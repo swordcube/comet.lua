@@ -14,11 +14,11 @@ end
 
 function Object:addChild(object, tag)
     if not object then
-        print("You can't add an invalid child to a Object!")
+        Log.warn("You can't add an invalid child to a Object!")
         return
     end
     if table.contains(self.children, object) then
-        print("You can't add the same object twice!")
+        Log.warn("You can't add the same object twice!")
         return
     end
     if tag then
@@ -30,11 +30,11 @@ end
 
 function Object:insertChild(position, object, tag)
     if not object then
-        print("You can't add an invalid child to an object!")
+        Log.warn("You can't add an invalid child to an object!")
         return
     end
     if table.contains(self.children, object) then
-        print("You can't insert the same object twice!")
+        Log.warn("You can't insert the same object twice!")
         return
     end
     if tag then
@@ -45,9 +45,18 @@ function Object:insertChild(position, object, tag)
     table.insert(self.children, position, object)
 end
 
+function Object:moveChild(object, newPosition)
+    if not object then
+        Log.warn("You can't move an invalid object's position!")
+        return
+    end
+    table.removeItem(self.children, object)
+    table.insert(self.children, newPosition, object)
+end
+
 function Object:removeChild(object)
     if not object then
-        print("You can't remove an invalid child from an object!")
+        Log.warn("You can't remove an invalid child from an object!")
         return
     end
     object.parent = nil

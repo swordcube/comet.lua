@@ -1,3 +1,5 @@
+io.stdout:setvbuf("no") -- Allows console output to be shown immediately
+
 local cd = ...
 cometreq = function(mod)
     return require(cd .. "." .. mod)
@@ -54,6 +56,7 @@ comet = {
     _tps = 0,
 }
 
+Log = cometreq("util.log") --- @type comet.util.Log
 Class = cometreq("util.class") --- @type comet.util.Class
 
 Vec2 = cometreq("math.vec2") --- @type comet.math.Vec2

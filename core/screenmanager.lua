@@ -32,13 +32,16 @@ function ScreenManager:_switchTo(newScreen)
         self.current:exit()
         self.current = nil
     end
+    local new = nil --- @type comet.core.Screen
     if type(newScreen) == "function" then
-        self.current = newScreen()
+        new = newScreen()
     else
-        self.current = newScreen
+        new = newScreen
     end
-    print("[COMET | INFO] Switched to screen: " .. newScreen.class.name)
+    self.current = new
     self.current:enter()
+    
+    Log.verbose("Switched to screen: " .. new.class.name)
     self.pending = nil
 end
 
