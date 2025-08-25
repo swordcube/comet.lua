@@ -261,8 +261,8 @@ function comet.handleInputEvent(e)
     comet.signals.onInput:emit(e)
 end
 
-function comet.handleKeyPress(key)
-    comet.handleInputEvent(InputKeyEvent:new(key, true))
+function comet.handleKeyPress(key, _, isRepeat)
+    comet.handleInputEvent(InputKeyEvent:new(key, true, isRepeat))
 end
 
 function comet.handleTextInput(text)

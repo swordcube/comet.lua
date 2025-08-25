@@ -3,11 +3,11 @@ local Object2D, super = Object:subclass("Object2D")
 
 local lmath = love.math
 
-function Object2D:__init__()
+function Object2D:__init__(x, y)
     super.__init__(self)
 
     --- Position of this image
-    self.position = Vec2:new() --- @type comet.math.Vec2
+    self.position = Vec2:new(x and x or 0.0, y and y or 0.0) --- @type comet.math.Vec2
     
     -- Rotation of this image (in degrees)
     self.rotation = 0.0

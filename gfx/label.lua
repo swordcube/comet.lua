@@ -191,7 +191,8 @@ function Label:draw()
 
     local transform = self:getTransform()
     if self.borderSize > 0 and self._borderColor.a > 0 then
-        gfx.setColor(self._borderColor:unpack())
+        local r, g, b, a = self._borderColor:unpack()
+        gfx.setColor(r, g, b, a * self.alpha)
 
         local size = self.borderSize
         local precision = self.borderPrecision
