@@ -89,7 +89,7 @@ end
 function Screen:input(e)
     for i = 1, #self.children do
         local object = self.children[i] --- @type comet.core.Object
-        object:_input()
+        object:_input(e)
     end
 end
 

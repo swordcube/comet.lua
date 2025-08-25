@@ -347,6 +347,9 @@ function Tween:update(dt)
         return
     end
     self.time = self.time + dt
+    if self.time > self.duration then
+        self.time = self.duration
+    end
     local progress = self:getProgress()
     for i = 1, #self.currentTargets do
         local target = self.currentTargets[i]

@@ -348,7 +348,7 @@ function comet.run()
         end
         nextUpdate = nextUpdate + rawDt
         if nextUpdate >= framePeriod then
-            local dt = love.timer.step()
+            local dt = math.min(love.timer.step(), 0.1)
             comet._dt = dt
             if love.update then love.update(dt) end
     

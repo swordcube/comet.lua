@@ -72,6 +72,11 @@ function Object:getChildByTag(tag)
     return self._childrenByTag[tag]
 end
 
+--- @param index integer
+function Object:getChild(index)
+    return self.children[index]
+end
+
 --- @protected
 function Object:_update(dt)
     for i = 1, #self.children do
@@ -99,15 +104,15 @@ end
 function Object:draw() end
 
 --- @protected
-function Object:_input()
+function Object:_input(e)
     for i = 1, #self.children do
         local object = self.children[i] --- @type comet.core.Object
-        object:_input()
+        object:_input(e)
     end
-    self:input()
+    self:input(e)
 end
 
-function Object:input() end
+function Object:input(e) end
 
 function Object:destroy()
     for i = 1, #self.children do

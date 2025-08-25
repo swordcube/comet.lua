@@ -7,6 +7,12 @@ function Signal:__init__()
     self.listeners = {}
 end
 
+--- Syntax sugar function, can be used to describe what this signal takes in and returns
+--- @return comet.util.Signal
+function Signal:type(...)
+    return self
+end
+
 ---
 --- Connects a listener to this signal
 ---
