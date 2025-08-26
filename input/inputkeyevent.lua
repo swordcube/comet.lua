@@ -13,8 +13,9 @@ local InputKeyEvent = {
 
 --- @param  key      love.KeyConstant
 --- @param  pressed  boolean
+--- @param  isRepeat boolean
 --- @return comet.input.InputKeyEvent
-function InputKeyEvent:new(key, pressed)
-    return {type = "key", key = key, pressed = pressed}
+function InputKeyEvent:new(key, pressed, isRepeat)
+    return {type = "key", key = key, pressed = pressed, isRepeat = isRepeat}
 end
 return InputKeyEvent
