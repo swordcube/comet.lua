@@ -6,6 +6,8 @@ local Object = Class("Object")
 function Object:__init__()
     self.tag = nil
 
+    self.parent = nil --- @type comet.core.Object
+
     self.children = {}
     
     --- @protected
@@ -65,6 +67,18 @@ function Object:removeChild(object)
         self._childrenByTag[object.tag] = nil
         object.tag = nil
     end
+end
+
+--- @param newParent comet.core.Object
+function Object:reparent(newParent)
+    if not newParent then
+        Log.warn("You can't reparent an object to an invalid parent!")
+        return
+    end
+    if self.parent then
+        table.removeItem(self.parent.children, self)
+    end
+    self.parent = newParent
 end
 
 --- @param tag string

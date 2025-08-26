@@ -43,7 +43,8 @@ comet = {
         -- `event`
         onInput = cometreq("util.signal"):new() --- @type comet.util.Signal
     },
-    gfx = next, --- @type comet.modules.gfx
+    gfx = nil, --- @type comet.modules.gfx
+    mixer = nil, --- @type comet.modules.mixer
 
     -- global values
 
@@ -72,9 +73,12 @@ Label = cometreq("gfx.label") --- @type comet.gfx.Label
 Camera = cometreq("gfx.camera") --- @type comet.gfx.Camera
 Tween = cometreq("gfx.tween") --- @type comet.gfx.Tween
 
+Source = cometreq("mixer.source") --- @type comet.mixer.Source
+Sound = cometreq("mixer.sound") --- @type comet.mixer.Sound
+
 Screen = cometreq("core.screen") --- @type comet.core.Screen
-ScreenManager = cometreq("core.screenmanager") --- @type comet.core.ScreenManager
-TweenManager = cometreq("core.tweenmanager") --- @type comet.core.TweenManager
+ScreenManager = cometreq("plugins.screenmanager") --- @type comet.plugins.ScreenManager
+TweenManager = cometreq("plugins.tweenmanager") --- @type comet.plugins.TweenManager
 
 InputEvent = cometreq("input.inputevent") --- @type comet.input.InputEvent
 InputKeyEvent = cometreq("input.inputkeyevent") --- @type comet.input.InputKeyEvent
@@ -136,6 +140,7 @@ function comet.init(params)
     debugFPSFont = love.graphics.newFont(comet.getEmbeddedFont("Roboto-Regular"), 12, "light")
 
     comet.gfx = cometreq("modules.gfx"):new()
+    comet.mixer = cometreq("modules.mixer"):new()
 
     comet.plugins = cometreq("core.pluginmanager"):new()
     comet.plugins:add(ScreenManager:new())
@@ -377,6 +382,7 @@ function comet.run()
 end
 
 function comet.update(dt)
+    comet.mixer:update(dt)
     comet.plugins:update(dt)
 end
 
