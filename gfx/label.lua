@@ -142,7 +142,7 @@ function Label:updateText()
     if self.maxWidth > 0 then
         self._textObject:setf(self.text, self.maxWidth, alignment)
     else
-        self._textObject:setf(self.text, self._fontData:getWidth(self.text), alignment)
+        self._textObject:setf(self.text, self._fontData:getWidth(self.text) + 10, alignment)
     end
     self._prevText = self.text
 end
