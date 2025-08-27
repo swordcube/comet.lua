@@ -274,6 +274,20 @@ function Tween:__init__()
     self.onFinish = Signal:new() --- @type comet.util.Signal
 end
 
+--- @param object any
+function Tween.cancelTweensOf(object)
+    local toRemove = {}
+    for i = 1, #TweenManager.instance.tweens.children do
+        local tween = TweenManager.instance.tweens.children[i] --- @type comet.gfx.Tween
+        if table.contains(tween.currentTargets, object) then
+            table.insert(toRemove, tween)
+        end
+    end
+    for i = 1, #toRemove do
+        TweenManager.instance.tweens:removeChild(toRemove[i])
+    end
+end
+
 --- Determines the target object and target properties of the tween
 --- 
 --- Will target nothing if no parameters are given

@@ -48,7 +48,7 @@ function Sound:getTime()
     if not src then
         return 0.0
     end
-    return src.data:tell("seconds")
+    return src.data:tell("seconds") * 1000.0
 end
 
 function Sound:tell()
@@ -60,7 +60,7 @@ function Sound:setTime(t)
     if not src then
         return
     end
-    src.data:seek(t, "seconds")
+    src.data:seek(t / 1000.0, "seconds")
 end
 
 function Sound:seek(t)
@@ -72,7 +72,7 @@ function Sound:getDuration()
     if not src then
         return 0.0
     end
-    return src.data:getDuration("seconds")
+    return src.data:getDuration("seconds") * 1000.0
 end
 
 function Sound:getVolume()
