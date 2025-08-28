@@ -19,10 +19,14 @@ function mixer:play(src, volume, looping)
     end
     local sound = Sound:new() --- @type comet.mixer.Sound
     sound:setSource(src)
-    sound:setVolume(volume or 1.0)
+    sound:setVolume(volume ~= nil and volume or 1.0)
     sound:setLooping(looping ~= nil and looping or false)
     sound:play()
     return sound
+end
+
+function mixer:setMasterVolume(volume)
+    love.audio.setVolume(volume)
 end
 
 --- @param  filePath  string

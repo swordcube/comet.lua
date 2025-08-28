@@ -7,7 +7,7 @@ local Source, super = RefCounted:subclass("Source")
 function Source:__init__(data, key)
     super.__init__(self)
     if data then
-        self.data = love.audio.newSource(data, "static")
+        self.data = love.audio.newSource(data, comet.flags.STREAM_AUDIO and "stream" or "static")
     end
     self.key = key
     self._destroyed = false

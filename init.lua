@@ -121,9 +121,13 @@ function comet.init(params)
     comet.flags.DESKTOP = comet.flags.WINDOWS or comet.flags.MAC or comet.flags.LINUX
     comet.flags.MOBILE = comet.flags.ANDROID or comet.flags.IOS
 
+    if comet.flags.STREAM_AUDIO == nil then
+        comet.flags.STREAM_AUDIO = true
+    end
     comet.settings.fpsCap = comet.settings.fpsCap or 240
     comet.settings.dimensions = comet.settings.dimensions and Vec2:new(comet.settings.dimensions[1], comet.settings.dimensions[2]) or Vec2:new(800, 600)
     comet.settings.scaleMode = comet.settings.scaleMode or "ratio"
+
     if comet.settings.parallelUpdate == nil then
         comet.settings.parallelUpdate = true
     end

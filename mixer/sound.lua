@@ -15,6 +15,9 @@ function Sound:__init__()
     self._source = nil --- @type comet.mixer.Source
 
     --- @protected
+    self._loveSource = nil --- @type love.Source
+
+    --- @protected
     self._playing = false
 
     if comet.mixer then
@@ -26,6 +29,10 @@ function Sound:getSource()
     return self._source
 end
 
+function Sound:getLoveSource()
+    return self._loveSource
+end
+
 function Sound:setSource(src)
     if type(src) == "string" then
         src = comet.mixer:getSource(src)
@@ -33,22 +40,19 @@ function Sound:setSource(src)
     if self._source then
         self._source:dereference()
     end
-    self._source = src
-end
-
-function Sound:destroy()
-    if self._source then
-        self._source:dereference()
-        self._source = nil
+    if self._loveSource then
+        self._loveSource:release()
     end
+    self._source = src
+    self._loveSource = src.data:clone()
 end
 
 function Sound:getTime()
-    local src = self._source
+    local src = self._loveSource
     if not src then
         return 0.0
     end
-    return src.data:tell("seconds") * 1000.0
+    return src:tell("seconds") * 1000.0
 end
 
 function Sound:tell()
@@ -56,11 +60,11 @@ function Sound:tell()
 end
 
 function Sound:setTime(t)
-    local src = self._source
+    local src = self._loveSource
     if not src then
         return
     end
-    src.data:seek(t / 1000.0, "seconds")
+    src:seek(t / 1000.0, "seconds")
 end
 
 function Sound:seek(t)
@@ -68,96 +72,94 @@ function Sound:seek(t)
 end
 
 function Sound:getDuration()
-    local src = self._source
+    local src = self._loveSource
     if not src then
         return 0.0
     end
-    return src.data:getDuration("seconds") * 1000.0
+    return src:getDuration("seconds") * 1000.0
 end
 
 function Sound:getVolume()
-    local src = self._source
+    local src = self._loveSource
     if not src then
         return 0.0
     end
-    return src.data:getVolume()
+    return src:getVolume()
 end
 
 function Sound:setVolume(v)
-    local src = self._source
+    local src = self._loveSource
     if not src then
         return
     end
-    src.data:setVolume(v)
+    src:setVolume(v)
 end
 
 function Sound:getPitch()
-    local src = self._source
+    local src = self._loveSource
     if not src then
         return 0.0
     end
-    return src.data:getPitch()
+    return src:getPitch()
 end
 
 function Sound:setPitch(p)
-    local src = self._source
+    local src = self._loveSource
     if not src then
         return
     end
-    src.data:setPitch(p)
+    src:setPitch(p)
 end
 
 function Sound:isLooping()
-    local src = self._source
+    local src = self._loveSource
     if not src then
         return false
     end
-    return src.data:isLooping()
+    return src:isLooping()
 end
 
 function Sound:setLooping(looping)
-    local src = self._source
+    local src = self._loveSource
     if not src then
         return
     end
-    src.data:setLooping(looping)
+    src:setLooping(looping)
 end
 
 function Sound:isPlaying()
-    local src = self._source
+    local src = self._loveSource
     if not src then
         return false
     end
-    return src.data:isPlaying()
+    return src:isPlaying()
 end
 
 function Sound:play()
-    local src = self._source
+    local src = self._loveSource
     if not src then
         return
     end
     self._playing = true
-    src.data:play()
+    src:play()
 end
 
 function Sound:stop()
-    local src = self._source
+    local src = self._loveSource
     if not src then
         return
     end
-    if src.data:isPlaying() then
-        src.data:stop()
-    end
     self._playing = false
+    src:stop()
 end
 
 function Sound:pause()
-    local src = self._source
+    local src = self._loveSource
     if not src then
         return
     end
     self._playing = false
-    src.data:pause()
+    src:pause()
 end
 
 function Sound:update(dt)
@@ -176,6 +178,11 @@ function Sound:destroy()
     if src then
         src:dereference()
         self._source = nil
+    end
+    local lsrc = self._loveSource
+    if lsrc then
+        lsrc:release()
+        self._loveSource = nil
     end
     comet.mixer.sounds:removeChild(self)
 end
