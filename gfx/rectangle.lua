@@ -102,14 +102,72 @@ function Rectangle:getTransform()
     return transform
 end
 
+--- Returns the bounding box of this rectangle, as a basic rectangle
+--- @param trans love.Transform?   The transform to use for the bounding box (optional)
+--- @param rect  comet.math.Rect?  The rectangle to use as the bounding box (optional)
+--- @return comet.math.Rect
+function Rectangle:getBoundingBox(trans, rect)
+    if not trans then
+        trans = self:getTransform()
+    end
+    if not rect then
+        rect = Rect:new()
+    end
+    local w, h = 1, 1
+    local x1, y1 = trans:transformPoint(0, 0)
+    local x2, y2 = trans:transformPoint(w, 0)
+    local x3, y3 = trans:transformPoint(w, h)
+    local x4, y4 = trans:transformPoint(0, h)
+
+    local minX = math.min(x1, x2, x3, x4)
+    local minY = math.min(y1, y2, y3, y4)
+    local maxX = math.max(x1, x2, x3, x4)
+    local maxY = math.max(y1, y2, y3, y4)
+
+    rect:set(minX, minY, maxX - minX, maxY - minY)
+    return rect
+end
+
+--- Checks if this rectangle is on screen
+--- @param box comet.math.Rect?  The bounding box to check with (optional)
+function Rectangle:isOnScreen(box)
+    if not box then
+        box = self:getBoundingBox()
+    end
+    local p = self.parent
+    local camera = nil --- @type comet.gfx.Camera
+    while p do
+        if p and p:isInstanceOf(Camera) then
+            --- @cast p comet.gfx.Camera
+            camera = p
+            break
+        end
+        p = p.parent
+    end
+    local bxpw, byph = box.x + box.width, box.y + box.height
+    local gw, gh = camera and camera.size.x or comet.getDesiredWidth(), camera and camera.size.y or comet.getDesiredHeight()
+
+    if bxpw < 0 or box.x > gw or byph < 0 or box.y > gh then
+        return false
+    end
+    return true
+end
+
 function Rectangle:draw()
+    local transform = self:getTransform()
+    local box = self:getBoundingBox(transform, self._rect)
+    if not self:isOnScreen(box) then
+        return
+    end
     local pr, pg, pb, pa = gfx.getColor()
     gfx.setColor(self._tint.r, self._tint.g, self._tint.b, self._tint.a * self.alpha)
-    
-    local transform = self:getTransform()
     gfx.draw(whitePixel, transform)
-    
     gfx.setColor(pr, pg, pb, pa)
+
+    if comet.settings.debugDraw then
+        gfx.setLineWidth(4)
+        gfx.rectangle("line", box.x, box.y, box.width, box.height)
+    end
 end
 
 --- Returns the tint of this rectangle

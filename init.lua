@@ -32,7 +32,11 @@ comet = {
         dimensions = nil, --- @type comet.math.Vec2
         scaleMode = "ratio", --- @type "ratio"|"fill"|"stage"
         parallelUpdate = true,
-        vsync = false
+        vsync = false,
+
+        --- Whether or not to draw certain things usually
+        --- only seen in the debugger
+        debugDraw = false
     },
 
     -- modules
@@ -61,6 +65,7 @@ Log = cometreq("util.log") --- @type comet.util.Log
 Class = cometreq("util.class") --- @type comet.util.Class
 
 Vec2 = cometreq("math.vec2") --- @type comet.math.Vec2
+Rect = cometreq("math.rect") --- @type comet.math.Rect
 Color = cometreq("gfx.color") --- @type comet.gfx.Color
 
 Object = cometreq("core.object") --- @type comet.core.Object
@@ -130,6 +135,9 @@ function comet.init(params)
 
     if comet.settings.parallelUpdate == nil then
         comet.settings.parallelUpdate = true
+    end
+    if comet.settings.debugDraw == nil then
+        comet.settings.debugDraw = false
     end
     if (love.filesystem.isFused() or not love.filesystem.getInfo("icon.png", "file")) and love.filesystem.mountFullPath then
         local sourceBaseDir = os.getenv("OWD") -- use OWD for linux app image support

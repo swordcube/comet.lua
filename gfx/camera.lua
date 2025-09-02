@@ -60,7 +60,7 @@ function Camera:getTransform()
     transform:translate(-ox, -oy)
 
     -- scale
-    transform:scale(self.zoom.x, self.zoom.y)
+    transform:scale(math.max(self.zoom.x, 0.0), math.max(self.zoom.y, 0.0))
     
     return transform
 end

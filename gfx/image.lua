@@ -24,6 +24,9 @@ function Image:__init__(image)
 
     --- @type comet.gfx.Color
     self._tint = Color:new(1, 1, 1, 1) --- @protected
+
+    --- @type comet.math.Rect
+    self._rect = Rect:new() --- @protected
 end
 
 function Image:loadTexture(tex)
@@ -58,18 +61,80 @@ function Image:getTransform()
     -- position
     transform:translate(self.position.x, self.position.y)
     if self.centered then
-        transform:translate(-self:getWidth() * 0.5, -self:getHeight() * 0.5)
+        transform:translate(-math.abs(self:getWidth()) * 0.5, -math.abs(self:getHeight()) * 0.5)
     end
     -- origin
-    local ox, oy = self:getWidth() * self.origin.x, self:getHeight() * self.origin.y
+    local ox, oy = math.abs(self:getWidth()) * self.origin.x, math.abs(self:getHeight()) * self.origin.y
     transform:translate(ox, oy)
     transform:rotate(math.rad(self.rotation))
     transform:translate(-ox, -oy)
 
     -- scale
-    transform:scale(self.scale.x, self.scale.y)
-    
+    local ox2, oy2 = math.abs(self:getOriginalWidth()) * 0.5, math.abs(self:getOriginalHeight()) * 0.5
+    transform:scale(math.abs(self.scale.x), math.abs(self.scale.y))
+
+    if self.scale.x < 0.0 then
+        transform:translate(ox2, oy2)
+        transform:scale(-1, 1)
+        transform:translate(-ox2, -oy2)
+    end
+    if self.scale.y < 0.0 then
+        transform:translate(ox2, oy2)
+        transform:scale(1, -1)
+        transform:translate(-ox2, -oy2)
+    end
     return transform
+end
+
+--- Returns the bounding box of this image, as a rectangle
+--- @param trans love.Transform?   The transform to use for the bounding box (optional)
+--- @param rect  comet.math.Rect?  The rectangle to use as the bounding box (optional)
+--- @return comet.math.Rect
+function Image:getBoundingBox(trans, rect)
+    if not trans then
+        trans = self:getTransform()
+    end
+    if not rect then
+        rect = Rect:new()
+    end
+    local w, h = self:getOriginalWidth(), self:getOriginalHeight()
+    local x1, y1 = trans:transformPoint(0, 0)
+    local x2, y2 = trans:transformPoint(w, 0)
+    local x3, y3 = trans:transformPoint(w, h)
+    local x4, y4 = trans:transformPoint(0, h)
+
+    local minX = math.min(x1, x2, x3, x4)
+    local minY = math.min(y1, y2, y3, y4)
+    local maxX = math.max(x1, x2, x3, x4)
+    local maxY = math.max(y1, y2, y3, y4)
+
+    rect:set(minX, minY, maxX - minX, maxY - minY)
+    return rect
+end
+
+--- Checks if this image is on screen
+--- @param box comet.math.Rect?  The bounding box to check with (optional)
+function Image:isOnScreen(box)
+    if not box then
+        box = self:getBoundingBox()
+    end
+    local p = self.parent
+    local camera = nil --- @type comet.gfx.Camera
+    while p do
+        if p and p:isInstanceOf(Camera) then
+            --- @cast p comet.gfx.Camera
+            camera = p
+            break
+        end
+        p = p.parent
+    end
+    local bxpw, byph = box.x + box.width, box.y + box.height
+    local gw, gh = camera and camera.size.x or comet.getDesiredWidth(), camera and camera.size.y or comet.getDesiredHeight()
+
+    if bxpw < 0 or box.x > gw or byph < 0 or box.y > gh then
+        return false
+    end
+    return true
 end
 
 function Image:draw()
@@ -77,10 +142,19 @@ function Image:draw()
         return
     end
     local transform = self:getTransform()
+    local box = self:getBoundingBox(transform, self._rect)
+    if not self:isOnScreen(box) then
+        return
+    end
     local pr, pg, pb, pa = gfx.getColor()
     gfx.setColor(self._tint.r, self._tint.g, self._tint.b, self._tint.a * self.alpha)
     gfx.draw(self.texture:getImage(self.antialiasing and "linear" or "nearest"), transform)
     gfx.setColor(pr, pg, pb, pa)
+
+    if comet.settings.debugDraw then
+        gfx.setLineWidth(4)
+        gfx.rectangle("line", box.x, box.y, box.width, box.height)
+    end
 end
 
 --- Returns the unscaled width of this image.
