@@ -86,6 +86,19 @@ function Screen:draw()
     end
 end
 
+--- @param newScreen comet.core.Screen
+function Screen:switchTo(newScreen)
+    ScreenManager.switchTo(newScreen)
+end
+
+--- You should only need this if you NEED the screen to instantly be switched
+--- to the new screen, otherwise use `switchTo`, which will wait until
+--- the current screen is finished updating to switch.
+--- @param newScreen comet.core.Screen
+function Screen:forceSwitchTo(newScreen)
+    ScreenManager.instance:_switchTo(newScreen)
+end
+
 function Screen:input(e)
     for i = 1, #self.children do
         local object = self.children[i] --- @type comet.core.Object

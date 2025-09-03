@@ -165,7 +165,7 @@ end
 function Sound:update(dt)
     if self._playing and not self:isPlaying() and not self:isLooping() then
         self:stop()
-        self.onComplete:emit()
+        self.onComplete:emit(self)
 
         if self.autoDestroy then
             self:destroy()

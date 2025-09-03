@@ -10,6 +10,10 @@ function TweenManager:__init__()
     TweenManager.static.instance = self
 end
 
+function TweenManager:clear()
+    self.tweens.children = {}
+end
+
 function TweenManager:update(dt)
     if self.tweens._update then
         self.tweens:_update(dt)

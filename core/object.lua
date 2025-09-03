@@ -131,7 +131,9 @@ function Object:input(e) end
 function Object:destroy()
     for i = 1, #self.children do
         local object = self.children[i] --- @type comet.core.Object
-        object:destroy()
+        if object then
+            object:destroy()
+        end
     end
     self.children = nil
 end

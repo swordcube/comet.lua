@@ -38,6 +38,8 @@ function ScreenManager:_switchTo(newScreen)
     else
         new = newScreen
     end
+    TweenManager.instance:clear()
+
     self.current = new
     self.current:enter()
     

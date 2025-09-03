@@ -193,6 +193,29 @@ function Image:getHeight()
     return self.texture:getHeight() * math.abs(self.scale.y)
 end
 
+--- @param axes  "x"|"y"|"xy"?
+function Image:screenCenter(axes)
+    if not axes then
+        axes = "xy"
+    end
+    local right = comet.getDesiredWidth()
+    if not self.centered then
+        right = right - self:getWidth()
+    end
+    local bottom = comet.getDesiredHeight()
+    if not self.centered then
+        bottom = bottom - self:getHeight()
+    end
+    axes = string.lower(axes)
+
+    if axes == "x" or axes == "xy" then
+        self.position.x = right / 2.0
+    end
+    if axes == "y" or axes == "xy" then
+        self.position.y = bottom / 2.0
+    end
+end
+
 --- Returns the tint of this image
 --- @return comet.gfx.Color
 function Image:getTint()

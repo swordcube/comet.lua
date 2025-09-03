@@ -12,27 +12,6 @@ function Vec2:__init__(x, y)
     self.y = y and y or 0.0
 end
 
---- makes a new vector
----@param x number?
----@param y number?
----@return comet.math.Vec2
-local function new(x,y)
-  return Vec2:new(x,y)
-end
-
---- makes a new vector from an angle
----@param theta number
----@return comet.math.Vec2
-local function fromAngle(theta)
-  return new(math.cos(theta), -math.sin(theta))
-end
-
---- makes a vector with a random direction
----@return comet.math.Vec2
-local function random()
-  return fromAngle(rand() * math.pi*2)
-end
-
 --- check if an object is a vector
 ---@param t any
 ---@return boolean
@@ -64,7 +43,7 @@ end
 --- returns a copy of a vector
 ---@return comet.math.Vec2
 function Vec2:clone()
-  return new(self.x, self.y)
+  return Vec2:new(self.x, self.y)
 end
 
 --- get the magnitude of a vector
@@ -94,7 +73,7 @@ end
 ---@param v comet.math.Vec2
 ---@return comet.math.Vec2
 function Vec2.__unm(v)
-  return new(-v.x, -v.y)
+  return Vec2:new(-v.x, -v.y)
 end
 
 --- meta function to add vectors together
@@ -104,7 +83,7 @@ end
 ---@return comet.math.Vec2
 function Vec2.__add(a,b)
   assert(isvector(a) and isvector(b), "add: wrong argument types: (expected <vector> and <vector>)")
-  return new(a.x+b.x, a.y+b.y)
+  return Vec2:new(a.x+b.x, a.y+b.y)
 end
 
 --- meta function to subtract vectors
@@ -113,7 +92,7 @@ end
 ---@return comet.math.Vec2
 function Vec2.__sub(a,b)
   assert(isvector(a) and isvector(b), "sub: wrong argument types: (expected <vector> and <vector>)")
-  return new(a.x-b.x, a.y-b.y)
+  return Vec2:new(a.x-b.x, a.y-b.y)
 end
 
 --- meta function to multiply vectors
@@ -122,12 +101,12 @@ end
 ---@return comet.math.Vec2
 function Vec2.__mul(a,b)
   if type(a) == 'number' then
-    return new(a * b.x, a * b.y)
+    return Vec2:new(a * b.x, a * b.y)
   elseif type(b) == 'number' then
-    return new(a.x * b, a.y * b)
+    return Vec2:new(a.x * b, a.y * b)
   else
     assert(isvector(a) and isvector(b),  "mul: wrong argument types: (expected <vector> or <number>)")
-    return new(a.x*b.x, a.y*b.y)
+    return Vec2:new(a.x*b.x, a.y*b.y)
   end
 end
 
@@ -137,16 +116,7 @@ end
 ---@return comet.math.Vec2
 function Vec2.__div(a,b)
   assert(isvector(a) and type(b) == "number", "div: wrong argument types (expected <vector> and <number>)")
-  return new(a.x/b, a.y/b)
-end
-
---- meta function to check if vectors have the same values
----@param a comet.math.Vec2
----@param b comet.math.Vec2
----@return boolean
-function Vec2.__eq(a,b)
-  assert(isvector(a) and isvector(b), "eq: wrong argument types (expected <vector> and <vector>)")
-  return a.x==b.x and a.y==b.y
+  return Vec2:new(a.x/b, a.y/b)
 end
 
 --- meta function to change how vectors appear as string
@@ -219,7 +189,7 @@ end
 function Vec2:rotate(theta)
   local s = math.sin(theta)
   local c = math.cos(theta)
-  local v = new(
+  local v = Vec2:new(
                 (c * self.x) + (s * self.y),
                 -(s * self.x) + (c * self.y))
   self:replace(v)

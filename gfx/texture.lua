@@ -14,6 +14,9 @@ function Texture:__init__(image, key)
         self.linearImage = gfx.newImage(data, {linear = true})
         self.nearestImage = gfx.newImage(data, {linear = false})
     end
+    if not key and type(image) == "string" then
+        key = image
+    end
     self.key = key
     self._destroyed = false
 end

@@ -73,6 +73,8 @@ Object2D = cometreq("gfx.object2d") --- @type comet.gfx.Object2D
 RefCounted = cometreq("core.refcounted") --- @type comet.core.RefCounted
 
 Image = cometreq("gfx.image") --- @type comet.gfx.Image
+Texture = cometreq("gfx.texture") --- @type comet.gfx.Texture
+
 Rectangle = cometreq("gfx.rectangle") --- @type comet.gfx.Rectangle
 Label = cometreq("gfx.label") --- @type comet.gfx.Label
 Camera = cometreq("gfx.camera") --- @type comet.gfx.Camera
@@ -287,7 +289,7 @@ function comet.handleTextInput(text)
 end
 
 function comet.handleKeyRelease(key)
-    comet.handleInputEvent(InputKeyEvent:new(key, false))
+    comet.handleInputEvent(InputKeyEvent:new(key, false, false))
 end
 
 function comet.handleMousePress(button, x, y)

@@ -153,15 +153,6 @@ function Rect.__div(a,b)
   return new(a.x/b, a.y/b, a.width/b, a.height/b)
 end
 
---- meta function to check if rectangles have the same values
----@param a comet.math.Rect
----@param b comet.math.Rect
----@return boolean
-function Rect.__eq(a,b)
-  assert(isrect(a) and isrect(b), "eq: wrong argument types (expected <rectangle> and <rectangle>)")
-  return a.x==b.x and a.y==b.y and a.width==b.width and a.height==b.height
-end
-
 --- meta function to change how rectangles appear as string
 --- ex: print(rectangle(2,8)) - this prints 'instance of Rect(2,8)'
 ---@return string
