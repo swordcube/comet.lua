@@ -10,7 +10,7 @@ local gfx = love.graphics
 function Texture:__init__(image, key)
     super.__init__(self)
     if image then
-        local data = img.newImageData(image)
+        local data = type(image) == "string" and img.newImageData(image) or image
         self.linearImage = gfx.newImage(data, {linear = true})
         self.nearestImage = gfx.newImage(data, {linear = false})
     end

@@ -16,8 +16,7 @@ local gfx = love.graphics -- Faster access with local variable
 
 local whitePixelData = img.newImageData(1, 1)
 whitePixelData:setPixel(0, 0, 1, 1, 1, 1)
-
-local whitePixel = gfx.newImage(whitePixelData)
+Rectangle.static.whitePixel = gfx.newImage(whitePixelData)
 
 function Rectangle:__init__(x, y)
     super.__init__(self)
@@ -166,7 +165,7 @@ function Rectangle:draw()
     end
     local pr, pg, pb, pa = gfx.getColor()
     gfx.setColor(self._tint.r, self._tint.g, self._tint.b, self._tint.a * self.alpha)
-    gfx.draw(whitePixel, transform)
+    gfx.draw(Rectangle.whitePixel, transform)
     gfx.setColor(pr, pg, pb, pa)
 
     if comet.settings.debugDraw then

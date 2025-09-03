@@ -2,10 +2,8 @@
 --- A basic object for displaying static images.
 local Image, super = Object2D:subclass("Image")
 
--- TODO: texture caching
-
 local math = math -- Faster access with local variable
-local gfx = love.graphics
+local gfx = love.graphics -- Faster access with local variable
 
 function Image:__init__(image)
     super.__init__(self)

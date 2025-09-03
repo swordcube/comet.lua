@@ -76,6 +76,10 @@ RefCounted = cometreq("core.refcounted") --- @type comet.core.RefCounted
 Image = cometreq("gfx.image") --- @type comet.gfx.Image
 Texture = cometreq("gfx.texture") --- @type comet.gfx.Texture
 
+AnimationFrame = cometreq("gfx.animationframe") --- @type comet.gfx.AnimationFrame
+FrameCollection = cometreq("gfx.framecollection") --- @type comet.gfx.FrameCollection
+AnimatedImage = cometreq("gfx.animatedimage") --- @type comet.gfx.AnimatedImage
+
 Rectangle = cometreq("gfx.rectangle") --- @type comet.gfx.Rectangle
 Label = cometreq("gfx.label") --- @type comet.gfx.Label
 Camera = cometreq("gfx.camera") --- @type comet.gfx.Camera

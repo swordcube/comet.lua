@@ -210,55 +210,13 @@ end
 --- @param rect  comet.math.Rect?  The rectangle to use as the bounding box (optional)
 --- @return comet.math.Rect
 function Label:getBoundingBox(trans, rect)
-    if not trans then
-        trans = self:getTransform()
-    end
-    if not rect then
-        rect = Rect:new()
-    end
-    local w, h = self:getOriginalWidth(), self:getOriginalHeight()
-    local x1, y1 = trans:transformPoint(0, 0)
-    local x2, y2 = trans:transformPoint(w, 0)
-    local x3, y3 = trans:transformPoint(w, h)
-    local x4, y4 = trans:transformPoint(0, h)
-
-    local minX = math.min(x1, x2, x3, x4)
-    local minY = math.min(y1, y2, y3, y4)
-    local maxX = math.max(x1, x2, x3, x4)
-    local maxY = math.max(y1, y2, y3, y4)
-
-    rect:set(minX, minY, maxX - minX, maxY - minY)
-    return rect
+    return Image.getBoundingBox(self, trans, rect)
 end
 
 --- Checks if this label is on screen
 --- @param box comet.math.Rect?  The bounding box to check with (optional)
 function Label:isOnScreen(box)
-    if not box then
-        box = self:getBoundingBox()
-    end
-    local p = self.parent
-    local camera = nil --- @type comet.gfx.Camera
-    while p do
-        if p and p:isInstanceOf(Camera) then
-            --- @cast p comet.gfx.Camera
-            camera = p
-            break
-        end
-        p = p.parent
-    end
-    local gx, gy, gw, gh = 0, 0, 0, 0
-    local bxpw, byph = box.x + box.width, box.y + box.height
-    if camera then
-        local cameraBox = camera._rect
-        gx, gy, gw, gh = cameraBox.x, cameraBox.y, cameraBox.width, cameraBox.height
-    else
-        gx, gy, gw, gh = 0, 0, comet.getDesiredWidth(), comet.getDesiredHeight()
-    end
-    if bxpw < gx or box.x > gx + gw or byph < gy or box.y > gy + gh then
-        return false
-    end
-    return true
+    return Image.isOnScreen(self, box)
 end
 
 function Label:draw()
