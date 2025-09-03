@@ -4,7 +4,7 @@ local cd = ...
 cometreq = function(mod)
     return require(cd .. "." .. mod)
 end
-cometreq("lib.autobatch")
+-- cometreq("lib.autobatch")
 
 cometreq("tools.mathtools") --- @type comet.tools.mathtools
 cometreq("tools.tabletools") --- @type comet.tools.tabletools

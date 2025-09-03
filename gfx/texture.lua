@@ -11,8 +11,8 @@ function Texture:__init__(image, key)
     super.__init__(self)
     if image then
         local data = type(image) == "string" and img.newImageData(image) or image
-        self.linearImage = gfx.newImage(data, {linear = true})
-        self.nearestImage = gfx.newImage(data, {linear = false})
+        self.image = gfx.newImage(data)
+        data:release()
     end
     if not key and type(image) == "string" then
         key = image
@@ -26,10 +26,8 @@ function Texture:getImage(filter)
     if not filter then
         filter = "nearest"
     end
-    if filter == "linear" then
-        return self.linearImage
-    end
-    return self.nearestImage
+    self.image:setFilter(filter, filter)
+    return self.image
 end
 
 --- Returns the width of this texture.
