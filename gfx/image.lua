@@ -35,7 +35,7 @@ function Image:loadTexture(tex)
     if tex ~= nil then
         if type(tex) == "string" then
             local filePath = tex
-            if not filePath or not love.filesystem.exists(filePath) then
+            if not filePath then
                 return self
             end
             if self.texture then

@@ -10,9 +10,30 @@ local gfx = love.graphics
 function Texture:__init__(image, key)
     super.__init__(self)
     if image then
-        local data = type(image) == "string" and img.newImageData(image) or image
-        self.linearImage = gfx.newImage(data, {linear = true})
-        self.nearestImage = gfx.newImage(data, {linear = false})
+        local data = nil --- @type love.ImageData
+        if type(image) == "string" then
+            if love.filesystem.exists(image) then
+                data = img.newImageData(image)
+            else
+                local size = 16
+                local halfSize = size / 2
+                data = img.newImageData(size, size)
+                for x = 1, size do
+                    for y = 1, size do
+                        local color = ((x > halfSize and y <= halfSize) or (x <= halfSize and y > halfSize)) and Color.MAGENTA or Color.BLACK
+                        data:setPixel(x - 1, y - 1, color:array())
+                    end
+                end
+                Log.warn("Image at " .. image .. " does not exist, generating fallback instead!")
+            end
+        else
+            data = image
+        end
+        self._loveImage = gfx.newImage(data)
+        data:release()
+        
+        self.linearImage = {_type = "FilteredImage", image = self._loveImage, filter = "linear"}
+        self.nearestImage = {_type = "FilteredImage", image = self._loveImage, filter = "nearest"}
     end
     if not key and type(image) == "string" then
         key = image
@@ -35,25 +56,29 @@ end
 --- Returns the width of this texture.
 --- @return number
 function Texture:getWidth()
-    return self:getImage("nearest"):getWidth()
+    return self:getImage("nearest").image:getWidth()
 end
 
 --- Returns the height of this texture.
 --- @return number
 function Texture:getHeight()
-    return self:getImage("nearest"):getHeight()
+    return self:getImage("nearest").image:getHeight()
 end
 
 function Texture:destroy()
     if self._destroyed then
         return
     end
+    if self._loveImage then
+        self._loveImage:release()
+        self._loveImage = nil
+    end
     if self.linearImage then
-        self.linearImage:release()
+        -- self.linearImage:release()
         self.linearImage = nil
     end
     if self.nearestImage then
-        self.nearestImage:release()
+        -- self.nearestImage:release()
         self.nearestImage = nil
     end
     self._destroyed = true
