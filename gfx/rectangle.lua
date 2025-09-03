@@ -144,10 +144,15 @@ function Rectangle:isOnScreen(box)
         end
         p = p.parent
     end
+    local gx, gy, gw, gh = 0, 0, 0, 0
     local bxpw, byph = box.x + box.width, box.y + box.height
-    local gw, gh = camera and camera.size.x or comet.getDesiredWidth(), camera and camera.size.y or comet.getDesiredHeight()
-
-    if bxpw < 0 or box.x > gw or byph < 0 or box.y > gh then
+    if camera then
+        local cameraBox = camera._rect
+        gx, gy, gw, gh = cameraBox.x, cameraBox.y, cameraBox.width, cameraBox.height
+    else
+        gx, gy, gw, gh = 0, 0, comet.getDesiredWidth(), comet.getDesiredHeight()
+    end
+    if bxpw < gx or box.x > gx + gw or byph < gy or box.y > gy + gh then
         return false
     end
     return true

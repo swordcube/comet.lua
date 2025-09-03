@@ -11,7 +11,7 @@ function Log.output(type, fgColor, bgColor, ...)
 
     Native.setConsoleColors(Native.ConsoleColor.YELLOW, bgColor)
     
-    io.stdout:write("COMET")
+    io.stdout:write("COMET✷")
     io.stdout:flush()
 
     Native.setConsoleColors(Native.ConsoleColor.NONE, bgColor)

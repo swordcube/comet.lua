@@ -182,6 +182,29 @@ function Label:getHeight()
     return (self._textObject:getHeight() + padding) * math.abs(self.scale.y)
 end
 
+--- @param axes  "x"|"y"|"xy"?
+function Label:screenCenter(axes)
+    if not axes then
+        axes = "xy"
+    end
+    local right = comet.getDesiredWidth()
+    if not self.centered then
+        right = right - self:getWidth()
+    end
+    local bottom = comet.getDesiredHeight()
+    if not self.centered then
+        bottom = bottom - self:getHeight()
+    end
+    axes = string.lower(axes)
+
+    if axes == "x" or axes == "xy" then
+        self.position.x = right / 2.0
+    end
+    if axes == "y" or axes == "xy" then
+        self.position.y = bottom / 2.0
+    end
+end
+
 --- Returns the bounding box of this label, as a rectangle
 --- @param trans love.Transform?   The transform to use for the bounding box (optional)
 --- @param rect  comet.math.Rect?  The rectangle to use as the bounding box (optional)
@@ -224,10 +247,15 @@ function Label:isOnScreen(box)
         end
         p = p.parent
     end
+    local gx, gy, gw, gh = 0, 0, 0, 0
     local bxpw, byph = box.x + box.width, box.y + box.height
-    local gw, gh = camera and camera.size.x or comet.getDesiredWidth(), camera and camera.size.y or comet.getDesiredHeight()
-
-    if bxpw < 0 or box.x > gw or byph < 0 or box.y > gh then
+    if camera then
+        local cameraBox = camera._rect
+        gx, gy, gw, gh = cameraBox.x, cameraBox.y, cameraBox.width, cameraBox.height
+    else
+        gx, gy, gw, gh = 0, 0, comet.getDesiredWidth(), comet.getDesiredHeight()
+    end
+    if bxpw < gx or box.x > gx + gw or byph < gy or box.y > gy + gh then
         return false
     end
     return true

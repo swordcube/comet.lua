@@ -48,6 +48,7 @@ function Object2D:getTransform()
     transform:translate(self.position.x, self.position.y)
     transform:rotate(math.rad(self.rotation))
     transform:scale(self.scale.x, self.scale.y)
+    
     return transform
 end
 

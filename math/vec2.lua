@@ -20,14 +20,14 @@ local function isvector(t)
 end
 
 --- set the values of the vector to something new
----@param x number
----@param y number
+---@param x number?
+---@param y number?
 ---@overload fun(self: comet.math.Vec2, vec: comet.math.Vec2): self
 ---@return self
 function Vec2:set(x,y)
 ---@diagnostic disable-next-line: undefined-field
   if isvector(x) then self.x, self.y = x.x, x.y; return self end
-  self.x, self.y = x or self.x, y or self.y
+  self.x, self.y = x or 0.0, y or 0.0
   return self
 end
 

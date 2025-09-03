@@ -129,6 +129,9 @@ end
 function Object:input(e) end
 
 function Object:destroy()
+    if not self.children then
+        return
+    end
     for i = 1, #self.children do
         local object = self.children[i] --- @type comet.core.Object
         if object then

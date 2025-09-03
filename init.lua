@@ -70,6 +70,7 @@ Color = cometreq("gfx.color") --- @type comet.gfx.Color
 
 Object = cometreq("core.object") --- @type comet.core.Object
 Object2D = cometreq("gfx.object2d") --- @type comet.gfx.Object2D
+Parallax2D = cometreq("gfx.parallax2d") --- @type comet.gfx.Parallax2D
 RefCounted = cometreq("core.refcounted") --- @type comet.core.RefCounted
 
 Image = cometreq("gfx.image") --- @type comet.gfx.Image
@@ -400,10 +401,10 @@ function comet.update(dt)
     comet.plugins:update(dt)
 end
 
-function comet.draw()
+function comet.getGameScissor()
     local desiredWidth, desiredHeight = comet.getDimensions()
     local windowWidth, windowHeight = love.graphics.getDimensions()
-    
+
     local scaleMode = comet.settings.scaleMode
     if scaleMode == "ratio" then
         local ratio = desiredWidth / desiredHeight
@@ -418,30 +419,54 @@ function comet.draw()
         end
         gamePos[1] = (windowWidth - (desiredWidth * gameScale[1])) * 0.5
         gamePos[2] = (windowHeight - (desiredHeight * gameScale[2])) * 0.5
-        love.graphics.setScissor(gamePos[1], gamePos[2], desiredWidth * gameScale[1], desiredHeight * gameScale[2])
+        return gamePos[1], gamePos[2], desiredWidth * gameScale[1], desiredHeight * gameScale[2]
         
     elseif scaleMode == "fill" then
         gameScale[1] = windowWidth / desiredWidth
         gameScale[2] = windowHeight / desiredHeight
         gamePos[1] = 0
         gamePos[2] = 0
-        love.graphics.setScissor(gamePos[1], gamePos[2], desiredWidth * gameScale[1], desiredHeight * gameScale[2])
+        return gamePos[1], gamePos[2], desiredWidth * gameScale[1], desiredHeight * gameScale[2]
         
     elseif scaleMode == "stage" then
         gameScale[1] = 1
         gameScale[2] = 1
         gamePos[1] = 0
         gamePos[2] = 0
-        love.graphics.setScissor()
+        return nil, nil, nil, nil
     end
+    return nil, nil, nil, nil
+end
+
+function comet.adjustToGameScissor(x, y, width, height)
+    x = (x * gameScale[1]) + gamePos[1]
+    y = (y * gameScale[2]) + gamePos[2]
+    width = width * gameScale[1]
+    height = height * gameScale[2]
+
+    local gx, gy, gw, gh = comet.getGameScissor()
+    x = math.max(x + (gx - x), x)
+    y = math.max(y + (gy - y), y)
+    width = math.min(width - ((x + width) - (gx + gw)), width)
+    height = math.min(height - ((y + height) - (gy + gh)), height)
+
+    return x, y, width, height
+end
+
+function comet.draw()
+    love.graphics.setScissor(comet.getGameScissor())
     love.graphics.translate(gamePos[1], gamePos[2])
     love.graphics.scale(gameScale[1], gameScale[2])
-
+    
     if not middleclass.isinstanceof(comet.settings.bgColor, Color) then
         -- convert to valid color object
         comet.settings.bgColor = Color:new(comet.settings.bgColor)
     end
     love.graphics.setColor(comet.settings.bgColor:unpack())
+    
+    local scaleMode = comet.settings.scaleMode
+    local desiredWidth, desiredHeight = comet.getDimensions()
+    local windowWidth, windowHeight = love.graphics.getDimensions()
 
     if scaleMode == "stage" then
         love.graphics.rectangle("fill", 0, 0, windowWidth, windowHeight)

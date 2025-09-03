@@ -39,7 +39,7 @@ end
 function Rect:set(x,y,w,h)
 ---@diagnostic disable-next-line: undefined-field
   if isrect(x) then self.x, self.y, self.width, self.height = x.x, x.y, x.width, x.height; return self end
-  self.x, self.y, self.width, self.height = x or self.x, y or self.y, w or self.width, h or self.height
+  self.x, self.y, self.width, self.height = x or 0.0, y or 0.0, w or 0.0, h or 0.0
   return self
 end
 
