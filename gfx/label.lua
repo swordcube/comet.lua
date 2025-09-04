@@ -184,25 +184,7 @@ end
 
 --- @param axes  "x"|"y"|"xy"?
 function Label:screenCenter(axes)
-    if not axes then
-        axes = "xy"
-    end
-    local right = comet.getDesiredWidth()
-    if not self.centered then
-        right = right - self:getWidth()
-    end
-    local bottom = comet.getDesiredHeight()
-    if not self.centered then
-        bottom = bottom - self:getHeight()
-    end
-    axes = string.lower(axes)
-
-    if axes == "x" or axes == "xy" then
-        self.position.x = right / 2.0
-    end
-    if axes == "y" or axes == "xy" then
-        self.position.y = bottom / 2.0
-    end
+    Image.screenCenter(self, axes)
 end
 
 --- Returns the bounding box of this label, as a rectangle

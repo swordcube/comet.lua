@@ -78,6 +78,11 @@ function Rectangle:setSize(newWidth, newHeight)
     self._height = newHeight
 end
 
+--- @param axes  "x"|"y"|"xy"?
+function Rectangle:screenCenter(axes)
+    Image.screenCenter(self, axes)
+end
+
 --- Returns the transform of this rectangle
 --- @return love.Transform
 function Rectangle:getTransform()

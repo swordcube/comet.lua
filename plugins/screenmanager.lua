@@ -18,7 +18,7 @@ ScreenManager.static.switchTo = ScreenManager.switchTo
 
 function ScreenManager:update(dt)
     if self.current then
-        self.current:update(dt)
+        self.current:_update(dt)
     end
     if self.pending then
         self:_switchTo(self.pending)
@@ -38,6 +38,7 @@ function ScreenManager:_switchTo(newScreen)
     else
         new = newScreen
     end
+    TimerManager.instance:clear()
     TweenManager.instance:clear()
 
     self.current = new

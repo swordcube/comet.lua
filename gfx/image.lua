@@ -196,6 +196,26 @@ function Image:getHeight()
     return self.texture:getHeight() * math.abs(self.scale.y)
 end
 
+--- @param newWidth   number
+--- @param newHeight  number
+function Image:setGraphicSize(newWidth, newHeight)
+    newWidth = newWidth or 0.0
+    newHeight = newHeight or 0.0
+
+    if newWidth <= 0 and newHeight <= 0 then
+        return
+    end
+    local newScaleX = newWidth / self:getOriginalWidth()
+    local newScaleY = newHeight / self:getOriginalHeight()
+    self.scale:set(newScaleX, newScaleY)
+
+    if newWidth <= 0 then
+        self.scale.x = newScaleY
+    elseif newHeight <= 0 then
+        self.scale.y = newScaleX
+    end
+end
+
 --- @param axes  "x"|"y"|"xy"?
 function Image:screenCenter(axes)
     if not axes then

@@ -38,6 +38,10 @@ function Signal:disconnect(listener)
     end
 end
 
+function Signal:disconnectAll()
+    self.listeners = {}
+end
+
 function Signal:emit(...)
     local deadListeners = {}
     for i = 1, #self.listeners do

@@ -36,7 +36,9 @@ comet = {
 
         --- Whether or not to draw certain things usually
         --- only seen in the debugger
-        debugDraw = false
+        debugDraw = false,
+        
+        showSplashScreen = true
     },
 
     -- modules
@@ -75,6 +77,7 @@ RefCounted = cometreq("core.refcounted") --- @type comet.core.RefCounted
 
 Image = cometreq("gfx.image") --- @type comet.gfx.Image
 Texture = cometreq("gfx.texture") --- @type comet.gfx.Texture
+Backdrop = cometreq("gfx.backdrop") --- @type comet.gfx.Backdrop
 
 AnimationFrame = cometreq("gfx.animationframe") --- @type comet.gfx.AnimationFrame
 FrameCollection = cometreq("gfx.framecollection") --- @type comet.gfx.FrameCollection
@@ -90,6 +93,8 @@ Sound = cometreq("mixer.sound") --- @type comet.mixer.Sound
 
 Screen = cometreq("core.screen") --- @type comet.core.Screen
 ScreenManager = cometreq("plugins.screenmanager") --- @type comet.plugins.ScreenManager
+
+TimerManager = cometreq("plugins.timermanager") --- @type comet.plugins.TimerManager
 TweenManager = cometreq("plugins.tweenmanager") --- @type comet.plugins.TweenManager
 
 InputEvent = cometreq("input.inputevent") --- @type comet.input.InputEvent
@@ -97,6 +102,8 @@ InputKeyEvent = cometreq("input.inputkeyevent") --- @type comet.input.InputKeyEv
 InputTextEvent = cometreq("input.inputtextevent") --- @type comet.input.InputTextEvent
 InputMouseButtonEvent = cometreq("input.inputmousebuttonevent") --- @type comet.input.InputMouseButtonEvent
 InputMouseMoveEvent = cometreq("input.inputmousemoveevent") --- @type comet.input.InputMouseMoveEvent
+
+Timer = cometreq("util.timer") --- @type comet.util.Timer
 
 local gfx = love.graphics
 local middleclass = cometreq("lib.middleclass") --- @type comet.lib.MiddleClass
@@ -146,6 +153,9 @@ function comet.init(params)
     if comet.settings.debugDraw == nil then
         comet.settings.debugDraw = false
     end
+    if comet.settings.showSplashScreen == nil then
+        comet.settings.showSplashScreen = true
+    end
     if (love.filesystem.isFused() or not love.filesystem.getInfo("icon.png", "file")) and love.filesystem.mountFullPath then
         local sourceBaseDir = os.getenv("OWD") -- use OWD for linux app image support
         if not sourceBaseDir then
@@ -163,11 +173,15 @@ function comet.init(params)
 
     comet.plugins = cometreq("core.pluginmanager"):new()
     comet.plugins:add(ScreenManager:new())
+    comet.plugins:add(TimerManager:new())
     comet.plugins:add(TweenManager:new())
 
     comet.settings.bgColor = comet.settings.bgColor or Color:new(0.5, 0.5, 0.5, 1.0)
-    ScreenManager.switchTo(params.screen or Screen:new())
-
+    if comet.settings.showSplashScreen then
+        ScreenManager.switchTo(cometreq("core.splashscreen"):new(params.screen or Screen:new()))
+    else
+        ScreenManager.switchTo(params.screen or Screen:new())
+    end
     love.run = comet.run
     love.update = comet.update
     love.draw = comet.draw
@@ -483,7 +497,7 @@ function comet.draw()
         comet.plugins:draw()
     end
     if ScreenManager.instance.current then
-        ScreenManager.instance.current:draw()
+        ScreenManager.instance.current:_draw()
     end
     if comet.plugins.drawOnTop then
         comet.plugins:draw()

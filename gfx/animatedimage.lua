@@ -157,27 +157,15 @@ function AnimatedImage:getHeight(frame)
     return self._frames:getFrame(self._animations[self._curAnim].name, frame).height * math.abs(self.scale.y)
 end
 
+--- @param newWidth   number
+--- @param newHeight  number
+function AnimatedImage:setGraphicSize(newWidth, newHeight)
+    return Image.setGraphicSize(self, newWidth, newHeight)
+end
+
 --- @param axes  "x"|"y"|"xy"?
 function AnimatedImage:screenCenter(axes)
-    if not axes then
-        axes = "xy"
-    end
-    local right = comet.getDesiredWidth()
-    if not self.centered then
-        right = right - self:getWidth()
-    end
-    local bottom = comet.getDesiredHeight()
-    if not self.centered then
-        bottom = bottom - self:getHeight()
-    end
-    axes = string.lower(axes)
-
-    if axes == "x" or axes == "xy" then
-        self.position.x = right / 2.0
-    end
-    if axes == "y" or axes == "xy" then
-        self.position.y = bottom / 2.0
-    end
+    Image.screenCenter(self, axes)
 end
 
 --- Returns the transform of this image
@@ -243,7 +231,7 @@ function AnimatedImage:update(dt)
     local anim = self._animations[self._curAnim]
     local frameDuration = 1.0 / anim.fps
 
-    if self._frameTimer >= frameDuration then
+    while self._frameTimer >= frameDuration do
         local newFrame = self._curFrame + 1
         local animFrames = self._frames:getFrames(anim.name)
         if anim.loop then

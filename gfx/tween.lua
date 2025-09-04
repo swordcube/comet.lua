@@ -271,7 +271,7 @@ function Tween:__init__()
     --- 
     --- This signal has the following attached to it's listeners:
     --- `tween`
-    self.onFinish = Signal:new() --- @type comet.util.Signal
+    self.onComplete = Signal:new() --- @type comet.util.Signal
 end
 
 --- @param object any
@@ -389,7 +389,7 @@ function Tween:update(dt)
             self.reversed = not self.reversed
             self.time = -self.delay
         end
-        self.onFinish:emit(self)
+        self.onComplete:emit(self)
     end
     if self.reversed then
         progress = 1 - progress

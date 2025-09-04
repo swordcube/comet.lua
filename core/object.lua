@@ -9,6 +9,9 @@ function Object:__init__()
     self.parent = nil --- @type comet.core.Object
 
     self.children = {}
+
+    --- Whether or not this object is visible
+    self.visible = true
     
     --- @protected
     self._childrenByTag = {}
@@ -108,7 +111,7 @@ function Object:update(dt) end
 function Object:_draw()
     for i = 1, #self.children do
         local object = self.children[i] --- @type comet.core.Object
-        if object then
+        if object and object.visible then
             object:_draw()
         end
     end
