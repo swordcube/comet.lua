@@ -36,7 +36,8 @@ local function switchActiveImage(img)
     end
     -- Activate spritebatch if image was not nil
     if img then
-        if type(img) == "table" and img._type == "FilteredImage" then
+        local isFilteredImage = type(img) == "table" and img._type == "FilteredImage"
+        if isFilteredImage then
             img.image:setFilter(img.filter, img.filter)
         end
         local b = autobatch.batches[img]
@@ -45,7 +46,7 @@ local function switchActiveImage(img)
             b = {}
             b.count = 0
             b.capacity = 16
-            b.sb = love_graphics.newSpriteBatch(img.image, b.capacity, "stream")
+            b.sb = love_graphics.newSpriteBatch(isFilteredImage and img.image or img, b.capacity, "stream")
             autobatch.batches[img] = b
         end
         -- Init spritebatch's color

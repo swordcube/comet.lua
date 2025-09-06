@@ -7,7 +7,10 @@ TimerManager.static.instance = nil
 function TimerManager:__init__()
     --- using this as a group lol
     self.timers = Object:new() --- @type comet.core.Object
-    TimerManager.static.instance = self
+
+    if not TimerManager.instance then
+        TimerManager.instance = self
+    end
 end
 
 function TimerManager:clear()

@@ -238,7 +238,7 @@ local easingMap = {
     outInBounce = outInBounce
 }
 
-function Tween:__init__()
+function Tween:__init__(tweenManager)
     self.time = 0 --- @type number
     self.duration = 0 --- @type number
     self.currentTargets = {} --- @type table
@@ -260,6 +260,7 @@ function Tween:__init__()
 
     self.paused = false
     self.reversed = false
+    self.tweenManager = tweenManager or TweenManager.instance --- @type comet.plugins.TweenManager
 
     --- Signal that gets emitted when the tween updates
     ---
@@ -332,7 +333,7 @@ function Tween:start(params)
     self.type = params.type or "oneshot"
     self.paused = false
     self.reversed = self.type == "backward"
-    TweenManager.instance.tweens:addChild(self)
+    self.tweenManager.tweens:addChild(self)
     return self
 end
 
@@ -398,7 +399,7 @@ end
 Tween._update = Tween.update
 
 function Tween:destroy()
-    TweenManager.instance.tweens:removeChild(self)
+    self.tweenManager.tweens:removeChild(self)
 end
 
 return Tween

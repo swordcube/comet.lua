@@ -47,7 +47,13 @@ comet = {
     signals = {
         -- This signal has the following attached to it's listeners:
         -- `event`
-        onInput = cometreq("util.signal"):new() --- @type comet.util.Signal
+        onInput = cometreq("util.signal"):new(), --- @type comet.util.Signal
+
+        preUpdate = cometreq("util.signal"):new(), --- @type comet.util.Signal
+        postUpdate = cometreq("util.signal"):new(), --- @type comet.util.Signal
+
+        preDraw = cometreq("util.signal"):new(), --- @type comet.util.Signal
+        postDraw = cometreq("util.signal"):new(), --- @type comet.util.Signal
     },
     gfx = nil, --- @type comet.modules.gfx
     mixer = nil, --- @type comet.modules.mixer
@@ -154,7 +160,7 @@ function comet.init(params)
         comet.settings.debugDraw = false
     end
     if comet.settings.showSplashScreen == nil then
-        comet.settings.showSplashScreen = true
+        comet.settings.showSplashScreen = ((not comet.isDebug()) or table.contains(arg, "--forcesplash")) and not table.contains(arg, "--nosplash")
     end
     if (love.filesystem.isFused() or not love.filesystem.getInfo("icon.png", "file")) and love.filesystem.mountFullPath then
         local sourceBaseDir = os.getenv("OWD") -- use OWD for linux app image support
@@ -294,7 +300,7 @@ end
 function comet.handleInputEvent(e)
     local screen = ScreenManager.instance.current
     if screen then
-        screen:input(e)
+        screen:_input(e)
     end
     comet.signals.onInput:emit(e)
 end
@@ -414,9 +420,17 @@ function comet.run()
 	end
 end
 
+function comet.getDeltaTime()
+    return comet._dt
+end
+
 function comet.update(dt)
+    comet.signals.preUpdate:emit()
+    
     comet.mixer:update(dt)
     comet.plugins:update(dt)
+
+    comet.signals.postUpdate:emit()
 end
 
 function comet.getGameScissor()
@@ -472,6 +486,8 @@ function comet.adjustToGameScissor(x, y, width, height)
 end
 
 function comet.draw()
+    comet.signals.preDraw:emit()
+
     love.graphics.setScissor(comet.getGameScissor())
     love.graphics.translate(gamePos[1], gamePos[2])
     love.graphics.scale(gameScale[1], gameScale[2])
@@ -517,6 +533,7 @@ function comet.draw()
         end
         love.graphics.print(text, debugFPSFont, gfx.getWidth() - debugFPSFont:getWidth(text) - 3, gfx.getHeight() - debugFPSFont:getHeight() - 3)
     end
+    comet.signals.postDraw:emit()
 end
 
 return comet

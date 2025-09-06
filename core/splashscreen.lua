@@ -1,9 +1,12 @@
 --- @class comet.core.SplashScreen : comet.core.Screen
 local SplashScreen, super = Screen:subclass("SplashScreen")
 
+local loveStripColors = {0xFFe74a99, 0xFF27aae1}
+
 function SplashScreen:__init__(initialScreen)
     super.__init__(self)
     self.initialScreen = initialScreen
+    self.skipped = false
 end
 
 function SplashScreen:enter()
@@ -163,6 +166,75 @@ function SplashScreen:enter()
                     end)
                 end)
             end)
+        end)
+    end)
+    Timer.wait(4, function()
+        self:skip()
+    end)
+end
+
+function SplashScreen:input(e)
+    if e.type == "key" then
+        self:skip()
+    end
+end
+
+function SplashScreen:skip()
+    if self.skipped then
+        return
+    end
+    self.skipped = true
+
+    local pinkStrip = Rectangle:new() --- @type comet.gfx.Rectangle
+    pinkStrip:setTint(loveStripColors[1])
+    pinkStrip:setSize(comet.getDesiredWidth(), comet.getDesiredHeight() / 2)
+    pinkStrip.position:set(-pinkStrip:getWidth() / 2, pinkStrip:getHeight() / 2)
+    self.camera:addChild(pinkStrip)
+
+    local blueStrip = Rectangle:new() --- @type comet.gfx.Rectangle
+    blueStrip:setTint(loveStripColors[2])
+    blueStrip:setSize(comet.getDesiredWidth(), comet.getDesiredHeight() / 2)
+    blueStrip.position:set(comet.getDesiredWidth() + (blueStrip:getWidth() / 2), pinkStrip.position.y + blueStrip:getHeight())
+    self.camera:addChild(blueStrip)
+
+    local t2 = Tween:new() --- @type comet.gfx.Tween
+    t2:target({target = pinkStrip.position, properties = {x = comet.getDesiredWidth() / 2}})
+    t2:target({target = blueStrip.position, properties = {x = comet.getDesiredWidth() / 2}})
+    t2:start({duration = 0.35, ease = "inCubic"})
+
+    Timer.wait(0.4, function()
+        local pinkStrip = Rectangle:new() --- @type comet.gfx.Rectangle
+        pinkStrip:setTint(loveStripColors[1])
+        pinkStrip:setSize(comet.getDesiredWidth(), comet.getDesiredHeight() / 2)
+        pinkStrip.position:set(comet.getDesiredWidth() / 2, pinkStrip:getHeight() / 2)
+
+        local blueStrip = Rectangle:new() --- @type comet.gfx.Rectangle
+        blueStrip:setTint(loveStripColors[2])
+        blueStrip:setSize(comet.getDesiredWidth(), comet.getDesiredHeight() / 2)
+        blueStrip.position:set(comet.getDesiredWidth() / 2, pinkStrip.position.y + blueStrip:getHeight())
+
+        local tm = TweenManager:new() --- @type comet.plugins.TweenManager
+        local function update()
+            tm:update(comet.getDeltaTime())
+        end
+        local function draw()
+            pinkStrip:draw()
+            blueStrip:draw()
+        end
+        comet.signals.postUpdate:connect(update)
+        comet.signals.postDraw:connect(draw)
+        self:switchTo(self.initialScreen)
+
+        local t3 = Tween:new(tm) --- @type comet.gfx.Tween
+        t3:target({target = pinkStrip.position, properties = {x = comet.getDesiredWidth() + (pinkStrip:getWidth() / 2)}})
+        t3:target({target = blueStrip.position, properties = {x = -(blueStrip:getWidth() / 2)}})
+        t3:start({duration = 0.35, ease = "outCubic"})
+        t3.onComplete:connect(function()
+            comet.signals.postUpdate:disconnect(update)
+            comet.signals.postDraw:disconnect(draw)
+            
+            pinkStrip:destroy()
+            blueStrip:destroy()
         end)
     end)
 end
