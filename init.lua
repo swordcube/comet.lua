@@ -57,6 +57,8 @@ comet = {
     },
     gfx = nil, --- @type comet.modules.gfx
     mixer = nil, --- @type comet.modules.mixer
+    keys = nil, --- @type comet.modules.keyboard
+    mouse = nil, --- @type comet.modules.mouse
 
     -- global values
 
@@ -108,6 +110,7 @@ InputKeyEvent = cometreq("input.inputkeyevent") --- @type comet.input.InputKeyEv
 InputTextEvent = cometreq("input.inputtextevent") --- @type comet.input.InputTextEvent
 InputMouseButtonEvent = cometreq("input.inputmousebuttonevent") --- @type comet.input.InputMouseButtonEvent
 InputMouseMoveEvent = cometreq("input.inputmousemoveevent") --- @type comet.input.InputMouseMoveEvent
+InputMouseWheelEvent = cometreq("input.inputmousewheelevent") --- @type comet.input.InputMouseWheelEvent
 
 Timer = cometreq("util.timer") --- @type comet.util.Timer
 
@@ -176,6 +179,8 @@ function comet.init(params)
 
     comet.gfx = cometreq("modules.gfx"):new()
     comet.mixer = cometreq("modules.mixer"):new()
+    comet.keys = cometreq("modules.keyboard"):new()
+    comet.mouse = cometreq("modules.mouse"):new()
 
     comet.plugins = cometreq("core.pluginmanager"):new()
     comet.plugins:add(ScreenManager:new())
@@ -200,8 +205,9 @@ function comet.init(params)
 
     love.mousepressed = comet.handleMousePress
     love.mousereleased = comet.handleMouseRelease
-
     love.mousemoved = comet.handleMouseMove
+    love.wheelmoved = comet.handleMouseWheel
+
     love.filesystem.exists = fsExists
 
     if comet.flags.DESKTOP then
@@ -306,7 +312,9 @@ function comet.handleInputEvent(e)
 end
 
 function comet.handleKeyPress(key, _, isRepeat)
-    comet.handleInputEvent(InputKeyEvent:new(key, true, isRepeat))
+    local e = InputKeyEvent:new(key, true, isRepeat)
+    comet.keys:handleEvent(e)
+    comet.handleInputEvent(e)
 end
 
 function comet.handleTextInput(text)
@@ -314,19 +322,34 @@ function comet.handleTextInput(text)
 end
 
 function comet.handleKeyRelease(key)
-    comet.handleInputEvent(InputKeyEvent:new(key, false, false))
+    local e = InputKeyEvent:new(key, false, false)
+    comet.keys:handleEvent(e)
+    comet.handleInputEvent(e)
 end
 
-function comet.handleMousePress(button, x, y)
-    comet.handleInputEvent(InputMouseButtonEvent:new(button, x, y, true))
+local mouseButtons = {"left", "right", "middle"}
+function comet.handleMousePress(x, y, button)
+    local e = InputMouseButtonEvent:new(mouseButtons[button], x, y, true)
+    comet.mouse:handleEvent(e)
+    comet.handleInputEvent(e)
 end
 
-function comet.handleMouseRelease(button, x, y)
-    comet.handleInputEvent(InputMouseButtonEvent:new(button, x, y, false))
+function comet.handleMouseRelease(x, y, button)
+    local e = InputMouseButtonEvent:new(mouseButtons[button], x, y, false)
+    comet.mouse:handleEvent(e)
+    comet.handleInputEvent(e)
 end
 
 function comet.handleMouseMove(x, y, dx, dy)
-    comet.handleInputEvent(InputMouseMoveEvent:new(x, y, dx, dy))
+    local e = InputMouseMoveEvent:new(x, y, dx, dy)
+    comet.mouse:handleEvent(e)
+    comet.handleInputEvent(e)
+end
+
+function comet.handleMouseWheel(x, y)
+    local e = InputMouseWheelEvent:new(x, -y)
+    comet.mouse:handleEvent(e)
+    comet.handleInputEvent(e)
 end
 
 function comet.sleep(ns)
@@ -429,8 +452,11 @@ function comet.update(dt)
     
     comet.mixer:update(dt)
     comet.plugins:update(dt)
-
+    
     comet.signals.postUpdate:emit()
+    
+    comet.keys:update()
+    comet.mouse:update()
 end
 
 function comet.getGameScissor()
@@ -468,6 +494,14 @@ function comet.getGameScissor()
         return nil, nil, nil, nil
     end
     return nil, nil, nil, nil
+end
+
+function comet.adjustPositionToGame(x, y)
+    return (x - gamePos[1]) / gameScale[1], (y - gamePos[2]) / gameScale[2]
+end
+
+function comet.adjustSizeToGame(width, height)
+    return width / gameScale[1], height / gameScale[2]
 end
 
 function comet.adjustToGameScissor(x, y, width, height)

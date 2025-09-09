@@ -20,8 +20,8 @@ whitePixelData:setPixel(0, 0, 1, 1, 1, 1)
 local whitePixel = gfx.newImage(whitePixelData)
 Rectangle.static.whitePixel = whitePixel
 
-function Rectangle:__init__(x, y)
-    super.__init__(self)
+function Rectangle:__init__(x, y, width, height)
+    super.__init__(self, x, y)
 
     --- Whether or not to display the rectangle from it's center
     self.centered = true
@@ -29,8 +29,11 @@ function Rectangle:__init__(x, y)
     --- Alpha multiplier for this rectangle
     self.alpha = 1
 
-    self._width = 1 --- @protected
-    self._height = 1 --- @protected
+    --- @type number
+    self._width = width or 1 --- @protected
+    
+    --- @type number
+    self._height = height or 1 --- @protected
 
     --- @type comet.gfx.Color
     self._tint = Color:new(1, 1, 1, 1) --- @protected

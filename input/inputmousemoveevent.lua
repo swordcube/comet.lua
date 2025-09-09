@@ -13,9 +13,12 @@ local InputMouseMoveEvent = {
     deltaY = nil, --- @type number
 }
 
---- @param button "left"|"center"|"right"
+--- @param x  number
+--- @param y  number
+--- @param dx number
+--- @param dy number
 --- @return comet.input.InputMouseMoveEvent
 function InputMouseMoveEvent:new(x, y, dx, dy)
-    return {type = "mousemove", x, y, deltaX = dx, deltaY = dy}
+    return {type = "mousemove", x = x, y = y, deltaX = dx, deltaY = dy}
 end
 return InputMouseMoveEvent

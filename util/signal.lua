@@ -18,10 +18,17 @@ end
 ---
 --- @param listener function  The listener to connect
 --- @param once     boolean?  Whether or not to call the listener only once
+--- @param priority integer?  The priority of the listener (optional, lower values mean higher priority)
 ---
-function Signal:connect(listener, once)
+function Signal:connect(listener, once, priority)
     once = once ~= nil and once or false
-    table.insert(self.listeners, {method = listener, once = once})
+    priority = priority ~= nil and priority or -1
+
+    if priority < 0 then
+        table.insert(self.listeners, {method = listener, once = once})
+    else
+        table.insert(self.listeners, priority, {method = listener, once = once})
+    end
 end
 
 ---
