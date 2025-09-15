@@ -169,6 +169,9 @@ function comet.init(params)
     if comet.flags.STREAM_AUDIO == nil then
         comet.flags.STREAM_AUDIO = true
     end
+    if comet.flags.SHOW_FPS_ON_DEBUG == nil then
+        comet.flags.SHOW_FPS_ON_DEBUG = true
+    end
     comet.settings.fpsCap = comet.settings.fpsCap or 240
     comet.settings.dimensions = comet.settings.dimensions and Vec2:new(comet.settings.dimensions[1], comet.settings.dimensions[2]) or Vec2:new(800, 600)
     comet.settings.scaleMode = comet.settings.scaleMode or "ratio"
@@ -211,6 +214,7 @@ function comet.init(params)
         ScreenManager.switchTo(params.screen or Screen:new())
     end
     love.run = comet.run
+    love.load = comet.load
     love.update = comet.update
     love.draw = comet.draw
     love.timer.getTPS = comet.getTPS
@@ -431,7 +435,9 @@ function comet.run()
         if rawDt > dtLimit then
             rawDt = dtLimit
         end
+        comet._rawDt = rawDt / 1000000000.0
         nextUpdate = nextUpdate + rawDt
+
         if nextUpdate >= framePeriod then
             local dt = math.min(love.timer.step(), 0.1)
             comet._dt = dt
@@ -461,8 +467,21 @@ function comet.run()
 	end
 end
 
+function comet.load() end -- define this yourself
+
+--- Returns delta time based off of FPS
+--- 
+--- Use this if you're within the context of comet.update (screen updating, plugin updating, etc)
 function comet.getDeltaTime()
     return comet._dt
+end
+
+--- Returns delta time based off of TPS
+--- 
+--- You should use `comet.getDeltaTime()` for most cases, but
+--- if you need the highest delta time available, this will return it!
+function comet.getFullDeltaTime()
+    return comet._rawDt
 end
 
 function comet.update(dt)
@@ -574,7 +593,7 @@ function comet.draw()
     love.graphics.origin()
 
     local isDebug = comet.isDebug()
-    if isDebug then
+    if isDebug and comet.flags.SHOW_FPS_ON_DEBUG then
         local fps = love.timer.getFPS()
         if comet.settings.fpsCap > 0 then
             fps = math.min(fps, comet.settings.fpsCap)
