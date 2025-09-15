@@ -22,6 +22,22 @@ local function fsExists(file)
     return false
 end
 
+--- Returns the contents of a file.
+--- Returns `nil` if the file doesn't exist.
+--- 
+--- @param  file  string  File path
+--- @return string
+local function fsGetContent(file)
+    if not fsExists(file) then
+        return nil
+    end
+    local content = lfs.read("string", file)
+    if type(content) == "string" then
+        return content
+    end
+    return nil
+end
+
 comet = {
     -- changable values
 
@@ -86,6 +102,7 @@ RefCounted = cometreq("core.refcounted") --- @type comet.core.RefCounted
 Image = cometreq("gfx.image") --- @type comet.gfx.Image
 Texture = cometreq("gfx.texture") --- @type comet.gfx.Texture
 Backdrop = cometreq("gfx.backdrop") --- @type comet.gfx.Backdrop
+Shader = cometreq("gfx.shader") --- @type comet.gfx.Shader
 
 AnimationFrame = cometreq("gfx.animationframe") --- @type comet.gfx.AnimationFrame
 FrameCollection = cometreq("gfx.framecollection") --- @type comet.gfx.FrameCollection
@@ -209,6 +226,7 @@ function comet.init(params)
     love.wheelmoved = comet.handleMouseWheel
 
     love.filesystem.exists = fsExists
+    love.filesystem.getContent = fsGetContent
 
     if comet.flags.DESKTOP then
         love.keyboard.setKeyRepeat(true)

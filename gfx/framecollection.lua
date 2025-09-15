@@ -19,7 +19,7 @@ end
 function FrameCollection.loadSparrowAtlas(img, xml)
     -- TODO: support rotated frames
     if type(img) == "string" then
-        img = comet.gfx:get(img)
+        img = comet.gfx:getTexture(img)
     end
     if love.filesystem.exists(xml) then
         xml = love.filesystem.read("string", xml)

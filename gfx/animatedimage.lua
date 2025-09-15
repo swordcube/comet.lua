@@ -8,14 +8,17 @@ local gfx = love.graphics -- Faster access with local variable
 function AnimatedImage:__init__(x, y)
     super.__init__(self, x, y)
 
-    -- Whether or not to display the image from it's center
+    --- Whether or not to display the image from it's center
     self.centered = true
 
-    -- Whether or not to use antialiasing on this image
+    --- Whether or not to use antialiasing on this image
     self.antialiasing = true
 
-    -- Alpha multiplier for this image
+    --- Alpha multiplier for this image
     self.alpha = 1
+
+    --- @type comet.gfx.Shader
+    self._shader = nil --- @protected
 
     --- @type table<string, table[]>
     self._animations = {} --- @protected
@@ -61,6 +64,22 @@ function AnimatedImage:setFrameCollection(frames)
     
         self._frame = self._frames:getFrame(self._frames:getAnimationNames()[1], 1)
     end
+end
+
+function AnimatedImage:getShader()
+    return self._shader
+end
+
+function AnimatedImage:setShader(shader)
+    if self._shader then
+        self._shader:dereference()
+        self._shader = nil
+    end
+    if not shader then
+        return
+    end
+    self._shader = shader
+    self._shader:reference()
 end
 
 --- @param shortcut string?   A shortcut name to use when playing the animation.
@@ -258,7 +277,15 @@ function AnimatedImage:draw()
     end
     local pr, pg, pb, pa = gfx.getColor()
     gfx.setColor(self._tint.r, self._tint.g, self._tint.b, self._tint.a * self.alpha)
+
+    local prevShader = gfx.getShader()
+    if self.shader then
+        gfx.setShader(self.shader)
+    else
+        gfx.setShader()
+    end
     gfx.draw(self._frame.texture:getImage(self.antialiasing and "linear" or "nearest"), self._frame.quad, transform)
+    gfx.setShader(prevShader)
     gfx.setColor(pr, pg, pb, pa)
 
     if comet.settings.debugDraw then

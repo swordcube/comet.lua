@@ -11,14 +11,17 @@ function Image:__init__(image)
     self.texture = nil --- @type comet.gfx.Texture
     self:loadTexture(image)
 
-    -- Whether or not to display the image from it's center
+    --- Whether or not to display the image from it's center
     self.centered = true
 
-    -- Whether or not to use antialiasing on this image
+    --- Whether or not to use antialiasing on this image
     self.antialiasing = true
 
-    -- Alpha multiplier for this image
+    --- Alpha multiplier for this image
     self.alpha = 1
+
+    --- @type comet.gfx.Shader
+    self._shader = nil --- @protected
 
     --- @type comet.gfx.Color
     self._tint = Color:new(1, 1, 1, 1) --- @protected
@@ -41,13 +44,29 @@ function Image:loadTexture(tex)
             if self.texture then
                 self.texture:dereference()
             end
-            self.texture = comet.gfx:get(filePath) --- @type comet.gfx.Texture
+            self.texture = comet.gfx:getTexture(filePath) --- @type comet.gfx.Texture
         else
             self.texture = tex --- @type comet.gfx.Texture
         end
         self.texture:reference()
     end
     return self
+end
+
+function Image:getShader()
+    return self._shader
+end
+
+function Image:setShader(shader)
+    if self._shader then
+        self._shader:dereference()
+        self._shader = nil
+    end
+    if not shader then
+        return
+    end
+    self._shader = shader
+    self._shader:reference()
 end
 
 --- Returns the transform of this image
@@ -151,7 +170,15 @@ function Image:draw()
     end
     local pr, pg, pb, pa = gfx.getColor()
     gfx.setColor(self._tint.r, self._tint.g, self._tint.b, self._tint.a * self.alpha)
+
+    local prevShader = gfx.getShader()
+    if self.shader then
+        gfx.setShader(self.shader)
+    else
+        gfx.setShader()
+    end
     gfx.draw(self.texture:getImage(self.antialiasing and "linear" or "nearest"), transform)
+    gfx.setShader(prevShader)
     gfx.setColor(pr, pg, pb, pa)
 
     if comet.settings.debugDraw then

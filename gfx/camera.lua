@@ -26,6 +26,16 @@ function Camera:__init__()
 
     --- @type comet.math.Rect
     self._rect = Rect:new() --- @protected
+
+    --- @type comet.gfx.Shader[]
+    self._shaders = {} --- @protected
+
+    --- Only used when drawing cameras with shaders applied
+    --- 
+    --- They are drawn as is (with scissor applied) otherwise
+    --- 
+    --- @type table<comet.gfx.Shader, love.Canvas>
+    self._canvases = {} --- @protected
 end
 
 function Camera:getBackgroundColor()
@@ -35,6 +45,34 @@ end
 --- @param color comet.gfx.Color
 function Camera:setBackgroundColor(color)
     self._bgColor = Color:new(color)
+end
+
+function Camera:getShaders()
+    return self._shaders
+end
+
+function Camera:setShaders(newShaders)
+    for i = 1, self._shaders do
+        -- if not in new shader list, then deference
+        -- otherwise, do nothing since it's still referenced
+        local shader = self._shaders[i]
+        if not table.contains(newShaders, shader) then
+            if self._canvases[shader] then
+                self._canvases[shader]:release()
+                self._canvases[shader] = nil
+            end
+            shader:dereference()
+        end
+    end
+    for i = 1, #newShaders do
+        -- reference da new shaders :D
+        local shader = newShaders[i] --- @type comet.gfx.Shader
+        if not self._canvases[shader] then
+            self._canvases[shader] = love.graphics.newCanvas(self.size.x, self.size.y)
+        end
+        shader:reference()
+    end
+    self._shaders = newShaders
 end
 
 --- Returns the unscaled width of this camera.
@@ -64,16 +102,24 @@ end
 --- Returns the transform of this camera
 --- @param accountForScroll boolean?
 --- @param accountForZoom boolean?
+--- @param accountForParent boolean?
 --- @return love.Transform
-function Camera:getTransform(accountForScroll, accountForZoom)
+function Camera:getTransform(accountForScroll, accountForZoom, accountForParent)
     if accountForScroll == nil then
         accountForScroll = true
     end
     if accountForZoom == nil then
         accountForZoom = true
     end
+    if accountForParent == nil then
+        accountForParent = true
+    end
+
+    -- base transform
     local transform = self._transform:reset()
-    transform = self:getParentTransform(transform)
+    if accountForParent then
+        transform = self:getParentTransform(transform)
+    end
 
     -- position
     if accountForScroll then
@@ -122,22 +168,44 @@ function Camera:getBoundingBox(trans, rect)
 end
 
 function Camera:_draw()
-    local box = self:getBoundingBox(self:getTransform(false, false), self._rect)
+    if #self._shaders ~= 0 then
+        -- draw camera directly
+        local box = self:getBoundingBox(self:getTransform(false, false), self._rect)
+    
+        local px, py, pw, ph = love.graphics.getScissor()
+        love.graphics.setScissor(comet.adjustToGameScissor(box.x, box.y, box.width, box.height))
+        
+        local pr, pg, pb, pa = love.graphics.getColor()
+        love.graphics.setColor(self._bgColor.r, self._bgColor.g, self._bgColor.b, self._bgColor.a)
+        love.graphics.rectangle("fill", box.x, box.y, box.width, box.height)
+        love.graphics.setColor(pr, pg, pb, pa)
+        
+        super._draw(self)
+        love.graphics.setScissor(px, py, pw, ph)
+    else
+        -- do some wacky canvas shit
+        -- TODO: actually do that...
+        local box = self:getBoundingBox(self:getTransform(false, false), self._rect)
+    
+        local px, py, pw, ph = love.graphics.getScissor()
+        love.graphics.setScissor(comet.adjustToGameScissor(box.x, box.y, box.width, box.height))
+        
+        local pr, pg, pb, pa = love.graphics.getColor()
+        love.graphics.setColor(self._bgColor.r, self._bgColor.g, self._bgColor.b, self._bgColor.a)
+        love.graphics.rectangle("fill", box.x, box.y, box.width, box.height)
+        love.graphics.setColor(pr, pg, pb, pa)
 
-    local px, py, pw, ph = love.graphics.getScissor()
-    love.graphics.setScissor(comet.adjustToGameScissor(box.x, box.y, box.width, box.height))
-    
-    local pr, pg, pb, pa = love.graphics.getColor()
-    love.graphics.setColor(self._bgColor.r, self._bgColor.g, self._bgColor.b, self._bgColor.a)
-    love.graphics.rectangle("fill", box.x, box.y, box.width, box.height)
-    love.graphics.setColor(pr, pg, pb, pa)
-    
-    super._draw(self)
-    love.graphics.setScissor(px, py, pw, ph)
+        super._draw(self)
+        love.graphics.setScissor(px, py, pw, ph)
+    end
 end
 
 function Camera:destroy()
     super.destroy(self)
+
+    self:setShaders({})
+    self._shaders = nil
+    
     self.size = nil
     self.zoom = nil
 end
