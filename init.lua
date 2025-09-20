@@ -10,6 +10,8 @@ cometreq("tools.mathtools") --- @type comet.tools.mathtools
 cometreq("tools.tabletools") --- @type comet.tools.tabletools
 cometreq("tools.stringtools") --- @type comet.tools.stringtools
 
+cometreq("os")
+
 local lfs = love.filesystem
 
 --- Returns whether or not a given file exists.
@@ -185,12 +187,21 @@ function comet.init(params)
     if comet.settings.showSplashScreen == nil then
         comet.settings.showSplashScreen = ((not comet.isDebug()) or table.contains(arg, "--forcesplash")) and not table.contains(arg, "--nosplash")
     end
+    local sourceBaseDir = "" --- @type string?
     if (love.filesystem.isFused() or not love.filesystem.getInfo("icon.png", "file")) and love.filesystem.mountFullPath then
-        local sourceBaseDir = os.getenv("OWD") -- use OWD for linux app image support
+        sourceBaseDir = os.getenv("OWD") -- use OWD for linux app image support
         if not sourceBaseDir then
             sourceBaseDir = love.filesystem.getSourceBaseDirectory()
         end
         love.filesystem.mountFullPath(sourceBaseDir, "")
+    end
+    if not love.audio then
+        local alconf = love.system.getOS() == "Windows" and "alsoft.ini" or "alsoft.conf"
+        os.setenv("ALSOFT_CONF", sourceBaseDir .. "/" .. alconf)
+        love.audio = require("love.audio") -- init audio NOW cuz we need to set the ALSOFT_CONF flag first
+    else
+        Log.warn("LÖVE audio system should be turned off in conf.lua!")
+        Log.warn("Audio might sound slightly worse than usual!")
     end
     if not params.screen then
         params.screen = Screen:new()
