@@ -92,6 +92,17 @@ function AnimatedImage:addAnimation(shortcut, name, fps, loop)
     self._animations[shortcut] = {name = name, fps = fps, loop = loop}
 end
 
+--- @param shortcut string?    A shortcut name to use when playing the animation.
+--- @param name     string     The raw name of the animation.
+--- @param indices  integer[]  The indices of the frames to use.
+--- @param fps      number     The framerate of the animation.
+--- @param loop     boolean?   Whether or not to loop the animation. (optional, default=`false`)
+function AnimatedImage:addAnimationByIndices(shortcut, name, indices, fps, loop)
+    shortcut = shortcut or name
+    loop = loop ~= nil and loop or false
+    self._animations[shortcut] = {name = name, fps = fps, indices = indices, loop = loop}
+end
+
 --- @param name string  The name/shortcut name of the animation to play.
 --- @param force boolean?  Whether or not to forcefully restart the animation. (optional, default=`false`)
 function AnimatedImage:playAnimation(name, force)
@@ -117,7 +128,9 @@ end
 --- @param frame integer
 function AnimatedImage:setCurrentFrame(frame)
     self._curFrame = frame
-    self._frame = self._frames:getFrame(self._animations[self._curAnim].name, frame)
+
+    local anim = self._animations[self._curAnim]
+    self._frame = self._frames:getFrame(anim.name, anim.indices and (anim.indices[frame] or 0) or frame)
 end
 
 function AnimatedImage:isPlaying()
@@ -140,7 +153,8 @@ function AnimatedImage:getOriginalWidth(frame)
     if not self._frames then
         return 0
     end
-    return self._frames:getFrame(self._animations[self._curAnim].name, frame).width
+    local anim = self._animations[self._curAnim]
+    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or 0) or frame).width
 end
 
 --- Returns the unscaled height of a given frame.
@@ -151,7 +165,8 @@ function AnimatedImage:getOriginalHeight(frame)
     if not self._frames then
         return 0
     end
-    return self._frames:getFrame(self._animations[self._curAnim].name, frame).height
+    local anim = self._animations[self._curAnim]
+    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or 0) or frame).height
 end
 
 --- Returns the width of a given frame (accounting for this image's scale).
@@ -162,7 +177,8 @@ function AnimatedImage:getWidth(frame)
     if not self._frames then
         return 0
     end
-    return self._frames:getFrame(self._animations[self._curAnim].name, frame).width * math.abs(self.scale.x)
+    local anim = self._animations[self._curAnim]
+    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or 0) or frame).width * math.abs(self.scale.x)
 end
 
 --- Returns the height of a given frame (accounting for this image's scale).
@@ -173,7 +189,8 @@ function AnimatedImage:getHeight(frame)
     if not self._frames then
         return 0
     end
-    return self._frames:getFrame(self._animations[self._curAnim].name, frame).height * math.abs(self.scale.y)
+    local anim = self._animations[self._curAnim]
+    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or 0) or frame).height * math.abs(self.scale.y)
 end
 
 --- @param newWidth   number
@@ -252,7 +269,7 @@ function AnimatedImage:update(dt)
 
     while self._frameTimer >= frameDuration do
         local newFrame = self._curFrame + 1
-        local animFrames = self._frames:getFrames(anim.name)
+        local animFrames = anim.indices or self._frames:getFrames(anim.name)
         if anim.loop then
             newFrame = math.wrap(newFrame, 1, #animFrames)
         else

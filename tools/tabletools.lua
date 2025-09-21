@@ -222,3 +222,11 @@ function table.removeDuplicates(t)
     end
     return res
 end
+
+function table.numberList(beginNumber, endNumber, inc)
+    local t = {}
+    for i = beginNumber, endNumber, inc or 1 do
+        t[#t + 1] = i
+    end
+    return t
+end
