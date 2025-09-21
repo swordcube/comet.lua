@@ -18,6 +18,9 @@ local lfs = love.filesystem
 --- @param  file  string  File path to check
 --- @return boolean
 local function fsExists(file)
+    if not file then
+        return false
+    end
     if lfs.getInfo(file, "file") or lfs.getInfo(file, "directory") or lfs.getInfo(file, "symlink") then
         return true
     end
