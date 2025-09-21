@@ -3,6 +3,7 @@
 local Camera, super = Object2D:subclass("Camera", ...)
 
 local math = math -- Faster access with local variable
+local gfx = love.graphics -- Faster access with local variable
 
 function Camera:__init__()
     super.__init__(self)
@@ -36,6 +37,9 @@ function Camera:__init__()
     --- 
     --- @type table<comet.gfx.Shader, love.Canvas>
     self._canvases = {} --- @protected
+
+    --- @type love.Transform
+    self._emptyTransform = love.math.newTransform() --- @protected
 end
 
 function Camera:getBackgroundColor()
@@ -52,7 +56,7 @@ function Camera:getShaders()
 end
 
 function Camera:setShaders(newShaders)
-    for i = 1, self._shaders do
+    for i = 1, #self._shaders do
         -- if not in new shader list, then deference
         -- otherwise, do nothing since it's still referenced
         local shader = self._shaders[i]
@@ -64,15 +68,16 @@ function Camera:setShaders(newShaders)
             shader:dereference()
         end
     end
-    for i = 1, #newShaders do
+    local filteredShaders = table.removeDuplicates(newShaders)
+    for i = 1, #filteredShaders do
         -- reference da new shaders :D
-        local shader = newShaders[i] --- @type comet.gfx.Shader
+        local shader = filteredShaders[i] --- @type comet.gfx.Shader
         if not self._canvases[shader] then
-            self._canvases[shader] = love.graphics.newCanvas(self.size.x, self.size.y)
+            self._canvases[shader] = gfx.newCanvas(self.size.x, self.size.y)
         end
         shader:reference()
     end
-    self._shaders = newShaders
+    self._shaders = filteredShaders
 end
 
 --- Returns the unscaled width of this camera.
@@ -169,34 +174,60 @@ end
 
 function Camera:_draw()
     if #self._shaders ~= 0 then
-        -- do some wacky canvas shit
-        -- TODO: actually do that...
-        -- local box = self:getBoundingBox(self:getTransform(false, false), self._rect)
-    
-        -- local px, py, pw, ph = love.graphics.getScissor()
-        -- love.graphics.setScissor(comet.adjustToGameScissor(box.x, box.y, box.width, box.height))
-        
-        -- local pr, pg, pb, pa = love.graphics.getColor()
-        -- love.graphics.setColor(self._bgColor.r, self._bgColor.g, self._bgColor.b, self._bgColor.a)
-        -- love.graphics.rectangle("fill", box.x, box.y, box.width, box.height)
-        -- love.graphics.setColor(pr, pg, pb, pa)
+        -- draw to a bunch of canvases with shaders applied to them
+        -- and then 
+        local transform = self._emptyTransform
+        local box = self:getBoundingBox(transform, self._rect)
 
-        -- super._draw(self)
-        -- love.graphics.setScissor(px, py, pw, ph)
+        gfx.push()
+        gfx.origin()
+
+        for i = 1, #self._shaders do
+            local shader = self._shaders[i]
+            if i > 1 then
+                gfx.setCanvas(self._canvases[shader])
+
+                gfx.setShader(shader.data)
+                gfx.draw(self._canvases[self._shaders[i - 1]], transform)
+                gfx.setShader()
+
+                gfx.setCanvas()
+            else
+                gfx.setCanvas(self._canvases[shader])
+                
+                local pr, pg, pb, pa = gfx.getColor()
+                gfx.setColor(self._bgColor.r, self._bgColor.g, self._bgColor.b, self._bgColor.a)
+                gfx.rectangle("fill", box.x, box.y, box.width, box.height)
+                gfx.setColor(pr, pg, pb, pa)
+                
+                super._draw(self)
+                gfx.setCanvas()
+            end
+        end
+        local shader = self._shaders[#self._shaders]
+        gfx.pop()
+        
+        local px, py, pw, ph = gfx.getScissor()
+        transform = self:getTransform(false, false)
+        box = self:getBoundingBox(transform, self._rect)
+
+        gfx.setScissor(comet.adjustToGameScissor(box.x, box.y, box.width, box.height))
+        gfx.draw(self._canvases[shader], transform)
+        gfx.setScissor(px, py, pw, ph)
     else
         -- draw camera directly
         local box = self:getBoundingBox(self:getTransform(false, false), self._rect)
     
-        local px, py, pw, ph = love.graphics.getScissor()
-        love.graphics.setScissor(comet.adjustToGameScissor(box.x, box.y, box.width, box.height))
+        local px, py, pw, ph = gfx.getScissor()
+        gfx.setScissor(comet.adjustToGameScissor(box.x, box.y, box.width, box.height))
         
-        local pr, pg, pb, pa = love.graphics.getColor()
-        love.graphics.setColor(self._bgColor.r, self._bgColor.g, self._bgColor.b, self._bgColor.a)
-        love.graphics.rectangle("fill", box.x, box.y, box.width, box.height)
-        love.graphics.setColor(pr, pg, pb, pa)
+        local pr, pg, pb, pa = gfx.getColor()
+        gfx.setColor(self._bgColor.r, self._bgColor.g, self._bgColor.b, self._bgColor.a)
+        gfx.rectangle("fill", box.x, box.y, box.width, box.height)
+        gfx.setColor(pr, pg, pb, pa)
         
         super._draw(self)
-        love.graphics.setScissor(px, py, pw, ph)
+        gfx.setScissor(px, py, pw, ph)
     end
 end
 

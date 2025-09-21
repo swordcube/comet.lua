@@ -96,29 +96,33 @@ end
 
 --- @protected
 function Object:_update(dt)
+    self:update(dt)
     for i = 1, #self.children do
         local object = self.children[i] --- @type comet.core.Object
         if object then
             object:_update(dt)
         end
     end
-    self:update(dt)
+    self:postUpdate(dt)
 end
 
 function Object:update(dt) end
+function Object:postUpdate(dt) end
 
 --- @protected
 function Object:_draw()
+    self:draw()
     for i = 1, #self.children do
         local object = self.children[i] --- @type comet.core.Object
         if object and object.visible then
             object:_draw()
         end
     end
-    self:draw()
+    self:postDraw()
 end
 
 function Object:draw() end
+function Object:postDraw() end
 
 --- @protected
 function Object:_input(e)

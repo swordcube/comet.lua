@@ -196,7 +196,29 @@ end
 ---
 --- @param t     table  The table to remove the item from.
 --- @param item  any    The item to remove from the table.
+--- 
+--- @return any
 ---
 function table.removeItem(t, item)
-	_table.remove(t, _table.indexOf(t, item))
+	return _table.remove(t, _table.indexOf(t, item))
+end
+
+---
+--- Removes duplicate elements from a table.
+--- This will return a *new* table with *only* the unique elements.
+--- 
+--- @param  t  table  The table to remove duplicates from.
+--- 
+--- @return table
+---
+function table.removeDuplicates(t)
+    local hash = {}
+    local res = {}
+    for _, v in ipairs(t) do
+        if not hash[v] then
+            res[#res+1] = v
+            hash[v] = true
+        end
+    end
+    return res
 end

@@ -28,7 +28,11 @@ function Object2D:getParentTransform(transform)
         transform = lmath.newTransform()
     end
     if self.parent and self.parent:isInstanceOf(Object2D) then
-        transform:apply(self.parent:getTransform())
+        if self.parent:isInstanceOf(Camera) and #self.parent.shaders ~= 0 then
+            transform:apply(self.parent:getTransform(true, true, false))
+        else
+            transform:apply(self.parent:getTransform())
+        end
     end
     return transform
 end

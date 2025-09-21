@@ -48,17 +48,17 @@ end
 --- @return comet.gfx.Shader
 function gfx:getShader(fragOrName, vertOrName)
     local frag = nil
-    if love.filesystem.exists(fragOrName) then
+    if fragOrName and love.filesystem.exists(fragOrName) then
         frag = love.filesystem.getContent(fragOrName)
-    elseif love.filesystem.exists(fragOrName .. ".frag") then
+    elseif fragOrName and love.filesystem.exists(fragOrName .. ".frag") then
         frag = love.filesystem.getContent(fragOrName .. ".frag")
     else
         frag = fragOrName
     end
     local vert = nil
-    if love.filesystem.exists(vertOrName) then
+    if vertOrName and love.filesystem.exists(vertOrName) then
         vert = love.filesystem.getContent(vertOrName)
-    elseif love.filesystem.exists(vertOrName .. ".vert") then
+    elseif vertOrName and love.filesystem.exists(vertOrName .. ".vert") then
         vert = love.filesystem.getContent(vertOrName .. ".vert")
     else
         vert = vertOrName

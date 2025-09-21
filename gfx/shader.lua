@@ -24,8 +24,10 @@ function Shader:__init__(frag, vert)
     end
     if frag or vert then
         self.data = gfx.newShader(frag, vert) --- @type love.Shader
-        if self.data:getWarnings() then
-            Log.warn("Warnings/errors in " .. fragPath .. "/" .. vertPath .. ": " .. self.data:getWarnings())
+        
+        local warns = self.data:getWarnings()
+        if warns and #warns ~= 0 then
+            Log.warn("Warnings/errors in " .. fragPath .. "/" .. vertPath .. ": " .. warns)
         end
     else
         if fragPath then
