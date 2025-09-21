@@ -115,6 +115,9 @@ end
 function Native.getProcessMemory()
 	return collectgarbage(_gcCount_) + gfx.getStats().texturememory
 end
+function Native.getPeakProcessMemory()
+	return Native.getProcessMemory()
+end
 function Native.showWindow()
 	SDL3.SDL_ShowWindow(SDL3.SDL_GL_GetCurrentWindow())
 end
@@ -137,6 +140,10 @@ local osName = love.system.getOS()
 
 if osName == "Windows" then
 	osNative = require((...) .. "." .. "Windows")
+elseif osName == "Linux" then
+	osNative = require((...) .. "." .. "Linux")
+elseif osName == "OS X" then
+	osNative = require((...) .. "." .. "MacOS")
 end
 
 local retNative = {}

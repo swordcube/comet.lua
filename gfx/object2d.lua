@@ -1,5 +1,5 @@
 --- @class comet.gfx.Object2D : comet.core.Object
-local Object2D, super = Object:subclass("Object2D")
+local Object2D, super = Object:subclass("Object2D", ...)
 
 local lmath = love.math
 

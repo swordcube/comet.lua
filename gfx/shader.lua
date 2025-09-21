@@ -3,7 +3,7 @@ local RefCounted = cometreq("core.refcounted") --- @type comet.core.RefCounted
 
 --- @class comet.gfx.Shader : comet.core.RefCounted
 --- A basic object for storing a shader.
-local Shader, super = RefCounted:subclass("Shader")
+local Shader, super = RefCounted:subclass("Shader", ...)
 
 local img = love.image
 local gfx = love.graphics

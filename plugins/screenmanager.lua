@@ -1,7 +1,7 @@
 local Plugin = cometreq("core.plugin") --- @type comet.core.Plugin
 
 --- @class comet.plugins.ScreenManager : comet.core.Plugin
-local ScreenManager = Plugin:subclass("ScreenManager")
+local ScreenManager = Plugin:subclass("ScreenManager", ...)
 ScreenManager.static.instance = nil
 
 function ScreenManager:__init__()

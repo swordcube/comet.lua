@@ -409,6 +409,13 @@ function nativefs.getInfo(path, filtertype)
 	return result or nil
 end
 
+function nativefs.exists(file)
+    if nativefs.getInfo(file, "file") or nativefs.getInfo(file, "directory") or nativefs.getInfo(file, "symlink") then
+        return true
+    end
+    return false
+end
+
 -----------------------------------------------------------------------------
 
 MODEMAP = { r = 'rb', w = 'wb', a = 'ab' }

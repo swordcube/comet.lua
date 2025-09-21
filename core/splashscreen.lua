@@ -1,5 +1,5 @@
 --- @class comet.core.SplashScreen : comet.core.Screen
-local SplashScreen, super = Screen:subclass("SplashScreen")
+local SplashScreen, super = Screen:subclass("SplashScreen", ...)
 
 local loveStripColors = {0xFFe74a99, 0xFF27aae1}
 

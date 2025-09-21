@@ -1,5 +1,5 @@
 --- @class comet.core.Plugin : comet.util.Class
-local Plugin = Class("Plugin")
+local Plugin = Class("Plugin", ...)
 
 function Plugin:__init__()
 end

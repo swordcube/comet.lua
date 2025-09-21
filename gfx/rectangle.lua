@@ -1,6 +1,6 @@
 --- @class comet.gfx.Rectangle : comet.gfx.Object2D
 --- A basic object for displaying static images.
-local Rectangle, super = Object2D:subclass("Rectangle")
+local Rectangle, super = Object2D:subclass("Rectangle", ...)
 
 local math = math -- Faster access with local variable
 local img = love.image -- Faster access with local variable

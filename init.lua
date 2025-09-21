@@ -45,12 +45,19 @@ comet = {
 
     flags = {},
     settings = {
+        srcDirectory = "", --- @type string
+
         fpsCap = 0,
         bgColor = nil, --- @type comet.gfx.Color
         dimensions = nil, --- @type comet.math.Vec2
         scaleMode = "ratio", --- @type "ratio"|"fill"|"stage"
         parallelUpdate = true,
         vsync = false,
+
+        --- Whether or not to run garbage collection more often
+        --- to reduce memory usage, if this is causing major performance
+        --- problems, turn this off!
+        frequentGc = true,
 
         --- Whether or not to draw certain things usually
         --- only seen in the debugger
@@ -65,13 +72,13 @@ comet = {
     signals = {
         -- This signal has the following attached to it's listeners:
         -- `event`
-        onInput = cometreq("util.signal"):new(), --- @type comet.util.Signal
+        onInput = nil, --- @type comet.util.Signal
 
-        preUpdate = cometreq("util.signal"):new(), --- @type comet.util.Signal
-        postUpdate = cometreq("util.signal"):new(), --- @type comet.util.Signal
+        preUpdate = nil, --- @type comet.util.Signal
+        postUpdate = nil, --- @type comet.util.Signal
 
-        preDraw = cometreq("util.signal"):new(), --- @type comet.util.Signal
-        postDraw = cometreq("util.signal"):new(), --- @type comet.util.Signal
+        preDraw = nil, --- @type comet.util.Signal
+        postDraw = nil, --- @type comet.util.Signal
     },
     gfx = nil, --- @type comet.modules.gfx
     mixer = nil, --- @type comet.modules.mixer
@@ -82,12 +89,33 @@ comet = {
 
     plugins = nil, --- @type comet.core.PluginManager
     parentDirectory = cd, -- parent directory that the module is located (thirdparty/comet, lib/comet, etc)
+    sourceBaseDirectory = nil, --- @type string
 
     -- private stuff
 
     _dt = 0.0,
     _tps = 0,
 }
+
+--- Similar to `require`, but returns from the source code directory automatically.
+--- 
+--- Recommended to add `@type` documentation to every line of `srcreq` for better autocompletion in VSCode.
+--- 
+--- This also means you should add `@class` documentation to every class in the source code.
+--- 
+--- Example:
+--- ```lua
+--- local something = srcreq("something") --- @type something
+--- ```
+--- 
+--- @param modname string
+--- @return unknown
+function srcreq(modname)
+    if comet.settings.srcDirectory and #comet.settings.srcDirectory ~= 0 then
+        return require(comet.settings.srcDirectory .. "." .. modname)
+    end
+    return require(modname)
+end
 
 Log = cometreq("util.log") --- @type comet.util.Log
 Class = cometreq("util.class") --- @type comet.util.Class
@@ -167,7 +195,7 @@ function comet.init(params)
 
     comet.flags.DESKTOP = comet.flags.WINDOWS or comet.flags.MAC or comet.flags.LINUX
     comet.flags.MOBILE = comet.flags.ANDROID or comet.flags.IOS
-
+    
     if comet.flags.STREAM_AUDIO == nil then
         comet.flags.STREAM_AUDIO = true
     end
@@ -187,6 +215,9 @@ function comet.init(params)
     if comet.settings.showSplashScreen == nil then
         comet.settings.showSplashScreen = ((not comet.isDebug()) or table.contains(arg, "--forcesplash")) and not table.contains(arg, "--nosplash")
     end
+    if comet.settings.frequentGc == nil then
+        comet.settings.frequentGc = true
+    end
     local sourceBaseDir = "" --- @type string?
     if (love.filesystem.isFused() or not love.filesystem.getInfo("icon.png", "file")) and love.filesystem.mountFullPath then
         sourceBaseDir = os.getenv("OWD") -- use OWD for linux app image support
@@ -195,6 +226,8 @@ function comet.init(params)
         end
         love.filesystem.mountFullPath(sourceBaseDir, "")
     end
+    comet.sourceBaseDirectory = sourceBaseDir
+    
     if not love.audio then
         local alconf = love.system.getOS() == "Windows" and "alsoft.ini" or "alsoft.conf"
         os.setenv("ALSOFT_CONF", sourceBaseDir .. "/" .. alconf)
@@ -224,6 +257,14 @@ function comet.init(params)
     else
         ScreenManager.switchTo(params.screen or Screen:new())
     end
+    comet.signals.onInput = cometreq("util.signal"):new()
+
+    comet.signals.preUpdate = cometreq("util.signal"):new()
+    comet.signals.postUpdate = cometreq("util.signal"):new()
+
+    comet.signals.preDraw = cometreq("util.signal"):new()
+    comet.signals.postDraw = cometreq("util.signal"):new()
+
     love.run = comet.run
     love.load = comet.load
     love.update = comet.update
@@ -452,7 +493,7 @@ function comet.run()
         if nextUpdate >= framePeriod then
             local dt = math.min(love.timer.step(), 0.1)
             comet._dt = dt
-            if love.update then love.update(dt) end
+            if love.update and not comet.settings.parallelUpdate then love.update(dt) end
     
             if love.graphics and love.graphics.isActive() then
                 love.graphics.origin()
@@ -473,6 +514,17 @@ function comet.run()
         end
         if nextUpdate < 0 then
             nextUpdate = 0
+        end
+        if comet.settings.parallelUpdate then
+            love.update(comet._rawDt)
+            comet._dt = 0
+        end
+        if comet.settings.frequentGc then
+            if love.window.hasFocus() then
+                collectgarbage("step")
+            else
+                collectgarbage(); collectgarbage()
+            end
         end
         lastTime = start
 	end

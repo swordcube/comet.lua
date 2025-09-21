@@ -1,6 +1,6 @@
 --- @class comet.gfx.Parallax2D : comet.gfx.Object2D
 --- A basic object meant for displaying child objects at different scroll factors.
-local Parallax2D, super = Object2D:subclass("Parallax2D")
+local Parallax2D, super = Object2D:subclass("Parallax2D", ...)
 
 function Parallax2D:__init__(x, y)
     super.__init__(self, x, y)

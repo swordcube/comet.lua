@@ -1,7 +1,7 @@
 local Signal = cometreq("util.signal") --- @type comet.util.Signal
 
 --- @class comet.mixer.Sound : comet.util.Class
-local Sound = Class("Sound")
+local Sound = Class("Sound", ...)
 
 function Sound:__init__()
     --- Whether or not this sound should be auto-destroyed

@@ -1,7 +1,7 @@
 local Signal = cometreq("util.signal") --- @type comet.util.Signal
 
 --- @class comet.gfx.Tween : comet.core.Object
-local Tween = Class("Tween")
+local Tween = Class("Tween", ...)
 
 -- eases taken from https://github.com/kikito/tween.lua/blob/master/tween.lua#L42
 local pow, sin, cos, pi, sqrt, abs, asin = math.pow, math.sin, math.cos, math.pi, math.sqrt, math.abs, math.asin

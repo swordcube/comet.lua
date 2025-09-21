@@ -1,7 +1,7 @@
 local middleclass = cometreq("lib.middleclass") --- @type comet.lib.MiddleClass
 
 ---@class comet.math.Vec2
-local Vec2 = Class("Vec2")
+local Vec2 = Class("Vec2", ...)
 
 -- get a random function from Love2d or base lua, in that order.
 local rand = math.random

@@ -1,5 +1,5 @@
 --- @class comet.core.RefCounted : comet.util.Class
-local RefCounted = Class("RefCounted")
+local RefCounted = Class("RefCounted", ...)
 
 function RefCounted:__init__()
     --- @type integer

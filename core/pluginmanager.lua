@@ -1,5 +1,5 @@
 --- @class comet.core.PluginManager : comet.util.Class
-local PluginManager = Class("PluginManager")
+local PluginManager = Class("PluginManager", ...)
 
 function PluginManager:__init__()
     self.plugins = {}

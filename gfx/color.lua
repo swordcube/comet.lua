@@ -23,7 +23,7 @@ Color.MAGENTA     = nil --- @type comet.gfx.Color
 Color.PINK        = nil --- @type comet.gfx.Color
 Color.BROWN       = nil --- @type comet.gfx.Color
 
-Color = Class("Color")
+Color = Class("Color", ...)
 
 function Color:__init__(r, g, b, a)
     -- Red channel of this color

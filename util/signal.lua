@@ -1,7 +1,7 @@
 local Class = cometreq("util.class") --- @type comet.util.Class
 
 --- @class comet.util.Signal : comet.util.Class
-local Signal = Class("Signal")
+local Signal = Class("Signal", ...)
 
 function Signal:__init__()
     self.listeners = {}

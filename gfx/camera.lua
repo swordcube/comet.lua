@@ -1,6 +1,6 @@
 --- @class comet.gfx.Camera : comet.gfx.Object2D
 --- A basic object for displaying static Cameras.
-local Camera, super = Object2D:subclass("Camera")
+local Camera, super = Object2D:subclass("Camera", ...)
 
 local math = math -- Faster access with local variable
 
@@ -169,6 +169,21 @@ end
 
 function Camera:_draw()
     if #self._shaders ~= 0 then
+        -- do some wacky canvas shit
+        -- TODO: actually do that...
+        -- local box = self:getBoundingBox(self:getTransform(false, false), self._rect)
+    
+        -- local px, py, pw, ph = love.graphics.getScissor()
+        -- love.graphics.setScissor(comet.adjustToGameScissor(box.x, box.y, box.width, box.height))
+        
+        -- local pr, pg, pb, pa = love.graphics.getColor()
+        -- love.graphics.setColor(self._bgColor.r, self._bgColor.g, self._bgColor.b, self._bgColor.a)
+        -- love.graphics.rectangle("fill", box.x, box.y, box.width, box.height)
+        -- love.graphics.setColor(pr, pg, pb, pa)
+
+        -- super._draw(self)
+        -- love.graphics.setScissor(px, py, pw, ph)
+    else
         -- draw camera directly
         local box = self:getBoundingBox(self:getTransform(false, false), self._rect)
     
@@ -180,21 +195,6 @@ function Camera:_draw()
         love.graphics.rectangle("fill", box.x, box.y, box.width, box.height)
         love.graphics.setColor(pr, pg, pb, pa)
         
-        super._draw(self)
-        love.graphics.setScissor(px, py, pw, ph)
-    else
-        -- do some wacky canvas shit
-        -- TODO: actually do that...
-        local box = self:getBoundingBox(self:getTransform(false, false), self._rect)
-    
-        local px, py, pw, ph = love.graphics.getScissor()
-        love.graphics.setScissor(comet.adjustToGameScissor(box.x, box.y, box.width, box.height))
-        
-        local pr, pg, pb, pa = love.graphics.getColor()
-        love.graphics.setColor(self._bgColor.r, self._bgColor.g, self._bgColor.b, self._bgColor.a)
-        love.graphics.rectangle("fill", box.x, box.y, box.width, box.height)
-        love.graphics.setColor(pr, pg, pb, pa)
-
         super._draw(self)
         love.graphics.setScissor(px, py, pw, ph)
     end

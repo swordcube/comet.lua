@@ -2,7 +2,7 @@ local Class = cometreq("util.class") --- @type comet.util.Class
 local Texture = cometreq("gfx.texture") --- @type comet.gfx.Texture
 
 --- @class comet.modules.gfx
-local gfx = Class("comet.modules.gfx")
+local gfx = Class("comet.modules.gfx", ...)
 
 function gfx:__init__()
     --- @type table

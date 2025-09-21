@@ -5,7 +5,7 @@ local Xml = cometreq("lib.xml") --- @type comet.lib.Xml
 --- @class comet.gfx.FrameCollection : comet.core.RefCounted
 --- A basic class for storing a collection of animation frames.
 --- Meant to be used in `AnimatedImage` objects.
-local FrameCollection, super = RefCounted:subclass("FrameCollection")
+local FrameCollection, super = RefCounted:subclass("FrameCollection", ...)
 
 function FrameCollection:__init__()
     super.__init__(self)

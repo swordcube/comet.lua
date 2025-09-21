@@ -79,19 +79,29 @@ end
 local function _tostring(self) return "class " .. self.name end
 local function _call(self, ...) return self:new(...) end
 
-local function _createClass(name, super)
+local function _createClass(name, path, super)
     local dict = {}
     dict.__index = dict
 
+    local parentDir = comet.parentDirectory .. "."
+    if path and path:startsWith(parentDir) then
+        path = "comet." .. path:sub(#parentDir + 1)
+    end
+    if path and path:startsWith((comet.settings.srcDirectory .. ".")) then
+        path = string.sub(path, #(comet.settings.srcDirectory .. ".") + 1)
+    end
+    if path and path:endsWith(name:lower()) then
+        path = path:sub(1, #path - #name) .. name
+    end
     local aClass = {
         name = name,
+        path = path,
         super = super,
         static = {},
         __instanceDict = dict,
         __declaredMethods = {},
         subclasses = setmetatable({}, { __mode = 'k' })
     }
-
     if super then
         setmetatable(aClass.static, {
             __index = function(_, k)
@@ -105,14 +115,12 @@ local function _createClass(name, super)
     else
         setmetatable(aClass.static, { __index = function(_, k) return rawget(dict, k) end })
     end
-
     setmetatable(aClass, {
         __index = aClass.static,
         __tostring = _tostring,
         __call = _call,
         __newindex = _declareInstanceMethod
     })
-
     return aClass
 end
 
@@ -160,11 +168,11 @@ local DefaultMixin = {
 
         finalize = function(self) return self end, -- compat with class library i used to use (classy)
 
-        subclass = function(self, name)
+        subclass = function(self, name, path)
             assert(type(self) == 'table', "Make sure that you are using 'Class:subclass' instead of 'Class.subclass'")
             assert(type(name) == "string", "You must provide a name(string) for your class")
 
-            local subclass = _createClass(name, self)
+            local subclass = _createClass(name, path, self)
 
             for methodName, f in pairs(self.__instanceDict) do
                 if not (methodName == "__index" and type(f) == "table") then
@@ -199,9 +207,9 @@ function middleclass.isinstanceof(t, cl)
     return type(t) == "table" and t.isInstanceOf ~= nil and t:isInstanceOf(cl)
 end
 
-function middleclass.class(name, super)
+function middleclass.class(name, path, super)
     assert(type(name) == 'string', "A name (string) is needed for the new class")
-    return super and super:subclass(name) or _includeMixin(_createClass(name), DefaultMixin)
+    return super and super:subclass(name, path) or _includeMixin(_createClass(name, path), DefaultMixin)
 end
 
 setmetatable(middleclass, { __call = function(_, ...) return middleclass.class(...) end })

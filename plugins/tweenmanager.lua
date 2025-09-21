@@ -1,7 +1,7 @@
 local Plugin = cometreq("core.plugin") --- @type comet.core.Plugin
 
 --- @class comet.plugins.TweenManager : comet.core.Plugin
-local TweenManager = Plugin:subclass("TweenManager")
+local TweenManager = Plugin:subclass("TweenManager", ...)
 TweenManager.static.instance = nil
 
 function TweenManager:__init__()

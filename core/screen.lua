@@ -1,5 +1,5 @@
 --- @class comet.core.Screen : comet.core.Object
-local Screen = Object:subclass("Screen")
+local Screen = Object:subclass("Screen", ...)
 
 function Screen:enter() end
 function Screen:exit() end

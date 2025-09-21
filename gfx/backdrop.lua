@@ -1,6 +1,6 @@
 --- @class comet.gfx.Backdrop : comet.gfx.Image
 --- A basic object for displaying scrolling static images.
-local Backdrop, super = Image:subclass("Backdrop")
+local Backdrop, super = Image:subclass("Backdrop", ...)
 
 local math = math -- Faster access with local variable
 local gfx = love.graphics -- Faster access with local variable

@@ -253,11 +253,20 @@ function Native.setConsoleColors(fgColor, bgColor)
 end
 
 local pmc_size = ffi.sizeof('PROCESS_MEMORY_COUNTERS')
+local ppsmemCounters = ffi.new('PROCESS_MEMORY_COUNTERS[1]')
 
 function Native.getProcessMemory()
-	local ppsmemCounters = ffi.new('PROCESS_MEMORY_COUNTERS[1]')
 	ffi.C.K32GetProcessMemoryInfo(ffi.C.GetCurrentProcess(), ppsmemCounters, pmc_size)
 	return tonumber(ppsmemCounters[0].WorkingSetSize)
+end
+
+local peak = 0
+function Native.getPeakProcessMemory()
+	local cur = Native.getProcessMemory()
+	if cur > peak then
+		peak = cur
+	end
+	return peak
 end
 
 return Native

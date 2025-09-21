@@ -1,7 +1,7 @@
 local Class = cometreq("util.class") --- @type comet.util.Class
 
 --- @class comet.modules.mixer
-local mixer = Class("comet.modules.mixer")
+local mixer = Class("comet.modules.mixer", ...)
 
 function mixer:__init__()
     self.sounds = Object:new() --- @type comet.core.Object
@@ -13,7 +13,7 @@ function mixer:__init__()
     self._sourceCache = {} --- @protected
 end
 
-function mixer:play(src, volume, looping)
+function mixer:load(src, volume, looping)
     if type(src) == "string" then
         src = self:getSource(src)
     end
@@ -21,6 +21,11 @@ function mixer:play(src, volume, looping)
     sound:setSource(src)
     sound:setVolume(volume ~= nil and volume or 1.0)
     sound:setLooping(looping ~= nil and looping or false)
+    return sound
+end
+
+function mixer:play(src, volume, looping)
+    local sound = self:load(src, volume, looping)
     sound:play()
     return sound
 end

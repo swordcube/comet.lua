@@ -1,6 +1,6 @@
 --- @class comet.gfx.Image : comet.gfx.Object2D
 --- A basic object for displaying static images.
-local Image, super = Object2D:subclass("Image")
+local Image, super = Object2D:subclass("Image", ...)
 
 local math = math -- Faster access with local variable
 local gfx = love.graphics -- Faster access with local variable

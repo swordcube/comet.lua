@@ -1,5 +1,5 @@
 --- @class comet.core.SplashScreen : comet.core.Screen
-local MouseOverlapTest = Screen:subclass("MouseOverlapTest") --- @type comet.core.Screen
+local MouseOverlapTest = Screen:subclass("MouseOverlapTest", ...) --- @type comet.core.Screen
 
 function MouseOverlapTest:enter()
     self.camera = Camera:new() --- @type comet.gfx.Camera

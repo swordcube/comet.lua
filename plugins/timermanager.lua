@@ -1,7 +1,7 @@
 local Plugin = cometreq("core.plugin") --- @type comet.core.Plugin
 
 --- @class comet.plugins.TimerManager : comet.core.Plugin
-local TimerManager = Plugin:subclass("TimerManager")
+local TimerManager = Plugin:subclass("TimerManager", ...)
 TimerManager.static.instance = nil
 
 function TimerManager:__init__()

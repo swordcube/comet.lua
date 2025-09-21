@@ -1,6 +1,6 @@
 --- @class comet.gfx.AnimatedImage : comet.gfx.Object2D
 --- A basic object for displaying animated images, typically loaded through the `FrameCollection` class.
-local AnimatedImage, super = Object2D:subclass("AnimatedImage")
+local AnimatedImage, super = Object2D:subclass("AnimatedImage", ...)
 
 local math = math -- Faster access with local variable
 local gfx = love.graphics -- Faster access with local variable

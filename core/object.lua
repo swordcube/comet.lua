@@ -1,7 +1,7 @@
 local middleclass = cometreq("lib.middleclass") --- @type comet.lib.MiddleClass
 
 --- @class comet.core.Object : comet.util.Class
-local Object = Class("Object")
+local Object = Class("Object", ...)
 
 function Object:__init__()
     self.tag = nil

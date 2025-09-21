@@ -1,6 +1,6 @@
 --- @class comet.gfx.Label : comet.gfx.Object2D
 --- A basic object for displaying static text.
-local Label, super = Object2D:subclass("Label")
+local Label, super = Object2D:subclass("Label", ...)
 
 local gfx = love.graphics
 -- TODO: font caching
