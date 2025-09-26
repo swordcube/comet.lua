@@ -82,6 +82,8 @@ comet = {
 
         preDraw = nil, --- @type comet.util.Signal
         postDraw = nil, --- @type comet.util.Signal
+
+        onQuit = nil, --- @type comet.util.Signal
     },
     gfx = nil, --- @type comet.modules.gfx
     mixer = nil, --- @type comet.modules.mixer
@@ -268,10 +270,13 @@ function comet.init(params)
     comet.signals.preDraw = cometreq("util.signal"):new()
     comet.signals.postDraw = cometreq("util.signal"):new()
 
+    comet.signals.onQuit = cometreq("util.signal"):new()
+
     love.run = comet.run
     love.load = comet.load
     love.update = comet.update
     love.draw = comet.draw
+    love.quit = comet.quit
     love.timer.getTPS = comet.getTPS
 
     love.keypressed = comet.handleKeyPress
@@ -671,6 +676,15 @@ function comet.draw()
         love.graphics.print(text, debugFPSFont, gfx.getWidth() - debugFPSFont:getWidth(text) - 3, gfx.getHeight() - debugFPSFont:getHeight() - 3)
     end
     comet.signals.postDraw:emit()
+end
+
+function comet.quit()
+    if ScreenManager.instance.current then
+        ScreenManager.instance.current:exit()
+        ScreenManager.instance.current:destroy()
+    end
+    comet.signals.onQuit:emit()
+    return comet.signals.onQuit.cancelled
 end
 
 return comet

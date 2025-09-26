@@ -30,6 +30,7 @@ end
 function ScreenManager:_switchTo(newScreen)
     if self.current then
         self.current:exit()
+        self.current:destroy()
         self.current = nil
     end
     local new = nil --- @type comet.core.Screen

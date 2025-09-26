@@ -5,6 +5,11 @@ local Signal = Class("Signal", ...)
 
 function Signal:__init__()
     self.listeners = {}
+    self.cancelled = false
+end
+
+function Signal:cancel()
+    self.cancelled = true
 end
 
 --- Syntax sugar function, can be used to describe what this signal takes in and returns
@@ -50,10 +55,15 @@ function Signal:disconnectAll()
 end
 
 function Signal:emit(...)
+    self.cancelled = false
     local deadListeners = {}
     for i = 1, #self.listeners do
         local listener = self.listeners[i]
         listener.method(...)
+        
+        if self.cancelled then
+            break
+        end
         if listener.once then
             listener.__index = i
             table.insert(deadListeners, listener)
