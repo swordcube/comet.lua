@@ -4,6 +4,7 @@ local Signal = cometreq("util.signal") --- @type comet.util.Signal
 local Timer = Class("Timer", ...)
 
 function Timer:__init__()
+    self.exists = true
     self.active = false
     self.paused = false
 

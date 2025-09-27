@@ -76,7 +76,7 @@ function Image:getTransform()
     transform = self:getParentTransform(transform)
 
     -- position
-    transform:translate(self.position.x, self.position.y)
+    transform:translate(self.position.x + self.offset.x, self.position.y + self.offset.y)
     if self.centered then
         transform:translate(-math.abs(self:getWidth()) * 0.5, -math.abs(self:getHeight()) * 0.5)
     end

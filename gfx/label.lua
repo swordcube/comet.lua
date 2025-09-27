@@ -115,7 +115,7 @@ function Label:getTransform()
 
     -- position
     self:updateText()
-    transform:translate(self.position.x, self.position.y)
+    transform:translate(self.position.x + self.offset.x, self.position.y + self.offset.y)
     if self.centered then
         transform:translate(-self:getWidth() * 0.5, -self:getHeight() * 0.5)
     end

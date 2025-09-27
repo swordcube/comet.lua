@@ -14,7 +14,7 @@ function Parallax2D:getTransform()
     local transform = self._transform:reset()
     transform = self:getParentTransform(transform)
 
-    transform:translate(self.position.x, self.position.y)
+    transform:translate(self.position.x + self.offset.x, self.position.y + self.offset.y)
     local p = self.parent
     local camera = nil --- @type comet.gfx.Camera
     while p do

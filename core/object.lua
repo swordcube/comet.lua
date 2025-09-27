@@ -10,8 +10,14 @@ function Object:__init__()
 
     self.children = {}
 
-    --- Whether or not this object is visible
+    --- Whether or not this object is active (updating every frame)
+    self.active = true
+
+    --- Whether or not this object is visible (drawing every frame)
     self.visible = true
+
+    --- Whether or not this object should exist (updating and drawing, setting this to `false` will stop them regardless of the individual flags)
+    self.exists = true
     
     --- @protected
     self._childrenByTag = {}
@@ -94,12 +100,20 @@ function Object:getChild(index)
     return self.children[index]
 end
 
+function Object:kill()
+    self.exists = false
+end
+
+function Object:revive()
+    self.exists = true
+end
+
 --- @protected
 function Object:_update(dt)
     self:update(dt)
     for i = 1, #self.children do
         local object = self.children[i] --- @type comet.core.Object
-        if object then
+        if object and object.exists and object.active then
             object:_update(dt)
         end
     end
@@ -114,7 +128,7 @@ function Object:_draw()
     self:draw()
     for i = 1, #self.children do
         local object = self.children[i] --- @type comet.core.Object
-        if object and object.visible then
+        if object and object.exists and object.visible then
             object:_draw()
         end
     end
@@ -128,7 +142,9 @@ function Object:postDraw() end
 function Object:_input(e)
     for i = 1, #self.children do
         local object = self.children[i] --- @type comet.core.Object
-        object:_input(e)
+        if object and object.exists and object.active then
+            object:_input(e)
+        end
     end
     self:input(e)
 end

@@ -40,6 +40,22 @@ function Camera:__init__()
 
     --- @type love.Transform
     self._emptyTransform = love.math.newTransform() --- @protected
+
+    self._fx = {
+        fade = {
+            color = Color:new(Color.WHITE), --- @type comet.gfx.Color
+            alpha = 0.0,
+            time = 0.0,
+            duration = 0.0,
+            inwards = false
+        },
+        flash = {
+            color = Color:new(Color.WHITE), --- @type comet.gfx.Color
+            alpha = 0.0,
+            time = 0.0,
+            duration = 0.0
+        }
+    }
 end
 
 function Camera:getBackgroundColor()
@@ -172,6 +188,50 @@ function Camera:getBoundingBox(trans, rect)
     return rect
 end
 
+function Camera:flash(color, duration, force)
+    if not force and self._fx.flash.alpha > 0.0 then
+        return
+    end
+    self._fx.flash.time = 0.0
+    self._fx.flash.duration = duration or 0.0
+    self._fx.flash.color = Color:new(color)
+end
+
+function Camera:fade(color, duration, fadeIn, force)
+    if not force and self._fx.fade.alpha > 0.0 then
+        return
+    end
+    self._fx.fade.time = 0.0
+    self._fx.fade.duration = duration or 0.0
+    self._fx.fade.color = Color:new(color)
+    self._fx.fade.fadeIn = fadeIn ~= nil and fadeIn or false
+end
+
+function Camera:update(dt)
+    self._fx.flash.time = math.min(self._fx.flash.time + dt, self._fx.flash.duration)
+    self._fx.fade.time = math.min(self._fx.fade.time + dt, self._fx.fade.duration)
+end
+
+function Camera:drawFX(box)
+    if self._fx.flash.time <= self._fx.flash.duration then
+        local alpha = self._fx.flash.color.a * (1 - (self._fx.flash.time / self._fx.flash.duration))
+        self._fx.flash.alpha = alpha
+
+        gfx.setColor(self._fx.flash.color.r, self._fx.flash.color.g, self._fx.flash.color.b, alpha)
+        gfx.rectangle("fill", box.x, box.y, box.width, box.height)
+    end
+    if self._fx.fade.time <= self._fx.fade.duration then
+        local alpha = self._fx.fade.color.a * (1 - (self._fx.fade.time / self._fx.fade.duration))
+        self._fx.fade.alpha = alpha
+
+        if self._fx.fade.fadeIn then
+            alpha = 1.0 - alpha
+        end
+        gfx.setColor(self._fx.fade.color.r, self._fx.fade.color.g, self._fx.fade.color.b, alpha)
+        gfx.rectangle("fill", box.x, box.y, box.width, box.height)
+    end
+end
+
 function Camera:_draw()
     if #self._shaders ~= 0 then
         -- draw to a bunch of canvases with shaders applied to them
@@ -198,9 +258,11 @@ function Camera:_draw()
                 local pr, pg, pb, pa = gfx.getColor()
                 gfx.setColor(self._bgColor.r, self._bgColor.g, self._bgColor.b, self._bgColor.a)
                 gfx.rectangle("fill", box.x, box.y, box.width, box.height)
-                gfx.setColor(pr, pg, pb, pa)
                 
                 super._draw(self)
+                self:drawFX(box)
+
+                gfx.setColor(pr, pg, pb, pa)
                 gfx.setCanvas()
             end
         end
@@ -224,9 +286,11 @@ function Camera:_draw()
         local pr, pg, pb, pa = gfx.getColor()
         gfx.setColor(self._bgColor.r, self._bgColor.g, self._bgColor.b, self._bgColor.a)
         gfx.rectangle("fill", box.x, box.y, box.width, box.height)
-        gfx.setColor(pr, pg, pb, pa)
         
         super._draw(self)
+        self:drawFX(box)
+        
+        gfx.setColor(pr, pg, pb, pa)
         gfx.setScissor(px, py, pw, ph)
     end
 end

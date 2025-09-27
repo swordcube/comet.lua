@@ -82,14 +82,24 @@ function AnimatedImage:setShader(shader)
     self._shader:reference()
 end
 
---- @param shortcut string?   A shortcut name to use when playing the animation.
---- @param name     string    The raw name of the animation.
---- @param fps      number    The framerate of the animation.
---- @param loop     boolean?  Whether or not to loop the animation. (optional, default=`false`)
-function AnimatedImage:addAnimation(shortcut, name, fps, loop)
+--- @param shortcut    string?   A shortcut name to use when playing the animation.
+--- @param name        string    The raw name of the animation.
+--- @param fps         number    The framerate of the animation.
+--- @param loop        boolean?  Whether or not to loop the animation. (optional, default=`false`)
+--- @param skipWarning boolean? Whether or not to skip warnings. (optional, default=`false`)
+function AnimatedImage:addAnimation(shortcut, name, fps, loop, skipWarnings)
+    if skipWarnings == nil then
+        skipWarnings = false
+    end
+    if not self._frames:getFrames(name) then
+        if not skipWarnings then
+            Log.warn("Animation '" .. name .. "' does not exist in the frame collection!")
+        end
+        return
+    end
     shortcut = shortcut or name
     loop = loop ~= nil and loop or false
-    self._animations[shortcut] = {name = name, fps = fps, loop = loop}
+    self._animations[shortcut] = {name = name, fps = fps, loop = loop, offset = Vec2:new()}
 end
 
 --- @param shortcut string?    A shortcut name to use when playing the animation.
@@ -100,12 +110,29 @@ end
 function AnimatedImage:addAnimationByIndices(shortcut, name, indices, fps, loop)
     shortcut = shortcut or name
     loop = loop ~= nil and loop or false
-    self._animations[shortcut] = {name = name, fps = fps, indices = indices, loop = loop}
+    self._animations[shortcut] = {name = name, fps = fps, indices = indices, loop = loop, offset = Vec2:new()}
 end
 
---- @param name string  The name/shortcut name of the animation to play.
+--- @param name string  The name/shortcut name of the animation to check.
+--- @return boolean
+function AnimatedImage:hasAnimation(name)
+    return self._animations[name] ~= nil
+end
+
+--- @param name string  The name/shortcut name of the animation to set the offset of.
+--- @param x    number  The new X offset for this animation.
+--- @param y    number  The new Y offset for this animation.
+function AnimatedImage:setAnimationOffset(name, x, y)
+    self._animations[name].offset:set(x, y)
+end
+
+--- @param name  string    The name/shortcut name of the animation to play.
 --- @param force boolean?  Whether or not to forcefully restart the animation. (optional, default=`false`)
 function AnimatedImage:playAnimation(name, force)
+    if not self:hasAnimation(name) then
+        Log.warn("Animation '" .. name .. "' does not exist!")
+        return
+    end
     force = force ~= nil and force or false
     if not force and self._curAnim == name then
         return
@@ -130,7 +157,7 @@ function AnimatedImage:setCurrentFrame(frame)
     self._curFrame = frame
 
     local anim = self._animations[self._curAnim]
-    self._frame = self._frames:getFrame(anim.name, anim.indices and (anim.indices[frame] or 0) or frame)
+    self._frame = self._frames:getFrame(anim.name, anim.indices and (anim.indices[frame] or 1) or frame)
 end
 
 function AnimatedImage:isPlaying()
@@ -154,7 +181,7 @@ function AnimatedImage:getOriginalWidth(frame)
         return 0
     end
     local anim = self._animations[self._curAnim]
-    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or 0) or frame).width
+    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or 1) or frame).width
 end
 
 --- Returns the unscaled height of a given frame.
@@ -166,7 +193,7 @@ function AnimatedImage:getOriginalHeight(frame)
         return 0
     end
     local anim = self._animations[self._curAnim]
-    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or 0) or frame).height
+    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or 1) or frame).height
 end
 
 --- Returns the width of a given frame (accounting for this image's scale).
@@ -178,7 +205,7 @@ function AnimatedImage:getWidth(frame)
         return 0
     end
     local anim = self._animations[self._curAnim]
-    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or 0) or frame).width * math.abs(self.scale.x)
+    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or 1) or frame).width * math.abs(self.scale.x)
 end
 
 --- Returns the height of a given frame (accounting for this image's scale).
@@ -190,7 +217,7 @@ function AnimatedImage:getHeight(frame)
         return 0
     end
     local anim = self._animations[self._curAnim]
-    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or 0) or frame).height * math.abs(self.scale.y)
+    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or 1) or frame).height * math.abs(self.scale.y)
 end
 
 --- @param newWidth   number
@@ -212,7 +239,7 @@ function AnimatedImage:getTransform()
 
     -- position
     local frame = self._frame
-    transform:translate(self.position.x, self.position.y)
+    transform:translate(self.position.x + self.offset.x, self.position.y + self.offset.y)
 
     if self.centered then
         transform:translate(-math.abs(self:getWidth(1)) * 0.5, -math.abs(self:getHeight(1)) * 0.5)
@@ -238,9 +265,13 @@ function AnimatedImage:getTransform()
         transform:scale(1, -1)
         transform:translate(-ox2, -oy2)
     end
-    transform:translate(frame.offset.x, frame.offset.y)
+
+    -- frame & anim offset
+    local anim = self._animations[self._curAnim]
+    transform:translate(frame.offset.x + (anim and anim.offset.x or 0.0), frame.offset.y + (anim and anim.offset.y or 0.0))
     transform:translate(0, math.fastsin(math.rad(frame.rotation)) * -frame.width)
     transform:rotate(math.rad(frame.rotation))
+
     return transform
 end
 
