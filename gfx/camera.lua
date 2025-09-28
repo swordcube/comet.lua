@@ -12,6 +12,10 @@ function Camera:__init__()
     self.position:set(comet.getDesiredWidth() / 2, comet.getDesiredHeight() / 2)
 
     self.scroll = Vec2:new()
+
+    self.target = nil
+
+    self.followSpeed = 1.0
     
     --- Size of this camera
     self.size = Vec2:new(comet.getDesiredWidth(), comet.getDesiredHeight()) --- @type comet.math.Vec2
@@ -56,6 +60,11 @@ function Camera:__init__()
             duration = 0.0
         }
     }
+end
+
+function Camera:follow(obj, speed)
+    self.target = obj
+    self.followSpeed = speed or 10
 end
 
 function Camera:getBackgroundColor()
@@ -215,9 +224,43 @@ function Camera:fade(color, duration, fadeIn, force)
     self._fx.fade.fadeIn = fadeIn ~= nil and fadeIn or false
 end
 
+function Camera:snapToTarget()
+    local target = self.target
+    if not target then
+        return
+    end
+    self.scroll:set(
+        target.position.x - (self.size.x * 0.5),
+        target.position.y - (self.size.y * 0.5)
+    )
+end
+
+function Camera:focusOn(obj)
+    if not obj or not obj.getBoundingBox then
+        return
+    end
+    local box = obj:getBoundingBox(obj:getTransform())
+    self.scroll:set(box.x + (box.width * 0.5), box.y + (box.height * 0.5))
+end
+
 function Camera:update(dt)
     self._fx.flash.time = math.min(self._fx.flash.time + dt, self._fx.flash.duration)
     self._fx.fade.time = math.min(self._fx.fade.time + dt, self._fx.fade.duration)
+
+    local target = self.target
+    if target then
+        if self.followSpeed >= 1 then
+            self.scroll:set(
+                target.position.x - (self.size.x * 0.5),
+                target.position.y - (self.size.y * 0.5)
+            )
+        else
+            self.scroll:set(
+                math.lerp(self.scroll.x, target.position.x - (self.size.x * 0.5), self.followSpeed * dt * 60),
+                math.lerp(self.scroll.y, target.position.y - (self.size.y * 0.5), self.followSpeed * dt * 60)
+            )
+        end
+    end
 end
 
 function Camera:drawFX(box)

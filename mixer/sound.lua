@@ -4,6 +4,8 @@ local Signal = cometreq("util.signal") --- @type comet.util.Signal
 local Sound = Class("Sound", ...)
 
 function Sound:__init__()
+    self.exists = true
+
     --- Whether or not this sound should be auto-destroyed
     --- when it finishes playing.
     self.autoDestroy = true
@@ -171,6 +173,11 @@ function Sound:update(dt)
             self:destroy()
         end
     end
+end
+Sound._update = Sound.update
+
+function Sound:shouldUpdate()
+    return true
 end
 
 function Sound:destroy()

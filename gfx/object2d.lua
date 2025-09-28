@@ -138,10 +138,10 @@ function Object2D:screenCenter(axes)
     axes = string.lower(axes)
 
     if axes == "x" or axes == "xy" then
-        self.position.x = right / 2.0
+        self.position.x = (right / 2.0) - box.x
     end
     if axes == "y" or axes == "xy" then
-        self.position.y = bottom / 2.0
+        self.position.y = (bottom / 2.0) - box.y
     end
 end
 

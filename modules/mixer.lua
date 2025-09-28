@@ -5,6 +5,7 @@ local mixer = Class("comet.modules.mixer", ...)
 
 function mixer:__init__()
     self.sounds = Object:new() --- @type comet.core.Object
+    self.sounds.updateMode = "always"
 
     self.music = Sound:new() --- @type comet.mixer.Sound
     self.music.autoDestroy = false
