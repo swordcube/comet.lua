@@ -58,13 +58,13 @@ function ScreenManager:_switchScreen()
     
     local new = self.pending
     self.current = new
+    Log.verbose("Switched to screen: " .. new.class.name)
+
     self.current:enter()
     self.current:startIntro()
     self.current:postEnter()
     
     comet.signals.postScreenSwitch:emit()
-
-    Log.verbose("Switched to screen: " .. new.class.name)
     self.pending = nil
 end
 
