@@ -30,6 +30,10 @@ function mixer:play(src, volume, looping)
     return sound
 end
 
+function mixer:getMasterVolume()
+    return love.audio.getVolume()
+end
+
 function mixer:setMasterVolume(volume)
     love.audio.setVolume(volume)
 end
@@ -52,7 +56,7 @@ end
 
 function mixer:update(dt)
     self.music:update(dt)
-    self.sounds:update(dt)
+    self.sounds:_update(dt)
 end
 
 return mixer

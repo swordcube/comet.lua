@@ -8,6 +8,10 @@ function Object:__init__()
 
     self.parent = nil --- @type comet.core.Object
 
+    --- The children of this object.
+    --- 
+    --- If you want to get the amount of children, use `getChildCount()`
+    --- instead of getting the table length, otherwise you might get unexpected crashes/problems!
     self.children = {}
 
     --- Whether or not this object is active (updating every frame)
@@ -18,9 +22,22 @@ function Object:__init__()
 
     --- Whether or not this object should exist (updating and drawing, setting this to `false` will stop them regardless of the individual flags)
     self.exists = true
+
+    --- Determines how this object should be updated
+    --- 
+    --- - `inherit` - Inherit from the parent object's update mode.
+    --- - `always` - Always update the object, unless the `active` flag is set to `false`.
+    --- - `never` - Never update the object, regardless of the `active` flag.
+    self.updateMode = "inherit" --- @type "inherit"|"always"|"never"
     
     --- @protected
+    self._childCount = 0 --- @type integer
+
+    --- @protected
     self._childrenByTag = {}
+
+    --- @protected
+    self._pendingToRemove = {}
 end
 
 function Object:addChild(object, tag)
@@ -37,6 +54,7 @@ function Object:addChild(object, tag)
     end
     object.parent = self
     table.insert(self.children, object)
+    self._childCount = #self.children
 end
 
 function Object:insertChild(position, object, tag)
@@ -54,6 +72,7 @@ function Object:insertChild(position, object, tag)
     end
     object.parent = self
     table.insert(self.children, position, object)
+    self._childCount = #self.children
 end
 
 function Object:moveChild(object, newPosition)
@@ -71,7 +90,8 @@ function Object:removeChild(object)
         return
     end
     object.parent = nil
-    table.removeItem(self.children, object)
+    table.insert(self._pendingToRemove, object)
+
     if object.tag then
         self._childrenByTag[object.tag] = nil
         object.tag = nil
@@ -85,9 +105,10 @@ function Object:reparent(newParent)
         return
     end
     if self.parent then
-        table.removeItem(self.parent.children, self)
+        self.parent:removeChild(self)
     end
     self.parent = newParent
+    newParent:addChild(self)
 end
 
 --- @param tag string
@@ -100,6 +121,10 @@ function Object:getChild(index)
     return self.children[index]
 end
 
+function Object:getChildCount()
+    return self._childCount
+end
+
 function Object:kill()
     self.exists = false
 end
@@ -108,16 +133,46 @@ function Object:revive()
     self.exists = true
 end
 
+function Object:shouldUpdate()
+    if self.updateMode == "inherit" then
+        if self.parent then
+            return self.parent:shouldUpdate() and self.active
+        else
+            return self.active
+        end
+    elseif self.updateMode == "always" then
+        return self.active
+
+    elseif self.updateMode == "never" then
+        return false
+    end
+    return true
+end
+
 --- @protected
 function Object:_update(dt)
-    self:update(dt)
-    for i = 1, #self.children do
+    local pendingToRemove = self._pendingToRemove
+    for i = 1, #pendingToRemove do
+        local child = pendingToRemove[i]
+        table.removeItem(self.children, child)
+    end
+    if #pendingToRemove ~= 0 then
+        self._childCount = #self.children
+        self._pendingToRemove = {}
+    end
+    local shouldUpdate = self:shouldUpdate()
+    if shouldUpdate then
+        self:update(dt)
+    end
+    for i = 1, self:getChildCount() do
         local object = self.children[i] --- @type comet.core.Object
-        if object and object.exists and object.active then
+        if object and object.exists and object:shouldUpdate() then
             object:_update(dt)
         end
     end
-    self:postUpdate(dt)
+    if shouldUpdate then
+        self:postUpdate(dt)
+    end
 end
 
 function Object:update(dt) end
@@ -125,8 +180,16 @@ function Object:postUpdate(dt) end
 
 --- @protected
 function Object:_draw()
+    local pendingToRemove = self._pendingToRemove
+    for i = 1, #pendingToRemove do
+        local child = pendingToRemove[i]
+        table.removeItem(self.children, child)
+    end
+    if #pendingToRemove ~= 0 then
+        self._pendingToRemove = {}
+    end
     self:draw()
-    for i = 1, #self.children do
+    for i = 1, self:getChildCount() do
         local object = self.children[i] --- @type comet.core.Object
         if object and object.exists and object.visible then
             object:_draw()
@@ -140,26 +203,36 @@ function Object:postDraw() end
 
 --- @protected
 function Object:_input(e)
-    for i = 1, #self.children do
+    local shouldUpdate = self:shouldUpdate()
+    if shouldUpdate then
+        self:input(e)
+    end
+    for i = 1, self:getChildCount() do
         local object = self.children[i] --- @type comet.core.Object
-        if object and object.exists and object.active then
+        if object and object.exists and object:shouldUpdate() then
             object:_input(e)
         end
     end
-    self:input(e)
+    if shouldUpdate then
+        self:postInput(e)
+    end
 end
 
 function Object:input(e) end
+function Object:postInput(e) end
 
 function Object:destroy()
     if not self.children then
         return
     end
-    for i = 1, #self.children do
+    for i = 1, self:getChildCount() do
         local object = self.children[i] --- @type comet.core.Object
         if object then
             object:destroy()
         end
+    end
+    if self.parent then
+        self.parent:removeChild(self)
     end
     self.children = nil
 end

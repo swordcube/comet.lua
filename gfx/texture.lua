@@ -82,7 +82,7 @@ function Texture:destroy()
         self.nearestImage = nil
     end
     self._destroyed = true
-    comet.gfx:remove(self)
+    comet.gfx:removeTexture(self)
 end
 
 return Texture

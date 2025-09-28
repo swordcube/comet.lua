@@ -333,7 +333,9 @@ function AnimatedImage:draw()
         gfx.setShader()
     end
     gfx.draw(self._frame.texture:getImage(self.antialiasing and "linear" or "nearest"), self._frame.quad, transform)
-    gfx.setShader(prevShader)
+    if self.shader then
+        gfx.setShader(prevShader)
+    end
     gfx.setColor(pr, pg, pb, pa)
 
     if comet.settings.debugDraw then

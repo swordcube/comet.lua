@@ -7,6 +7,7 @@ TweenManager.static.instance = nil
 function TweenManager:__init__()
     --- using this as a group lol
     self.tweens = Object:new() --- @type comet.core.Object
+    self.tweens.updateMode = "always"
 
     if not TweenManager.instance then
         TweenManager.instance = self

@@ -92,6 +92,16 @@ function Timer:update(dt)
 end
 Timer._update = Timer.update
 
+function Timer:shouldUpdate()
+    return true
+end
+
+function Timer:cancel()
+    self.active = false
+    self.paused = true
+    self:destroy()
+end
+
 function Timer:destroy()
     TimerManager.instance.timers:removeChild(self)
 end

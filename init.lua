@@ -83,6 +83,9 @@ comet = {
         preDraw = nil, --- @type comet.util.Signal
         postDraw = nil, --- @type comet.util.Signal
 
+        preScreenSwitch = nil, --- @type comet.util.Signal
+        postScreenSwitch = nil, --- @type comet.util.Signal
+
         onQuit = nil, --- @type comet.util.Signal
     },
     gfx = nil, --- @type comet.modules.gfx
@@ -269,6 +272,9 @@ function comet.init(params)
 
     comet.signals.preDraw = cometreq("util.signal"):new()
     comet.signals.postDraw = cometreq("util.signal"):new()
+
+    comet.signals.preScreenSwitch = cometreq("util.signal"):new()
+    comet.signals.postScreenSwitch = cometreq("util.signal"):new()
 
     comet.signals.onQuit = cometreq("util.signal"):new()
 

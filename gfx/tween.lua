@@ -239,6 +239,8 @@ local easingMap = {
 }
 
 function Tween:__init__(tweenManager)
+    self.exists = true
+    
     self.time = 0 --- @type number
     self.duration = 0 --- @type number
     self.currentTargets = {} --- @type table
@@ -397,6 +399,10 @@ function Tween:update(dt)
     end
 end
 Tween._update = Tween.update
+
+function Tween:shouldUpdate()
+    return true
+end
 
 function Tween:destroy()
     self.tweenManager.tweens:removeChild(self)

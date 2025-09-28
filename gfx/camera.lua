@@ -93,6 +93,14 @@ function Camera:setShaders(newShaders)
         end
         shader:reference()
     end
+    if #filteredShaders == 0 then
+        if self._canvases["first"] then
+            self._canvases["first"]:release()
+            self._canvases["first"] = nil
+        end
+    else
+        self._canvases["first"] = gfx.newCanvas(self.size.x, self.size.y)
+    end
     self._shaders = filteredShaders
 end
 
@@ -241,6 +249,7 @@ function Camera:_draw()
 
         gfx.push()
         gfx.origin()
+        gfx.setScissor()
 
         for i = 1, #self._shaders do
             local shader = self._shaders[i]
@@ -253,7 +262,8 @@ function Camera:_draw()
 
                 gfx.setCanvas()
             else
-                gfx.setCanvas(self._canvases[shader])
+                -- draw to initial shaderless canvas first
+                gfx.setCanvas(self._canvases["first"])
                 
                 local pr, pg, pb, pa = gfx.getColor()
                 gfx.setColor(self._bgColor.r, self._bgColor.g, self._bgColor.b, self._bgColor.a)
@@ -263,6 +273,14 @@ function Camera:_draw()
                 self:drawFX(box)
 
                 gfx.setColor(pr, pg, pb, pa)
+
+                -- then draw this shaderless canvas to the final canvas
+                gfx.setCanvas(self._canvases[shader])
+                
+                gfx.setShader(shader.data)
+                gfx.draw(self._canvases["first"], transform)
+                gfx.setShader()
+
                 gfx.setCanvas()
             end
         end

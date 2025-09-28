@@ -13,6 +13,9 @@ local gfx = love.graphics
 function Shader:__init__(frag, vert)
     super.__init__(self)
     
+    -- Love2D doesn't have a way to get uniforms from shaders, so we have to track them ourselves
+    self._uniforms = {} --- @protected
+
     local fragPath, vertPath = "frag", "vert"
     if frag and love.filesystem.exists(frag) then
         fragPath = frag
@@ -57,6 +60,18 @@ function Shader:hasUniform(name)
     return self.data:hasUniform(name)
 end
 
+--- Gets the values of an uniform / extern variable.
+--- @return table
+function Shader:getUniform(name)
+    return self._uniforms[name]
+end
+
+--- Gets the first value of an uniform / extern variable as a number.
+--- @return number
+function Shader:getUniformNumber(name)
+    return tonumber(self._uniforms[name][1])
+end
+
 --- Returns any warning and error messages from compiling the shader code. This can be used for debugging your shaders if there's anything the graphics hardware doesn't like.
 --- @return string warnings # Warning and error messages (if any).
 function Shader:getWarnings()
@@ -99,6 +114,8 @@ end
 --- @param number number Number to send to store in the uniform variable.
 --- @vararg number Additional numbers to send if the uniform variable is an array.
 function Shader:send(name, number, ...)
+    local values = {number, ...}
+    self._uniforms[name] = values
     self.data:send(name, number, ...)
 end
 
@@ -116,6 +133,8 @@ end
 ---@param color table A table with red, green, blue, and optional alpha color components in the range of 1 to send to the extern as a vector.
 ---@vararg table Additional colors to send in case the extern is an array. All colors need to be of the same size (e.g. only vec3's).
 function Shader:sendColor(name, color, ...)
+    local values = {color, ...}
+    self._uniforms[name] = values
     self.data:sendColor(name, color, ...)
 end
 

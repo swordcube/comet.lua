@@ -7,6 +7,7 @@ TimerManager.static.instance = nil
 function TimerManager:__init__()
     --- using this as a group lol
     self.timers = Object:new() --- @type comet.core.Object
+    self.timers.updateMode = "always"
 
     if not TimerManager.instance then
         TimerManager.instance = self

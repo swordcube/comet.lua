@@ -178,7 +178,9 @@ function Image:draw()
         gfx.setShader()
     end
     gfx.draw(self.texture:getImage(self.antialiasing and "linear" or "nearest"), transform)
-    gfx.setShader(prevShader)
+    if self.shader then
+        gfx.setShader(prevShader)
+    end
     gfx.setColor(pr, pg, pb, pa)
 
     if comet.settings.debugDraw then

@@ -20,8 +20,8 @@ end
 function RefCounted:dereference()
     self._refs = self._refs - 1
     if self._refs <= 0 and not self._destroyed then
-        self._destroyed = true
         self:destroy()
+        self._destroyed = true
     end
 end
 

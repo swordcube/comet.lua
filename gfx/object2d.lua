@@ -85,7 +85,7 @@ function Object2D:getChildrenBoundingBox(rect)
         rect = self._fullRect
     end
     local minX, minY, maxX, maxY = math.huge, math.huge, -math.huge, -math.huge
-    for i = 1, #self.children do
+    for i = 1, self:getChildCount() do
         local child = self.children[i]
         if child and child.exists and child.visible and child.getBoundingBox then
             local box = child:getBoundingBox(child:getTransform(), child._rect)

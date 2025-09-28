@@ -29,11 +29,8 @@ function Rectangle:__init__(x, y, width, height)
     --- Alpha multiplier for this rectangle
     self.alpha = 1
 
-    --- @type number
-    self._width = width or 1 --- @protected
-    
-    --- @type number
-    self._height = height or 1 --- @protected
+    --- The size of this rectangle
+    self.size = Vec2:new(width or 1, height or 1) --- @type comet.math.Vec2
 
     --- @type comet.gfx.Color
     self._tint = Color:new(1, 1, 1, 1) --- @protected
@@ -42,45 +39,46 @@ end
 --- Returns the unscaled width of this rectangle.
 --- @return number
 function Rectangle:getOriginalWidth()
-    return self._width
+    return self.size.x
 end
 
 --- Returns the unscaled height of this rectangle.
 --- @return number
 function Rectangle:getOriginalHeight()
-    return self._height
+    return self.size.y
 end
 
 --- Returns the current width of this rectangle.
 --- @return number
 function Rectangle:getWidth()
-    return self._width * math.abs(self.scale.x)
+    return self.size.x * math.abs(self.scale.x)
 end
 
 --- Sets the width of this rectangle.
 --- @param newWidth number
 function Rectangle:setWidth(newWidth)
-    self._width = newWidth
+    self.size.x = newWidth
 end
 
 --- Returns the current height of this rectangle.
 --- @return number
 function Rectangle:getHeight()
-    return self._height * math.abs(self.scale.y)
+    return self.size.y * math.abs(self.scale.y)
 end
 
 --- Sets the height of this rectangle.
 --- @param newHeight number
 function Rectangle:setHeight(newHeight)
-    self._height = newHeight
+    self.size.y = newHeight
 end
 
 --- Sets the size of this rectangle.
 --- @param newWidth number
 --- @param newHeight number
+--- @deprecated
 function Rectangle:setSize(newWidth, newHeight)
-    self._width = newWidth
-    self._height = newHeight
+    Log.warn("Rectangle.setSize() is deprecated, use myRect.size:set() instead!")
+    self.size:set(newWidth, newHeight)
 end
 
 --- @param axes  "x"|"y"|"xy"?
@@ -106,7 +104,7 @@ function Rectangle:getTransform()
     transform:translate(-ox, -oy)
 
     -- scale
-    transform:scale(self._width * self.scale.x, self._height * self.scale.y)
+    transform:scale(self.size.x * self.scale.x, self.size.y * self.scale.y)
     
     return transform
 end

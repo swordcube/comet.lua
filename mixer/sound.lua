@@ -181,6 +181,7 @@ function Sound:destroy()
     end
     local lsrc = self._loveSource
     if lsrc then
+        lsrc:stop()
         lsrc:release()
         self._loveSource = nil
     end

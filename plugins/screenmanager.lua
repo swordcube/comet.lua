@@ -12,39 +12,58 @@ end
 
 --- @param newScreen comet.core.Screen | function
 function ScreenManager.switchTo(newScreen)
-    ScreenManager.static.instance.pending = newScreen
-end
-ScreenManager.static.switchTo = ScreenManager.switchTo
-
-function ScreenManager:update(dt)
-    if self.current then
-        self.current:_update(dt)
-    end
-    if self.pending then
-        self:_switchTo(self.pending)
-    end
-end
-
---- @protected
---- @param newScreen comet.core.Screen | function
-function ScreenManager:_switchTo(newScreen)
-    if self.current then
-        self.current:exit()
-        self.current:destroy()
-        self.current = nil
-    end
     local new = nil --- @type comet.core.Screen
     if type(newScreen) == "function" then
         new = newScreen()
     else
         new = newScreen
     end
+    local current = ScreenManager.instance.current
+    if current then
+        current:startOutro(function()
+            ScreenManager.instance.pending = new
+        end)
+    else
+        ScreenManager.instance.pending = new
+    end
+end
+
+function ScreenManager:update(dt)
+    if self.current then
+        self.current:_update(dt)
+    end
+    if self.pending then
+        self:_switchScreen()
+    end
+end
+
+--- @protected
+--- @param newScreen comet.core.Screen | function
+function ScreenManager:_switchScreen()
+    if self.current then
+        self.current:exit()
+        self.current:destroy()
+        self.current = nil
+    end
+    comet.signals.preScreenSwitch:emit()
+    
+    for i = 1, #comet.mixer.sounds.children do
+        local sound = comet.mixer.sounds.children[i] --- @type comet.mixer.Sound
+        if sound then
+            sound:destroy()
+        end
+    end
     TimerManager.instance:clear()
     TweenManager.instance:clear()
-
+    
+    local new = self.pending
     self.current = new
     self.current:enter()
+    self.current:startIntro()
+    self.current:postEnter()
     
+    comet.signals.postScreenSwitch:emit()
+
     Log.verbose("Switched to screen: " .. new.class.name)
     self.pending = nil
 end
