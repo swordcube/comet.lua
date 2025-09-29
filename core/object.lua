@@ -151,6 +151,9 @@ end
 
 --- @protected
 function Object:_update(dt)
+    if not self.children then
+        return
+    end
     local pendingToRemove = self._pendingToRemove
     if #pendingToRemove ~= 0 then
         for i = 1, #pendingToRemove do
@@ -180,6 +183,9 @@ function Object:postUpdate(dt) end
 
 --- @protected
 function Object:_draw()
+    if not self.children then
+        return
+    end
     local pendingToRemove = self._pendingToRemove
     if #pendingToRemove ~= 0 then
         for i = 1, #pendingToRemove do
@@ -203,6 +209,9 @@ function Object:postDraw() end
 
 --- @protected
 function Object:_input(e)
+    if not self.children then
+        return
+    end
     local shouldUpdate = self:shouldUpdate()
     if shouldUpdate then
         self:input(e)
@@ -237,6 +246,7 @@ function Object:destroy()
         self.parent:removeChild(self)
     end
     self.children = nil
+    self._childCount = 0
 end
 
 return Object
