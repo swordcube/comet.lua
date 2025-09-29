@@ -184,8 +184,6 @@ function Image:draw()
     local prevShader = gfx.getShader()
     if self.shader then
         gfx.setShader(self.shader)
-    else
-        gfx.setShader()
     end
     gfx.draw(self.texture:getImage(self.antialiasing and "linear" or "nearest"), transform)
     if self.shader then

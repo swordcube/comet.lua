@@ -339,8 +339,6 @@ function AnimatedImage:draw()
     local prevShader = gfx.getShader()
     if self.shader then
         gfx.setShader(self.shader)
-    else
-        gfx.setShader()
     end
     gfx.draw(self._frame.texture:getImage(self.antialiasing and "linear" or "nearest"), self._frame.quad, transform)
     if self.shader then
