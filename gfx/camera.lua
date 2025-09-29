@@ -11,11 +11,22 @@ function Camera:__init__()
     -- Set position to center by default
     self.position:set(comet.getDesiredWidth() / 2, comet.getDesiredHeight() / 2)
 
-    self.scroll = Vec2:new()
+    self.scroll = Vec2:new() --- @type comet.math.Vec2
+    self.targetOffset = Vec2:new() --- @type comet.math.Vec2
+    self.followLead = Vec2:new() --- @type comet.math.Vec2
+
+    self.minScrollX = nil --- @type number?
+    self.maxScrollX = nil --- @type number?
+
+    self.minScrollY = nil --- @type number?
+    self.maxScrollY = nil --- @type number?
 
     self.target = nil
 
+    self.followType = "lockon" --- @type "lockon"|"platformer"|"topdown"|"topdown-tight"|"screen-by-screen"|"no-dead-zone"
     self.followSpeed = 1.0
+
+    self.deadzone = nil --- @type comet.math.Rect?
     
     --- Size of this camera
     self.size = Vec2:new(comet.getDesiredWidth(), comet.getDesiredHeight()) --- @type comet.math.Vec2
@@ -25,6 +36,9 @@ function Camera:__init__()
 
     --- Non-functional on Cameras, use `zoom` instead.
     self.scale = nil
+
+    --- @type comet.math.Vec2
+    self._scrollTarget = Vec2:new() --- @protected
 
     --- @type comet.gfx.Color
     self._bgColor = Color:new(Color.BLACK) --- @protected
@@ -62,9 +76,43 @@ function Camera:__init__()
     }
 end
 
-function Camera:follow(obj, speed)
+--- @param obj    any
+--- @param type   "lockon"|"platformer"|"topdown"|"topdown-tight"|"screen-by-screen"|"no-dead-zone"
+--- @param speed  number
+function Camera:follow(obj, type, speed)
+    if not type then
+        type = "lockon"
+    end
     self.target = obj
+    self.followType = type
     self.followSpeed = speed or 10
+    self.deadzone = nil
+    
+    if type == "lockon" then
+        local w, h = 0, 0
+        if obj and obj.getWidth and obj.getHeight then
+            w, h = obj:getWidth(), obj:getHeight()
+        end
+        self.deadzone = Rect:new((self.size.x - w) / 2, (self.size.y - h) / 2 - h * 0.25, w, h)
+        
+    elseif type == "platformer" then
+        local w, h = self.size.x / 8, self.size.y / 3
+        self.deadzone = Rect:new((self.size.x - w) / 2, (self.size.y - h) / 2 - h * 0.25, w, h)
+
+    elseif type == "topdown" then
+        local helper = math.max(self.size.x, self.size.y) / 4
+        self.deadzone = Rect:new((self.size.x - helper) / 2, (self.size.y - helper) / 2, helper, helper)
+
+    elseif type == "topdown-tight" then
+        local helper = math.max(self.size.x, self.size.y) / 8
+        self.deadzone = Rect:new((self.size.x - helper) / 2, (self.size.y - helper) / 2, helper, helper)
+
+    elseif type == "screen-by-screen" then
+        self.deadzone = Rect:new(0, 0, self.size.x, self.size.y)
+
+    elseif type == "no-dead-zone" then
+        self.deadzone = nil
+    end
 end
 
 function Camera:getBackgroundColor()
@@ -243,23 +291,102 @@ function Camera:focusOn(obj)
     self.scroll:set(box.x + (box.width * 0.5), box.y + (box.height * 0.5))
 end
 
+function Camera:bindScrollPos(scrollPos)
+    local camBox = self:getBoundingBox(self:getTransform(false, true, false), self._rect) --- @type comet.math.Rect
+
+    local viewMarginLeft = camBox.x
+    local viewMarginRight = camBox.x + camBox.width
+    local viewMarginTop = camBox.y
+    local viewMarginBottom = camBox.y + camBox.height
+
+    local minX = self.minScrollX and self.minScrollX - viewMarginLeft or nil
+    local maxX = self.maxScrollX and self.maxScrollX - viewMarginRight or nil
+    local minY = self.minScrollY and self.minScrollY - viewMarginTop or nil
+    local maxY = self.maxScrollY and self.maxScrollY - viewMarginBottom or nil
+
+    scrollPos:set(math.clamp(scrollPos.x, minX, maxX), math.clamp(scrollPos.y, minY, maxY))
+end
+
+function Camera:updateScroll()
+    self:bindScrollPos(self.scroll)
+end
+
+function Camera:updateFollow()
+    local deadzone, target = self.deadzone, self.target
+    if not deadzone then
+        self._scrollTarget:set(
+            (target.position.x + self.targetOffset.x) - (self.size.x * 0.5),
+            (target.position.y + self.targetOffset.y) - (self.size.y * 0.5)
+        )
+    else
+        local edge = 0
+        local targetX, targetY = target.position.x + self.targetOffset.x, target.position.y + self.targetOffset.y
+
+        if self.followType == "screen-by-screen" then
+            -- TODO: this shit is terribly broken but i don't want to fix it right now
+            local camBox = self:getBoundingBox(self:getTransform(false, true, false), self._rect) --- @type comet.math.Rect
+            
+            local viewWidth, viewHeight = self.scroll.x + camBox.width, self.scroll.x + camBox.height
+            local viewLeft, viewRight = self.scroll.x + (camBox.width * 0.5), self.size.x - (camBox.width * 0.5)
+            local viewTop, viewBottom = self.scroll.y + (camBox.height * 0.5), self.size.y - (camBox.height * 0.5)
+
+            if targetX >= viewRight then
+                self._scrollTarget.x = self._scrollTarget.x + viewWidth
+            elseif targetX + target:getWidth() < viewLeft then
+                self._scrollTarget.x = self._scrollTarget.x - viewWidth
+            end
+            if targetY >= viewBottom then
+                self._scrollTarget.y = self._scrollTarget.y + viewHeight
+            elseif targetY + target:getHeight() < viewTop then
+                self._scrollTarget.y = self._scrollTarget.y - viewHeight
+            end
+            self:bindScrollPos(self._scrollTarget)
+        else
+            edge = targetX - deadzone.x
+            if self._scrollTarget.x > edge then
+                self._scrollTarget.x = edge
+            end
+            edge = targetX + target:getWidth() - deadzone.x - deadzone.width
+            if self._scrollTarget.x < edge then
+                self._scrollTarget.x = edge
+            end
+            edge = targetY - deadzone.y
+            if self._scrollTarget.y > edge then
+                self._scrollTarget.y = edge
+            end
+            edge = targetY + target:getHeight() - deadzone.y - deadzone.height
+            if self._scrollTarget.y < edge then
+                self._scrollTarget.y = edge
+            end
+        end
+    end
+    if not self._lastTargetPosition then
+        self._lastTargetPosition = Vec2:new(self.target.position.x, self.target.position.y) --- @type comet.math.Vec2
+    end
+    self._scrollTarget.x = self._scrollTarget.x + ((self.target.position.x - self._lastTargetPosition.x) * self.followLead.x)
+    self._scrollTarget.y = self._scrollTarget.y + ((self.target.position.y - self._lastTargetPosition.y) * self.followLead.y)
+
+    self._lastTargetPosition:set(self.target.position.x, self.target.position.y)
+end
+
+function Camera:updateLerp(dt)
+    if self.followSpeed >= 1.0 then
+        self.scroll:set(self._scrollTarget.x, self._scrollTarget.y)
+    else
+        local adjustedSpeed = 1.0 - math.pow(1.0 - self.followSpeed, dt * 60.0)
+        self.scroll.x = math.lerp(self.scroll.x, self._scrollTarget.x, adjustedSpeed)
+        self.scroll.y = math.lerp(self.scroll.y, self._scrollTarget.y, adjustedSpeed)
+    end
+end
+
 function Camera:update(dt)
     self._fx.flash.time = math.min(self._fx.flash.time + dt, self._fx.flash.duration)
     self._fx.fade.time = math.min(self._fx.fade.time + dt, self._fx.fade.duration)
 
     local target = self.target
     if target then
-        if self.followSpeed >= 1 then
-            self.scroll:set(
-                target.position.x - (self.size.x * 0.5),
-                target.position.y - (self.size.y * 0.5)
-            )
-        else
-            self.scroll:set(
-                math.lerp(self.scroll.x, target.position.x - (self.size.x * 0.5), self.followSpeed * dt * 60),
-                math.lerp(self.scroll.y, target.position.y - (self.size.y * 0.5), self.followSpeed * dt * 60)
-            )
-        end
+        self:updateFollow()
+        self:updateLerp(dt)
     end
 end
 

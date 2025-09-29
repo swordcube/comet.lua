@@ -102,6 +102,8 @@ end
 --- 
 --- Returns a clamped version of a specified number where
 --- it never goes below `minimum` or above `maximum`.
+--- 
+--- Leaving `minimum` or `maximum` unspecified will result in no clamping on that side.
 ---
 --- @param  value    number   The number to clamp.
 --- @param  minimum  number?  The minimum value that `value` can go-to.
