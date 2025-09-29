@@ -10,44 +10,40 @@ function Timer:__init__()
 
     self.onComplete = Signal:new():type("comet.util.Timer", "void") --- @type comet.util.Signal
     
-    --- @type number
-    self._time = 0.0 --- @protected
+    --- The current time of the timer.
+    self.time = 0.0 --- @type number
     
-    --- @type number
-    self._duration = 0.0 --- @protected
+    --- The duration of the timer.
+    self.duration = 0.0 --- @type number
 
-    --- @type integer
-    self._loops = 0 --- @protected
+    --- The amount of times this timer should loop for.
+    self.loops = 0 --- @type integer
 
-    --- @type integer
-    self._loopsLeft = 0 --- @protected
-end
-
-function Timer:getTime()
-    return self._time
-end
-
-function Timer:getDuration()
-    return self._duration
+    --- The amount of loops left before this timer stops.
+    self.loopsLeft = 0 --- @type integer
 end
 
 function Timer:getProgress()
-    return self._time / self._duration
+    return self.time / self.duration
 end
 
 --- @param duration  number    The duration of the timer
 --- @param func      function  The function to call when the timer finishes/loops
+--- @return comet.util.Timer
 function Timer.wait(duration, func)
     local t = Timer:new() --- @type comet.util.Timer
     t:start(duration, func)
+    return t
 end
 
 --- @param duration  number    The duration of the timer
 --- @param func      function  The function to call when the timer finishes/loops
 --- @param loops     integer?  Determines how many times this timer should loop. 0 means infinite looping
+--- @return comet.util.Timer
 function Timer.loop(duration, func, loops)
     local t = Timer:new() --- @type comet.util.Timer
     t:start(duration, func, loops)
+    return t
 end
 
 --- @param duration  number    The duration of the timer
@@ -55,11 +51,11 @@ end
 --- @param loops     integer?  Determines how many times this timer should loop. 0 means infinite looping
 --- @return comet.util.Timer
 function Timer:start(duration, func, loops)
-    self._time = 0.0
-    self._duration = duration
+    self.time = 0.0
+    self.duration = duration
 
-    self._loops = loops or 1
-    self._loopsLeft = self._loops
+    self.loops = loops or 1
+    self.loopsLeft = self.loops
 
     self.active = true
     self.paused = false
@@ -75,17 +71,17 @@ function Timer:update(dt)
     if not self.active or self.paused then
         return
     end
-    self._time = self._time + dt
-    while self._time >= self._duration do
-        self._time = self._time - self._duration
-        if self._loops ~= 0 then
-            self._loopsLeft = self._loopsLeft - 1
+    self.time = self.time + dt
+    while self.time >= self.duration do
+        self.time = self.time - self.duration
+        if self.loops ~= 0 then
+            self.loopsLeft = self.loopsLeft - 1
         else
-            self._loopsLeft = 9999999
+            self.loopsLeft = 9999999
         end
         self.onComplete:emit(self)
 
-        if self._loopsLeft <= 0 then
+        if self.loopsLeft <= 0 then
             self:destroy()
         end
     end

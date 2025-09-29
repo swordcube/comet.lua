@@ -108,10 +108,20 @@ function Label:setFont(font)
 end
 
 --- Returns the transform of this label
+--- @param accountForParent boolean?
+--- @param accountForCamera boolean?
 --- @return love.Transform
-function Label:getTransform()
+function Label:getTransform(accountForParent, accountForCamera)
+    if accountForParent == nil then
+        accountForParent = true
+    end
+    if accountForCamera == nil then
+        accountForCamera = true
+    end
     local transform = self._transform:reset()
-    transform = self:getParentTransform(transform)
+    if accountForParent then
+        transform = self:getParentTransform(transform, accountForCamera)
+    end
 
     -- position
     self:updateText()

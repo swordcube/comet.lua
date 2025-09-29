@@ -30,17 +30,26 @@ function Object2D:__init__(x, y)
 end
 
 --- @param  transform  love.Transform
-function Object2D:getParentTransform(transform)
+--- @param  accountForCamera boolean?
+function Object2D:getParentTransform(transform, accountForCamera)
     if transform == nil then
         transform = lmath.newTransform()
     end
+    if accountForCamera == nil then
+        accountForCamera = true
+    end
     if self.parent and self.parent:isInstanceOf(Object2D) then
-        if self.parent:isInstanceOf(Camera) and #self.parent._shaders ~= 0 then
+        local isCam = self.parent:isInstanceOf(Camera)
+        if isCam and not accountForCamera then
+            goto continue
+        end
+        if isCam and #self.parent._shaders ~= 0 then
             transform:apply(self.parent:getTransform(true, true, false))
         else
             transform:apply(self.parent:getTransform())
         end
     end
+    ::continue::
     return transform
 end
 
@@ -61,15 +70,6 @@ function Object2D:getTransform()
     transform:scale(self.scale.x, self.scale.y)
     
     return transform
-end
-
-local function isValidBox(b)
-    return b and
-           b.x == b.x and b.y == b.y and
-           b.width == b.width and b.height == b.height and -- filters NaN
-           b.width >= 0 and b.height >= 0 and
-           math.abs(b.x) ~= math.huge and
-           math.abs(b.y) ~= math.huge
 end
 
 -- TODO: does this need better documentation???? i'm too tired to think of anything better

@@ -232,10 +232,20 @@ function AnimatedImage:screenCenter(axes)
 end
 
 --- Returns the transform of this image
+--- @param accountForParent boolean?
+--- @param accountForCamera boolean?
 --- @return love.Transform
-function AnimatedImage:getTransform()
+function AnimatedImage:getTransform(accountForParent, accountForCamera)
+    if accountForParent == nil then
+        accountForParent = true
+    end
+    if accountForCamera == nil then
+        accountForCamera = true
+    end
     local transform = self._transform:reset()
-    transform = self:getParentTransform(transform)
+    if accountForParent then
+        transform = self:getParentTransform(transform, accountForCamera)
+    end
 
     -- position
     local frame = self._frame

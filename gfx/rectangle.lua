@@ -87,10 +87,20 @@ function Rectangle:screenCenter(axes)
 end
 
 --- Returns the transform of this rectangle
+--- @param accountForParent boolean?
+--- @param accountForCamera boolean?
 --- @return love.Transform
-function Rectangle:getTransform()
+function Rectangle:getTransform(accountForParent, accountForCamera)
+    if accountForParent == nil then
+        accountForParent = true
+    end
+    if accountForCamera == nil then
+        accountForCamera = true
+    end
     local transform = self._transform:reset()
-    transform = self:getParentTransform(transform)
+    if accountForParent then
+        transform = self:getParentTransform(transform, accountForCamera)
+    end
 
     -- position
     transform:translate(self.position.x + self.offset.x, self.position.y + self.offset.y)

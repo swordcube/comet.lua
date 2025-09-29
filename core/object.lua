@@ -152,11 +152,11 @@ end
 --- @protected
 function Object:_update(dt)
     local pendingToRemove = self._pendingToRemove
-    for i = 1, #pendingToRemove do
-        local child = pendingToRemove[i]
-        table.removeItem(self.children, child)
-    end
     if #pendingToRemove ~= 0 then
+        for i = 1, #pendingToRemove do
+            local child = pendingToRemove[i]
+            table.removeItem(self.children, child)
+        end
         self._childCount = #self.children
         self._pendingToRemove = {}
     end
@@ -181,11 +181,11 @@ function Object:postUpdate(dt) end
 --- @protected
 function Object:_draw()
     local pendingToRemove = self._pendingToRemove
-    for i = 1, #pendingToRemove do
-        local child = pendingToRemove[i]
-        table.removeItem(self.children, child)
-    end
     if #pendingToRemove ~= 0 then
+        for i = 1, #pendingToRemove do
+            local child = pendingToRemove[i]
+            table.removeItem(self.children, child)
+        end
         self._pendingToRemove = {}
     end
     self:draw()
@@ -207,10 +207,12 @@ function Object:_input(e)
     if shouldUpdate then
         self:input(e)
     end
-    for i = 1, self:getChildCount() do
-        local object = self.children[i] --- @type comet.core.Object
-        if object and object.exists and object:shouldUpdate() then
-            object:_input(e)
+    if self.children then
+        for i = 1, self:getChildCount() do
+            local object = self.children[i] --- @type comet.core.Object
+            if object and object.exists and object:shouldUpdate() then
+                object:_input(e)
+            end
         end
     end
     if shouldUpdate then

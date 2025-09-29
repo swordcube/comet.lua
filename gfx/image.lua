@@ -70,10 +70,20 @@ function Image:setShader(shader)
 end
 
 --- Returns the transform of this image
+--- @param accountForParent boolean?
+--- @param accountForCamera boolean?
 --- @return love.Transform
-function Image:getTransform()
+function Image:getTransform(accountForParent, accountForCamera)
+    if accountForParent == nil then
+        accountForParent = true
+    end
+    if accountForCamera == nil then
+        accountForCamera = true
+    end
     local transform = self._transform:reset()
-    transform = self:getParentTransform(transform)
+    if accountForParent then
+        transform = self:getParentTransform(transform, accountForCamera)
+    end
 
     -- position
     transform:translate(self.position.x + self.offset.x, self.position.y + self.offset.y)

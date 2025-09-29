@@ -36,7 +36,7 @@ local function switchActiveImage(img)
     end
     -- Activate spritebatch if image was not nil
     if img then
-        local isFilteredImage = type(img) == "table" and img._type == "FilteredImage"
+        local isFilteredImage = img._type == "FilteredImage"
         if isFilteredImage then
             img.image:setFilter(img.filter, img.filter)
         end
@@ -59,7 +59,7 @@ end
 
 local function flushAndDraw(image, ...)
     autobatch.flush()
-    if type(image) == "table" and image._type == "FilteredImage" then
+    if image._type == "FilteredImage" then
         image.image:setFilter(image.filter, image.filter)
         image = image.image
     end
@@ -70,7 +70,7 @@ end
 function autobatch.draw(image, ...)
     -- Only Textures (Image or Canvas) can be batched -- if the image is
     -- neither of these then we draw normally instead
-    if not ((type(image) == "table" and image._type == "FilteredImage") or image:typeOf("Texture")) then
+    if not (image._type == "FilteredImage" or image:typeOf("Texture")) then
         return flushAndDraw(image, ...)
     end
     if image ~= autobatch.image then

@@ -16,10 +16,20 @@ end
 --- Returns the transform of this backdrop
 --- @param gridX integer
 --- @param gridY integer
+--- @param accountForParent boolean?
+--- @param accountForCamera boolean?
 --- @return love.Transform
-function Backdrop:getTransform(gridX, gridY)
+function Backdrop:getTransform(accountForParent, accountForCamera)
+    if accountForParent == nil then
+        accountForParent = true
+    end
+    if accountForCamera == nil then
+        accountForCamera = true
+    end
     local transform = self._transform:reset()
-    transform = self:getParentTransform(transform)
+    if accountForParent then
+        transform = self:getParentTransform(transform, accountForCamera)
+    end
 
     -- position
     transform:translate(self.position.x + self.offset.x, self.position.y + self.offset.y)

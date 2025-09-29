@@ -359,6 +359,11 @@ function Tween:getProgress()
     return math.min(self.time / self.duration, 1)
 end
 
+function Tween:getEasedProgress()
+    local start, value = 0.0, 1.0
+    return self.ease(math.max(self.time, 0.0), start, value - start, self.duration)
+end
+
 function Tween:update(dt)
     if self.paused then
         return
@@ -402,6 +407,12 @@ Tween._update = Tween.update
 
 function Tween:shouldUpdate()
     return true
+end
+
+function Tween:cancel()
+    self.active = false
+    self.paused = true
+    self:destroy()
 end
 
 function Tween:destroy()
