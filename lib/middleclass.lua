@@ -83,6 +83,7 @@ local function _createClass(name, path, super)
     local dict = {}
     dict.__index = dict
 
+    local rawPath = path
     local parentDir = comet.parentDirectory .. "."
     if path and path:startsWith(parentDir) then
         path = "comet." .. path:sub(#parentDir + 1)
@@ -96,6 +97,7 @@ local function _createClass(name, path, super)
     local aClass = {
         name = name,
         path = path,
+        rawPath = rawPath,
         super = super,
         static = {},
         __instanceDict = dict,

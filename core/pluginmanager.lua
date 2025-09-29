@@ -28,4 +28,11 @@ function PluginManager:draw()
     end
 end
 
+function PluginManager:input(e)
+    for i = 1, #self.plugins do
+        local plugin = self.plugins[i] --- @type comet.core.Plugin
+        plugin:input(e)
+    end
+end
+
 return PluginManager

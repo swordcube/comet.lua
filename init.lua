@@ -397,6 +397,7 @@ function comet.handleInputEvent(e)
         screen:_input(e)
     end
     comet.signals.onInput:emit(e)
+    comet.plugins:input(e)
 end
 
 function comet.handleKeyPress(key, _, isRepeat)

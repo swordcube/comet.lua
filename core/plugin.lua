@@ -8,4 +8,6 @@ function Plugin:update(dt) end
 
 function Plugin:draw() end
 
+function Plugin:input(e) end
+
 return Plugin
