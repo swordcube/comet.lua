@@ -36,14 +36,14 @@ function Sound:getLoveSource()
 end
 
 function Sound:setSource(src)
-    if type(src) == "string" then
-        src = comet.mixer:getSource(src)
-    end
     if self._source then
         self._source:dereference()
     end
     if self._loveSource then
         self._loveSource:release()
+    end
+    if type(src) == "string" then
+        src = comet.mixer:getSource(src)
     end
     self._source = src
     self._loveSource = src.data:clone()
