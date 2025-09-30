@@ -1,5 +1,12 @@
 --- @class comet.core.Screen : comet.core.Object
-local Screen = Object:subclass("Screen", ...)
+local Screen, super = Object:subclass("Screen", ...)
+
+function Screen:__init__()
+    super.__init__(self)
+
+    --- @type function?
+    self._constructor = nil --- @protected
+end
 
 function Screen:enter() end
 function Screen:postEnter() end

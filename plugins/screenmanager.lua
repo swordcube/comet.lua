@@ -15,6 +15,7 @@ function ScreenManager.switchTo(newScreen)
     local new = nil --- @type comet.core.Screen
     if type(newScreen) == "function" then
         new = newScreen()
+        new._constructor = newScreen
     else
         new = newScreen
     end
