@@ -32,13 +32,15 @@ function FrameCollection.loadSparrowAtlas(img, xml)
             goto continue
         end
         local animationName = string.sub(child.att.name, 1, string.len(child.att.name) - 4)
-        frames:addFrame(animationName, AnimationFrame:new(
+        local frame = AnimationFrame:new(
             child.att.name, img,
             child.att.x, child.att.y,
-            child.att.frameX and -child.att.frameX or 0.0, child.att.frameY and -child.att.frameY or 0.0,
-            child.att.w or child.att.width, child.att.h or child.att.height,
+            child.att.frameX and -tonumber(child.att.frameX) or 0.0, child.att.frameY and -tonumber(child.att.frameY) or 0.0,
+            tonumber(child.att.w or child.att.width), tonumber(child.att.h or child.att.height),
+            child.att.frameWidth and tonumber(child.att.frameWidth) or tonumber(child.att.w or child.att.width), child.frameHeight and tonumber(child.frameHeight) or (child.att.h or child.att.height),
             child.att.rotated and (string.lower(child.att.rotated) == "true" and -90.0 or 0.0) or 0.0
-        ))
+        )
+        frames:addFrame(animationName, frame)
         ::continue::
     end
     for _, f in pairs(frames._frames) do

@@ -75,7 +75,8 @@ comet = {
     signals = {
         -- This signal has the following attached to it's listeners:
         -- `event`
-        onInput = nil, --- @type comet.util.Signal
+        preInput = nil, --- @type comet.util.Signal
+        postInput = nil, --- @type comet.util.Signal
 
         preUpdate = nil, --- @type comet.util.Signal
         postUpdate = nil, --- @type comet.util.Signal
@@ -265,7 +266,8 @@ function comet.init(params)
     else
         ScreenManager.switchTo(params.screen or Screen:new())
     end
-    comet.signals.onInput = cometreq("util.signal"):new()
+    comet.signals.preInput = cometreq("util.signal"):new()
+    comet.signals.postInput = cometreq("util.signal"):new()
 
     comet.signals.preUpdate = cometreq("util.signal"):new()
     comet.signals.postUpdate = cometreq("util.signal"):new()
@@ -392,12 +394,13 @@ function comet.getTPS()
 end
 
 function comet.handleInputEvent(e)
+    comet.signals.preInput:emit(e)
     local screen = ScreenManager.instance.current
     if screen then
         screen:_input(e)
     end
-    comet.signals.onInput:emit(e)
     comet.plugins:input(e)
+    comet.signals.postInput:emit(e)
 end
 
 function comet.handleKeyPress(key, _, isRepeat)

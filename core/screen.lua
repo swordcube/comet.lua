@@ -4,6 +4,20 @@ local Screen, super = Object:subclass("Screen", ...)
 function Screen:__init__()
     super.__init__(self)
 
+    --- Whether or not to keep updating this screen
+    --- when a sub screen is opened.
+    self.persistentUpdate = true
+
+    --- Whether or not to keep drawing this screen
+    --- when a sub screen is opened.
+    self.persistentDraw = true
+
+    --- @type comet.core.Screen?
+    self._subScreen = nil --- @protected
+
+    --- @type boolean
+    self._isSubScreen = false --- @protected
+
     --- @type function?
     self._constructor = nil --- @protected
 end
@@ -50,6 +64,62 @@ function Screen:forceSwitchTo(newScreen)
     local sm = ScreenManager.instance --- @type comet.plugins.ScreenManager
     sm.pending = new -- make this the pending screen
     sm:_switchScreen() -- then force the switch
+end
+
+function Screen:openSubScreen(newScreen)
+    if self._subScreen then
+        self._subScreen:close()
+    end
+    local new = nil --- @type comet.core.Screen
+    if type(newScreen) == "function" then
+        new = newScreen()
+    else
+        new = newScreen
+    end
+    self._subScreen = new
+    self._subScreen._isSubScreen = true
+    self._subScreen.parent = self
+
+    new:enter()
+    new:startIntro()
+    new:postEnter()
+end
+
+function Screen:getSubScreen()
+    return self._subScreen
+end
+
+--- Closes this sub screen and removes it from it's parent screen
+--- 
+--- If this is not a sub screen, this will do nothing
+function Screen:close()
+    if not self._isSubScreen then
+        return
+    end
+    if self.parent then
+        self.parent._subScreen = nil
+        self.parent = nil
+    end
+    self:exit()
+    self:destroy()
+end
+
+function Screen:_update(dt)
+    if self.persistentUpdate or not self._subScreen then
+        super._update(self, dt)
+    end
+    if self._subScreen and self._subScreen.exists then
+        self._subScreen:_update(dt)
+    end
+end
+
+function Screen:_draw()
+    if self.persistentDraw or not self._subScreen then
+        super._draw(self)
+    end
+    if self._subScreen and self._subScreen.exists and self._subScreen.visible then
+        self._subScreen:_draw()
+    end
 end
 
 return Screen

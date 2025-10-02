@@ -9,10 +9,12 @@ local AnimationFrame = Class("AnimationFrame", ...)
 ---@param y number
 ---@param offsetX number
 ---@param offsetY number
----@param width number
----@param height number
+---@param clipWidth number
+---@param clipHeight number
+---@param frameWidth number
+---@param frameHeight number
 ---@param rotation number
-function AnimationFrame:__init__(name, texture, x, y, offsetX, offsetY, width, height, rotation)
+function AnimationFrame:__init__(name, texture, x, y, offsetX, offsetY, clipWidth, clipHeight, frameWidth, frameHeight, rotation)
     self.name = name
 
     self.texture = texture --- @type comet.gfx.Texture
@@ -20,15 +22,20 @@ function AnimationFrame:__init__(name, texture, x, y, offsetX, offsetY, width, h
 
     self.position = Vec2:new(x, y) --- @type comet.math.Vec2
     self.offset = Vec2:new(offsetX, offsetY) --- @type comet.math.Vec2
-    self.width = width --- @type number
-    self.height = height --- @type number
-    self.rotation = rotation --- @type number
 
-    self.quad = love.graphics.newQuad(x, y, width, height, texture:getWidth(), texture:getHeight()) --- @type love.Quad
+    self.clipWidth = clipWidth --- @type number
+    self.clipHeight = clipHeight --- @type number
+
+    self.frameWidth = frameWidth or clipWidth --- @type number
+    self.frameHeight = frameHeight or clipHeight --- @type number
+
+    self.rotation = rotation or 0.0 --- @type number
+
+    self.quad = love.graphics.newQuad(x, y, clipWidth, clipHeight, texture:getWidth(), texture:getHeight()) --- @type love.Quad
 end
 
 function AnimationFrame:updateQuad()
-    self.quad:setViewport(self.position.x, self.position.y, self.width, self.height, self.texture:getWidth(), self.texture:getHeight())
+    self.quad:setViewport(self.position.x, self.position.y, self.clipWidth, self.clipHeight, self.texture:getWidth(), self.texture:getHeight())
 end
 
 function AnimationFrame:destroy()

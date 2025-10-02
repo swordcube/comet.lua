@@ -181,7 +181,7 @@ function AnimatedImage:getOriginalWidth(frame)
         return 0
     end
     local anim = self._animations[self._curAnim]
-    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or 1) or frame).width
+    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or frame) or frame).frameWidth
 end
 
 --- Returns the unscaled height of a given frame.
@@ -193,7 +193,7 @@ function AnimatedImage:getOriginalHeight(frame)
         return 0
     end
     local anim = self._animations[self._curAnim]
-    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or 1) or frame).height
+    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or frame) or frame).frameHeight
 end
 
 --- Returns the width of a given frame (accounting for this image's scale).
@@ -205,7 +205,7 @@ function AnimatedImage:getWidth(frame)
         return 0
     end
     local anim = self._animations[self._curAnim]
-    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or 1) or frame).width * math.abs(self.scale.x)
+    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or frame) or frame).frameWidth * math.abs(self.scale.x)
 end
 
 --- Returns the height of a given frame (accounting for this image's scale).
@@ -217,7 +217,7 @@ function AnimatedImage:getHeight(frame)
         return 0
     end
     local anim = self._animations[self._curAnim]
-    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or 1) or frame).height * math.abs(self.scale.y)
+    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or frame) or frame).frameHeight * math.abs(self.scale.y)
 end
 
 --- @param newWidth   number
@@ -279,7 +279,7 @@ function AnimatedImage:getTransform(accountForParent, accountForCamera)
     -- frame & anim offset
     local anim = self._animations[self._curAnim]
     transform:translate(frame.offset.x + (anim and anim.offset.x or 0.0), frame.offset.y + (anim and anim.offset.y or 0.0))
-    transform:translate(0, math.fastsin(math.rad(frame.rotation)) * -frame.width)
+    transform:translate(0, math.fastsin(math.rad(frame.rotation)) * -frame.frameWidth)
     transform:rotate(math.rad(frame.rotation))
 
     return transform
