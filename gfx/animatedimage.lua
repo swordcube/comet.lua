@@ -123,6 +123,10 @@ end
 --- @param x    number  The new X offset for this animation.
 --- @param y    number  The new Y offset for this animation.
 function AnimatedImage:setAnimationOffset(name, x, y)
+    if not self:hasAnimation(name) then
+        Log.warn("Animation '" .. name .. "' does not exist!")
+        return
+    end
     self._animations[name].offset:set(x, y)
 end
 
