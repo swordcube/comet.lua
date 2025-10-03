@@ -173,7 +173,7 @@ Timer = cometreq("util.timer") --- @type comet.util.Timer
 local gfx = love.graphics
 local middleclass = cometreq("lib.middleclass") --- @type comet.lib.MiddleClass
 
-local currentUpdate, nextUpdate = 0.0, 0.0
+local currentUpdate = 0.0
 local debugFPSFont = nil --- @type love.Font
 
 local gamePos = {0, 0}
@@ -506,9 +506,9 @@ function comet.run()
             rawDt = dtLimit
         end
         comet._rawDt = rawDt / 1000000000.0
-        currentUpdate = currentUpdate + comet._rawDt
+        currentUpdate = currentUpdate + rawDt
 
-        if currentUpdate >= nextUpdate then
+        if currentUpdate >= framePeriod then
             local dt = math.min(love.timer.step(), 0.1)
             comet._dt = dt
 
@@ -532,10 +532,10 @@ function comet.run()
                     comet.sleep(sleepDuration * 0.9)
                 end
             end
-            nextUpdate = nextUpdate + (framePeriod / 1000000000.0)
+            currentUpdate = 0.0
         end
-        if nextUpdate < 0 then
-            nextUpdate = 0
+        if currentUpdate < 0 then
+            currentUpdate = 0
         end
         if comet.settings.parallelUpdate then
             love.update(comet._rawDt)

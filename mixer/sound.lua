@@ -110,7 +110,7 @@ function Sound:setPitch(p)
     if not src then
         return
     end
-    src:setPitch(p)
+    src:setPitch(math.clamp(p, 0.001, 1000.0))
 end
 
 function Sound:isLooping()

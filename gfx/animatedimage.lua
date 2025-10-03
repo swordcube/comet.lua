@@ -82,12 +82,28 @@ function AnimatedImage:setShader(shader)
     self._shader:reference()
 end
 
+--- Adds an animation purely by frame indices.
+--- 
+--- Use this if your using a frame collection loaded as a grid (`FrameCollection.fromTexture`),
+--- as there is no animation names available in them.
+--- 
+--- Otherwise use `addAnimationByName()` or `addAnimationByIndices()`.
+--- 
+--- @param shortcut string?    A shortcut name to use when playing the animation.
+--- @param indices  integer[]  The indices of the frames to use.
+--- @param fps      number     The framerate of the animation.
+--- @param loop     boolean?   Whether or not to loop the animation. (optional, default=`false`)
+function AnimatedImage:addAnimation(shortcut, indices, fps, loop)
+    loop = loop ~= nil and loop or false
+    self._animations[shortcut] = {name = "grid", fps = fps, indices = indices, loop = loop, offset = Vec2:new()}
+end
+
 --- @param shortcut    string?   A shortcut name to use when playing the animation.
 --- @param name        string    The raw name of the animation.
 --- @param fps         number    The framerate of the animation.
 --- @param loop        boolean?  Whether or not to loop the animation. (optional, default=`false`)
 --- @param skipWarning boolean? Whether or not to skip warnings. (optional, default=`false`)
-function AnimatedImage:addAnimation(shortcut, name, fps, loop, skipWarnings)
+function AnimatedImage:addAnimationByName(shortcut, name, fps, loop, skipWarnings)
     if skipWarnings == nil then
         skipWarnings = false
     end

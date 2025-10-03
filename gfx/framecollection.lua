@@ -17,7 +17,6 @@ end
 --- @param img comet.gfx.Image|string  The image to load the atlas from.
 --- @param xml string                  The XML file path/string to load the atlas from.
 function FrameCollection.loadSparrowAtlas(img, xml)
-    -- TODO: support rotated frames
     if type(img) == "string" then
         img = comet.gfx:getTexture(img)
     end
@@ -49,6 +48,27 @@ function FrameCollection.loadSparrowAtlas(img, xml)
             local bID = tonumber(string.sub(b.name, string.len(b.name) - 3))
             return aID < bID
         end)
+    end
+    return frames
+end
+
+function FrameCollection.fromTexture(img, gridWidth, gridHeight)
+    if type(img) == "string" then
+        img = comet.gfx:getTexture(img)
+    end
+    local frameX, frameY, frameID = 0, 0, 1
+    local frames = FrameCollection:new() --- @type comet.gfx.FrameCollection
+
+    while true do
+        if frameX >= img:getWidth() then
+            frameX = 0
+            frameY = frameY + gridHeight
+        end
+        if frameY >= img:getHeight() then
+            break
+        end
+        frames:addFrame("grid", AnimationFrame:new("frame" .. frameID, img, frameX, frameY, gridWidth, gridHeight, gridWidth, gridHeight, 0.0))
+        frameX = frameX + gridWidth
     end
     return frames
 end
