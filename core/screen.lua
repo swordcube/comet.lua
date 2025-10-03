@@ -113,6 +113,15 @@ function Screen:_update(dt)
     end
 end
 
+function Screen:_input(e)
+    if self.persistentUpdate or not self._subScreen then
+        super._input(self, e)
+    end
+    if self._subScreen and self._subScreen.exists then
+        self._subScreen:_input(e)
+    end
+end
+
 function Screen:_draw()
     if self.persistentDraw or not self._subScreen then
         super._draw(self)

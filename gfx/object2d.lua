@@ -72,6 +72,22 @@ function Object2D:getTransform()
     return transform
 end
 
+local function processChild(child, minX, minY, maxX, maxY)
+    if child and child.exists and child.visible and child.getBoundingBox then
+        local box = child:getBoundingBox(child:getTransform(), child._rect)
+        if box.x < minX then minX = box.x end
+        if box.x + box.width > maxX then maxX = box.x + box.width end
+        if box.y < minY then minY = box.y end
+        if box.y + box.height > maxY then maxY = box.y + box.height end
+    end
+    if child.getChildCount and child.children then
+        for i = 1, child:getChildCount() do
+            minX, minY, maxX, maxY = processChild(child.children[i], minX, minY, maxX, maxY)
+        end
+    end
+    return minX, minY, maxX, maxY
+end
+
 -- TODO: does this need better documentation???? i'm too tired to think of anything better
 
 --- Returns the total bounding box of the children inside of this object.
@@ -86,22 +102,7 @@ function Object2D:getChildrenBoundingBox(rect)
     end
     local minX, minY, maxX, maxY = math.huge, math.huge, -math.huge, -math.huge
     for i = 1, self:getChildCount() do
-        local child = self.children[i]
-        if child and child.exists and child.visible and child.getBoundingBox then
-            local box = child:getBoundingBox(child:getTransform(), child._rect)
-            if box.x < minX then
-                minX = box.x
-            end
-            if box.x + box.width > maxX then
-                maxX = box.x + box.width
-            end
-            if box.y < minY then
-                minY = box.y
-            end
-            if box.y + box.height > maxY then
-                maxY = box.y + box.height
-            end
-        end
+        minX, minY, maxX, maxY = processChild(self.children[i], minX, minY, maxX, maxY)
     end
     if minX == math.huge then
         rect:set(0, 0, 0, 0)
@@ -137,6 +138,8 @@ function Object2D:screenCenter(axes)
     end
     axes = string.lower(axes)
 
+    -- TODO: maybe subtracting by box x/y isn't ideal?
+    -- it breaks object centering in certain scenarios
     if axes == "x" or axes == "xy" then
         self.position.x = (right / 2.0) - box.x
     end

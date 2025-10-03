@@ -67,7 +67,7 @@ function FrameCollection.fromTexture(img, gridWidth, gridHeight)
         if frameY >= img:getHeight() then
             break
         end
-        frames:addFrame("grid", AnimationFrame:new("frame" .. frameID, img, frameX, frameY, gridWidth, gridHeight, gridWidth, gridHeight, 0.0))
+        frames:addFrame("grid", AnimationFrame:new("frame" .. frameID, img, frameX, frameY, 0, 0, gridWidth, gridHeight, gridWidth, gridHeight, 0.0))
         frameX = frameX + gridWidth
     end
     return frames
