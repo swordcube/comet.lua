@@ -29,9 +29,12 @@ function Texture:__init__(image, key)
         else
             data = image
         end
-        self._loveImage = gfx.newImage(data)
-        data:release()
-        
+        if data:typeOf("Texture") then
+            self._loveImage = data
+        else
+            self._loveImage = gfx.newImage(data)
+            data:release()
+        end
         self.linearImage = {_type = "FilteredImage", image = self._loveImage, filter = "linear"}
         self.nearestImage = {_type = "FilteredImage", image = self._loveImage, filter = "nearest"}
     end
