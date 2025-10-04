@@ -251,6 +251,18 @@ function AnimatedImage:screenCenter(axes)
     Image.screenCenter(self, axes)
 end
 
+--- Returns the tint of this image
+--- @return comet.gfx.Color
+function AnimatedImage:getTint()
+    return self._tint
+end
+
+--- Sets the tint of this image
+--- @param tint comet.gfx.Color
+function AnimatedImage:setTint(tint)
+    self._tint = Color:new(tint)
+end
+
 --- Returns the transform of this image
 --- @param accountForParent boolean?
 --- @param accountForCamera boolean?
