@@ -2,7 +2,7 @@
 --- A basic object for displaying animated images, typically loaded through the `FrameCollection` class.
 local AnimatedImage, super = Object2D:subclass("AnimatedImage", ...)
 
-local math = math -- Faster access with local variable
+local abs, floor, rad, fastsin, wrap, clamp = math.abs, math.floor, math.rad, math.fastsin, math.wrap, math.clamp
 local gfx = love.graphics -- Faster access with local variable
 
 function AnimatedImage:__init__(x, y)
@@ -225,7 +225,7 @@ function AnimatedImage:getWidth(frame)
         return 0
     end
     local anim = self._animations[self._curAnim]
-    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or frame) or frame).frameWidth * math.abs(self.scale.x)
+    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or frame) or frame).frameWidth * abs(self.scale.x)
 end
 
 --- Returns the height of a given frame (accounting for this image's scale).
@@ -237,7 +237,7 @@ function AnimatedImage:getHeight(frame)
         return 0
     end
     local anim = self._animations[self._curAnim]
-    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or frame) or frame).frameHeight * math.abs(self.scale.y)
+    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or frame) or frame).frameHeight * abs(self.scale.y)
 end
 
 --- @param newWidth   number
@@ -266,13 +266,17 @@ end
 --- Returns the transform of this image
 --- @param accountForParent boolean?
 --- @param accountForCamera boolean?
+--- @param accountForCentering boolean?
 --- @return love.Transform
-function AnimatedImage:getTransform(accountForParent, accountForCamera)
+function AnimatedImage:getTransform(accountForParent, accountForCamera, accountForCentering)
     if accountForParent == nil then
         accountForParent = true
     end
     if accountForCamera == nil then
         accountForCamera = true
+    end
+    if accountForCentering == nil then
+        accountForCentering = false
     end
     local transform = self._transform:reset()
     if accountForParent then
@@ -283,19 +287,19 @@ function AnimatedImage:getTransform(accountForParent, accountForCamera)
     local frame = self._frame
     transform:translate(self.position.x + self.offset.x, self.position.y + self.offset.y)
 
-    if self.centered then
-        transform:translate(-math.abs(self:getWidth(1)) * 0.5, -math.abs(self:getHeight(1)) * 0.5)
+    if accountForCentering and self.centered then
+        transform:translate(-abs(self:getWidth(1)) * 0.5, -abs(self:getHeight(1)) * 0.5)
     end
     
     -- origin
-    local ox, oy = math.abs(self:getWidth(1)) * self.origin.x, math.abs(self:getHeight(1)) * self.origin.y
+    local ox, oy = abs(self:getWidth(1)) * self.origin.x, abs(self:getHeight(1)) * self.origin.y
     transform:translate(ox, oy)
-    transform:rotate(math.rad(self.rotation))
+    transform:rotate(rad(self.rotation))
     transform:translate(-ox, -oy)
 
     -- scale
-    local ox2, oy2 = math.abs(self:getOriginalWidth(1)) * 0.5, math.abs(self:getOriginalHeight(1)) * 0.5
-    transform:scale(math.abs(self.scale.x), math.abs(self.scale.y))
+    local ox2, oy2 = abs(self:getOriginalWidth(1)) * 0.5, abs(self:getOriginalHeight(1)) * 0.5
+    transform:scale(abs(self.scale.x), abs(self.scale.y))
     
     if self.scale.x < 0.0 then
         transform:translate(ox2, oy2)
@@ -311,9 +315,12 @@ function AnimatedImage:getTransform(accountForParent, accountForCamera)
     -- frame & anim offset
     local anim = self._animations[self._curAnim]
     transform:translate(frame.offset.x + (anim and anim.offset.x or 0.0), frame.offset.y + (anim and anim.offset.y or 0.0))
-    transform:translate(0, math.fastsin(math.rad(frame.rotation)) * -frame.frameWidth)
-    transform:rotate(math.rad(frame.rotation))
-
+    
+    -- frame rotation
+    if abs(frame.rotation) % 360 > 0.001 then
+        transform:translate(0, fastsin(rad(frame.rotation)) * -frame.frameWidth)
+        transform:rotate(rad(frame.rotation))
+    end
     return transform
 end
 
@@ -344,9 +351,9 @@ function AnimatedImage:update(dt)
         local newFrame = self._curFrame + 1
         local animFrames = anim.indices or self._frames:getFrames(anim.name)
         if anim.loop then
-            newFrame = math.wrap(newFrame, 1, #animFrames)
+            newFrame = wrap(newFrame, 1, #animFrames)
         else
-            newFrame = math.clamp(newFrame, 1, #animFrames)
+            newFrame = clamp(newFrame, 1, #animFrames)
             if newFrame >= #animFrames then
                 self._playing = false
             end
@@ -360,7 +367,7 @@ function AnimatedImage:draw()
     if self.alpha <= 0.0001 or not self._frame or not self._frame.texture then
         return
     end
-    local transform = self:getTransform()
+    local transform = self:getTransform(true, true, true)
     local box = self:getBoundingBox(transform, self._rect)
     if not self:isOnScreen(box) then
         return

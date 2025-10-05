@@ -74,7 +74,7 @@ end
 
 local function processChild(child, minX, minY, maxX, maxY)
     if child and child.exists and child.visible and child.getBoundingBox then
-        local box = child:getBoundingBox(child:getTransform(), child._rect)
+        local box = child:getBoundingBox(child:getTransform(true, true, true), child._rect)
         if box.x < minX then minX = box.x end
         if box.x + box.width > maxX then maxX = box.x + box.width end
         if box.y < minY then minY = box.y end

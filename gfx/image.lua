@@ -2,7 +2,7 @@
 --- A basic object for displaying static images.
 local Image, super = Object2D:subclass("Image", ...)
 
-local math = math -- Faster access with local variable
+local abs, floor, rad, fastsin, wrap, clamp, min, max = math.abs, math.floor, math.rad, math.fastsin, math.wrap, math.clamp, math.min, math.max
 local gfx = love.graphics -- Faster access with local variable
 
 function Image:__init__(image)
@@ -70,15 +70,19 @@ function Image:setShader(shader)
 end
 
 --- Returns the transform of this image
---- @param accountForParent boolean?
---- @param accountForCamera boolean?
+--- @param accountForParent    boolean?
+--- @param accountForCamera    boolean?
+--- @param accountForCentering boolean?
 --- @return love.Transform
-function Image:getTransform(accountForParent, accountForCamera)
+function Image:getTransform(accountForParent, accountForCamera, accountForCentering)
     if accountForParent == nil then
         accountForParent = true
     end
     if accountForCamera == nil then
         accountForCamera = true
+    end
+    if accountForCentering == nil then
+        accountForCentering = false
     end
     local transform = self._transform:reset()
     if accountForParent then
@@ -87,18 +91,18 @@ function Image:getTransform(accountForParent, accountForCamera)
 
     -- position
     transform:translate(self.position.x + self.offset.x, self.position.y + self.offset.y)
-    if self.centered then
-        transform:translate(-math.abs(self:getWidth()) * 0.5, -math.abs(self:getHeight()) * 0.5)
+    if accountForCentering and self.centered then
+        transform:translate(-abs(self:getWidth()) * 0.5, -abs(self:getHeight()) * 0.5)
     end
     -- origin
-    local ox, oy = math.abs(self:getWidth()) * self.origin.x, math.abs(self:getHeight()) * self.origin.y
+    local ox, oy = abs(self:getWidth()) * self.origin.x, abs(self:getHeight()) * self.origin.y
     transform:translate(ox, oy)
-    transform:rotate(math.rad(self.rotation))
+    transform:rotate(rad(self.rotation))
     transform:translate(-ox, -oy)
 
     -- scale
-    local ox2, oy2 = math.abs(self:getOriginalWidth()) * 0.5, math.abs(self:getOriginalHeight()) * 0.5
-    transform:scale(math.abs(self.scale.x), math.abs(self.scale.y))
+    local ox2, oy2 = abs(self:getOriginalWidth()) * 0.5, abs(self:getOriginalHeight()) * 0.5
+    transform:scale(abs(self.scale.x), abs(self.scale.y))
 
     if self.scale.x < 0.0 then
         transform:translate(ox2, oy2)
@@ -130,10 +134,10 @@ function Image:getBoundingBox(trans, rect)
     local x3, y3 = trans:transformPoint(w, h)
     local x4, y4 = trans:transformPoint(0, h)
 
-    local minX = math.min(x1, x2, x3, x4)
-    local minY = math.min(y1, y2, y3, y4)
-    local maxX = math.max(x1, x2, x3, x4)
-    local maxY = math.max(y1, y2, y3, y4)
+    local minX = min(x1, x2, x3, x4)
+    local minY = min(y1, y2, y3, y4)
+    local maxX = max(x1, x2, x3, x4)
+    local maxY = max(y1, y2, y3, y4)
 
     rect:set(minX, minY, maxX - minX, maxY - minY)
     return rect
@@ -173,7 +177,7 @@ function Image:draw()
     if self.alpha <= 0.0001 or not self.texture then
         return
     end
-    local transform = self:getTransform()
+    local transform = self:getTransform(true, true, true)
     local box = self:getBoundingBox(transform, self._rect)
     if not self:isOnScreen(box) then
         return
@@ -221,7 +225,7 @@ function Image:getWidth()
     if not self.texture then
         return 0
     end
-    return self.texture:getWidth() * math.abs(self.scale.x)
+    return self.texture:getWidth() * abs(self.scale.x)
 end
 
 --- Returns the current height of this image.
@@ -230,7 +234,7 @@ function Image:getHeight()
     if not self.texture then
         return 0
     end
-    return self.texture:getHeight() * math.abs(self.scale.y)
+    return self.texture:getHeight() * abs(self.scale.y)
 end
 
 --- @param newWidth   number
