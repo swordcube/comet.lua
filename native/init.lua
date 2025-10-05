@@ -33,6 +33,35 @@ ffi.cdef [[\
 
 	void SDL_DelayPrecise(uint64_t ns);
 	uint64_t SDL_GetTicksNS(void);
+
+	typedef struct SDL_DialogFileFilter
+	{
+		const char *name;
+		const char *pattern;
+	} SDL_DialogFileFilter;
+
+	typedef enum SDL_FileDialogType
+	{
+		SDL_FILEDIALOG_OPENFILE,
+		SDL_FILEDIALOG_SAVEFILE,
+		SDL_FILEDIALOG_OPENFOLDER
+	} SDL_FileDialogType;
+
+	typedef void (*SDL_DialogFileCallback)(void *userdata, const char * const *filelist, int filter);
+	typedef uint32_t SDL_PropertiesID;
+
+	SDL_PropertiesID SDL_CreateProperties(void);
+	void SDL_DestroyProperties(SDL_PropertiesID props);
+
+	void SDL_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props);
+	
+	bool SDL_SetStringProperty(SDL_PropertiesID props, const char *name, const char *value);
+	bool SDL_SetBooleanProperty(SDL_PropertiesID props, const char *name, bool value);
+
+	bool SDL_SetPointerProperty(SDL_PropertiesID props, const char *name, void *value);
+	bool SDL_SetNumberProperty(SDL_PropertiesID props, const char *name, int64_t value);
+
+	const char* SDL_GetError(void);
 ]]
 
 ---
@@ -80,11 +109,89 @@ Native.AnsiColorCodes = {
     ["-1"] = {fgColor = string.char(27) .. "[0m",  bgColor = string.char(27) .. "[10m"}
 }
 
-function Native.askOpenFile(title, fileTypes)
-	return ""
+local function isempty(str)
+	return type(str) == "string" and (str == "" or str == nil)
 end
-function Native.askSaveAsFile(title, fileTypes, initialFile)
-	return ""
+
+Native.eventCallbackStorage = {}
+love.handlers.handlecustomfiledialog = function()
+    local data = Native.eventCallbackStorage[1]
+    if data and data.f then
+        data.f(table.unpack(data.args))
+    end
+    table.remove(Native.eventCallbackStorage, 1)
+end
+
+--- Reimplementation of love.window.showFileDialog
+---
+--- Main difference is the `filters` being an array instead of a map (they're unordered with no way to make them ordered in LuaJIT because `__pairs` isn't real!)
+---
+--- @param type "openfile"|"openfolder"|"savefile" File dialog type.
+--- @param callback function  Function with 3 parameters: files (array of full platform-dependent paths to selected files, empty if the dialog is canceled by the user), filtername (nil if not set), and errorstring (nil if no error)
+--- @param settings table  Look here for the fields of this parameter: https://www.love2d.org/wiki/love.window.showFileDialog
+function Native.showFileDialog(type, callback, settings)
+	-- referenced from https://github.com/love2d/love/blob/main/src/modules/window/sdl/Window.cpp#L1564
+	local sdltype = 0
+	if type == "openfile" then
+		sdltype = 0
+	elseif type == "savefile" then
+		sdltype = 1
+	elseif type == "openfolder" then
+		sdltype = 2
+	end
+	local props = SDL3.SDL_CreateProperties()
+	if not isempty(settings.title) then
+		SDL3.SDL_SetStringProperty(props, "SDL.filedialog.title", settings.title)
+	end
+	if not isempty(settings.acceptlabel) then
+		SDL3.SDL_SetStringProperty(props, "SDL.filedialog.accept", settings.acceptlabel)
+	end
+	if not isempty(settings.cancellabel) then
+		SDL3.SDL_SetStringProperty(props, "SDL.filedialog.cancel", settings.cancellabel)
+	end
+	if not isempty(settings.defaultname) then
+		SDL3.SDL_SetStringProperty(props, "SDL.filedialog.location", settings.defaultname)
+	end
+	if settings.attachtowindow then
+		SDL3.SDL_SetBoolProperty(props, "SDL.filedialog.window", SDL3.SDL_GL_GetCurrentWindow())
+	end
+	if settings.filters and #settings.filters ~= 0 then
+		local data = ffi.new("SDL_DialogFileFilter[" .. #settings.filters .. "]")
+		for i = 1, #settings.filters do
+			local f = ffi.new("SDL_DialogFileFilter")
+			f.name = settings.filters[i][1]
+			f.pattern = settings.filters[i][2]
+			data[i - 1] = f
+		end
+		SDL3.SDL_SetPointerProperty(props, "SDL.filedialog.filters", data)
+		SDL3.SDL_SetNumberProperty(props, "SDL.filedialog.nfilters", #settings.filters)
+	end
+	if settings.multiselect then
+		SDL3.SDL_SetBooleanProperty(props, "SDL.filedialog.many", 1)
+	end
+	SDL3.SDL_ShowFileDialogWithProperties(sdltype, ffi.cast("SDL_DialogFileCallback", function(userdata, filelist, filter)
+		local files = {}
+		local err = nil
+
+		if filelist ~= nil then
+			local i = 0
+			while filelist[i] ~= nil do
+				table.insert(files, ffi.string(filelist[i]))
+				i = i + 1
+			end
+		else
+			err = ffi.string(SDL3.SDL_GetError())
+		end
+		-- have to push an event cuz this stuff isn't super
+		-- thread-safe, meaning if something goes wrong in the callback
+		-- the app usually tends to freeze up, but worse could happen
+		table.insert(Native.eventCallbackStorage, {
+			f = callback,
+			args = {files, settings.filters[filter + 1], err}
+		})
+		love.event.push("handlecustomfiledialog")
+		SDL3.SDL_DestroyProperties(props)
+	end), nil, props)
 end
 function Native.setCursor(type) end
 function Native.setDarkMode(enable) end
