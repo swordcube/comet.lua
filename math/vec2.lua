@@ -1,22 +1,29 @@
-local middleclass = cometreq("lib.middleclass") --- @type comet.lib.MiddleClass
+local ffi = require("ffi")
+if not type(jit) == "table" or not jit.status() then
+    error("JIT must be enabled to use Vec2!")
+end
+ffi.cdef("typedef struct {double x,y;} comet_vec2;")
 
 ---@class comet.math.Vec2
-local Vec2 = Class("Vec2", ...)
+---@field x number
+---@field y number
+local Vec2 = {}
+Vec2.__index = Vec2
 
--- get a random function from Love2d or base lua, in that order.
-local rand = math.random
-if love and love.math then rand = love.math.random end
-
-function Vec2:__init__(x, y)
-    self.x = x and x or 0.0
-    self.y = y and y or 0.0
-end
+local _new = ffi.typeof("comet_vec2")
+local impl = {new = function(_, x, y)
+    local v = _new()
+    v.x = tonumber(x or 0.0) or 0.0
+    v.y = tonumber(y or 0.0) or 0.0
+    return v
+end}
+impl.mt = Vec2
 
 --- check if an object is a vector
 ---@param t any
 ---@return boolean
 local function isvector(t)
-    return middleclass.isinstanceof(t, Vec2)
+    return (type(t) == "cdata" and ffi.istype(t, "comet_vec2")) or getmetatable(t) == Vec2
 end
 
 --- set the values of the vector to something new
@@ -124,7 +131,7 @@ end
 --- meta function to change how vectors appear as string
 --- ex: print(vector(2,8)) - this prints 'instance of Vec2(2,8)'
 ---@return string
-function Vec2:__tostring__()
+function Vec2:__tostring()
     return "instance of Vec2(" .. self.x .. ", " .. self.y .. ")"
 end
 
@@ -217,4 +224,5 @@ function Vec2:unpack()
     return self.x, self.y
 end
 
-return Vec2
+ffi.metatype("comet_vec2", impl.mt)
+return impl

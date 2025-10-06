@@ -1,0 +1,107 @@
+--- @diagnostic disable: cast-local-type
+local ffi = require("ffi")
+local atan2, sqrt, cos, sin = math.atan2, math.sqrt, math.fastcos, math.fastsin
+
+if not type(jit) == "table" or not jit.status() then
+    error("JIT must be enabled to use Transform!")
+end
+ffi.cdef "typedef struct { double _m[9]; } comet_mat3;"
+
+---@class comet.math.Transform
+local Transform = {}
+Transform.__index = Transform
+
+local _new = ffi.typeof("comet_mat3")
+local impl = {new = function(_, x, y, width, height)
+    local v = _new()
+    v._m[0], v._m[1], v._m[2] = 1, 0, 0
+    v._m[3], v._m[4], v._m[5] = 0, 1, 0
+    v._m[6], v._m[7], v._m[8] = 0, 0, 1
+    return v
+end}
+impl.mt = Transform
+
+function Transform:reset()
+    local m = self._m
+    m[0], m[1], m[2] = 1, 0, 0
+    m[3], m[4], m[5] = 0, 1, 0
+    m[6], m[7], m[8] = 0, 0, 1
+    return self
+end
+
+function Transform:translate(x,y)
+    local m = self._m
+    local a,b,c,d = m[0],m[1],m[3],m[4]
+
+    local det = a*d - b*c
+    local sign = det < 0 and -1 or 1
+
+    local sx = sqrt(a*a + c*c) * sign
+    local sy = sqrt(b*b + d*d) * sign
+
+    m[6] = m[6] + (x * sx)
+    m[7] = m[7] + (y * sy)
+    return self
+end
+
+function Transform:scale(sx,sy)
+    local m = self._m
+    m[0] = m[0] * sx
+    m[1] = m[1] * sx
+    m[3] = m[3] * sy
+    m[4] = m[4] * sy
+    return self
+end
+
+function Transform:rotate(r)
+    local m = self._m
+    local cosr, sinr = cos(r), sin(r)
+    local a,b,c,d = m[0], m[1], m[3], m[4]
+    m[0] = a*cosr - c*sinr
+    m[1] = b*cosr - d*sinr
+    m[3] = a*sinr + c*cosr
+    m[4] = b*sinr + d*cosr
+    return self
+end
+
+function Transform:transformPoint(x,y)
+    local m = self._m
+    return x*m[0] + y*m[3] + m[6], x*m[1] + y*m[4] + m[7]
+end
+
+function Transform:apply(other)
+    local a = self._m
+    local b = other._m
+
+    -- cache a values because we’re overwriting in-place
+    local a0,a1,a3,a4,a6,a7 = a[0],a[1],a[3],a[4],a[6],a[7]
+
+    -- multiply 2x2 rotation/scale part
+    a[0] = a0*b[0] + a3*b[1]
+    a[1] = a1*b[0] + a4*b[1]
+    a[3] = a0*b[3] + a3*b[4]
+    a[4] = a1*b[3] + a4*b[4]
+
+    -- multiply translation
+    a[6] = a0*b[6] + a3*b[7] + a6
+    a[7] = a1*b[6] + a4*b[7] + a7
+
+    return self
+end
+
+function Transform:getRenderValues()
+    local m = self._m
+    local a,b,c,d = m[0],m[1],m[3],m[4]
+    local r = atan2(c,a)
+
+    local det = a*d - b*c
+    local sign = det < 0 and -1 or 1
+
+    local sx = sqrt(a*a + c*c) * sign
+    local sy = sqrt(b*b + d*d) * sign
+    
+    return m[6], m[7], r, sx, sy
+end
+
+ffi.metatype("comet_mat3", impl.mt)
+return impl

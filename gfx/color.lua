@@ -1,8 +1,16 @@
+local ffi = require("ffi")
+if not type(jit) == "table" or not jit.status() then
+    error("JIT must be enabled to use Color!")
+end
 local bit = require("bit")
-local middleclass = cometreq("lib.middleclass") --- @type comet.lib.MiddleClass
 
 --- @class comet.gfx.Color : comet.util.Class
 --- Basic class for representing RGBA color
+--- 
+--- @field r number Red channel of this color
+--- @field g number Green channel of this color
+--- @field b number Blue channel of this color
+--- @field a number Alpha channel of this color
 local Color = {}
 
 -- these are here for documentation purposes
@@ -23,22 +31,24 @@ Color.MAGENTA     = nil --- @type comet.gfx.Color
 Color.PINK        = nil --- @type comet.gfx.Color
 Color.BROWN       = nil --- @type comet.gfx.Color
 
-Color = Class("Color", ...)
+ffi.cdef "typedef struct { double r,g,b,a; } comet_color;"
 
-function Color:__init__(r, g, b, a)
-    -- Red channel of this color
-    self.r = 0
+Color = {}
+Color.__index = Color
 
-    -- Green channel of this color
-    self.g = 0
+local _new = ffi.typeof("comet_color")
+local impl = {new = function(_, r, g, b, a)
+    local v = _new()
+    Color.set(v, r, g, b, a)
+    return v
+end}
+impl.mt = Color
 
-    -- Blue channel of this color
-    self.b = 0
-
-    -- Alpha channel of this color
-    self.a = 0
-
-    self:set(r, g, b, a)
+--- check if an object is a color
+---@param t any
+---@return boolean
+local function iscolor(t)
+    return type(t) == "cdata"
 end
 
 -- Sets the RGBA values of this color and returns it
@@ -48,17 +58,16 @@ end
 --- @param a number        The alpha channel (ignored if hex color is provided)
 function Color:set(r, g, b, a)
     if not r then return self end
-    if type(r) == "table" then
-        if middleclass.isinstanceof(r, Color) then
-            self.r, self.g, self.b, self.a = r.r, r.g, r.b, r.a
-        else
-            self.r, self.g, self.b, self.a = r[1], r[2], r[3], r[4]
-        end
+    if iscolor(r) then
+        self.r, self.g, self.b, self.a = r.r, r.g, r.b, r.a
+        return self
+    elseif type(r) == "table" then
+        self.r, self.g, self.b, self.a = r[1], r[2], r[3], r[4]
         return self
     end
     if type(r) == "string" then
         r = tonumber(r:replace("#", "0x"))
-        return self
+        isRNumber = true
     end
     if type(r) == "number" and (not g or not b or not a) then
         self.r = bit.band(bit.rshift(r, 16), 0xFF) / 255
@@ -83,20 +92,21 @@ end
 
 -- these are here again to make them actually work in static context
 
-Color.static.TRANSPARENT = Color:new(0x00000000) --- @type comet.gfx.Color
-Color.static.WHITE       = Color:new(0xFFFFFFFF) --- @type comet.gfx.Color
-Color.static.GRAY        = Color:new(0xFF808080) --- @type comet.gfx.Color
-Color.static.BLACK       = Color:new(0xFF000000) --- @type comet.gfx.Color
-Color.static.RED         = Color:new(0xFFFF0000) --- @type comet.gfx.Color
-Color.static.ORANGE      = Color:new(0xFFFFA500) --- @type comet.gfx.Color
-Color.static.YELLOW      = Color:new(0xFFFFFF00) --- @type comet.gfx.Color
-Color.static.LIME        = Color:new(0xFF00FF00) --- @type comet.gfx.Color
-Color.static.GREEN       = Color:new(0xFF008000) --- @type comet.gfx.Color
-Color.static.CYAN        = Color:new(0xFF00FFFF) --- @type comet.gfx.Color
-Color.static.BLUE        = Color:new(0xFF0000FF) --- @type comet.gfx.Color
-Color.static.PURPLE      = Color:new(0xFF800080) --- @type comet.gfx.Color
-Color.static.MAGENTA     = Color:new(0xFFFF00FF) --- @type comet.gfx.Color
-Color.static.PINK        = Color:new(0xFFFFC0CB) --- @type comet.gfx.Color
-Color.static.BROWN       = Color:new(0xFF8B4513) --- @type comet.gfx.Color
+impl.TRANSPARENT = impl:new(0x00000000) --- @type comet.gfx.Color
+impl.WHITE       = impl:new(0xFFFFFFFF) --- @type comet.gfx.Color
+impl.GRAY        = impl:new(0xFF808080) --- @type comet.gfx.Color
+impl.BLACK       = impl:new(0xFF000000) --- @type comet.gfx.Color
+impl.RED         = impl:new(0xFFFF0000) --- @type comet.gfx.Color
+impl.ORANGE      = impl:new(0xFFFFA500) --- @type comet.gfx.Color
+impl.YELLOW      = impl:new(0xFFFFFF00) --- @type comet.gfx.Color
+impl.LIME        = impl:new(0xFF00FF00) --- @type comet.gfx.Color
+impl.GREEN       = impl:new(0xFF008000) --- @type comet.gfx.Color
+impl.CYAN        = impl:new(0xFF00FFFF) --- @type comet.gfx.Color
+impl.BLUE        = impl:new(0xFF0000FF) --- @type comet.gfx.Color
+impl.PURPLE      = impl:new(0xFF800080) --- @type comet.gfx.Color
+impl.MAGENTA     = impl:new(0xFFFF00FF) --- @type comet.gfx.Color
+impl.PINK        = impl:new(0xFFFFC0CB) --- @type comet.gfx.Color
+impl.BROWN       = impl:new(0xFF8B4513) --- @type comet.gfx.Color
 
-return Color
+ffi.metatype("comet_color", impl.mt)
+return impl

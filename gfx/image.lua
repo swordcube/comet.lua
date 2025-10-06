@@ -73,7 +73,7 @@ end
 --- @param accountForParent    boolean?
 --- @param accountForCamera    boolean?
 --- @param accountForCentering boolean?
---- @return love.Transform
+--- @return comet.math.Transform
 function Image:getTransform(accountForParent, accountForCamera, accountForCentering)
     if accountForParent == nil then
         accountForParent = true
@@ -118,7 +118,7 @@ function Image:getTransform(accountForParent, accountForCamera, accountForCenter
 end
 
 --- Returns the bounding box of this image, as a rectangle
---- @param trans love.Transform?   The transform to use for the bounding box (optional)
+--- @param trans comet.math.Transform?   The transform to use for the bounding box (optional)
 --- @param rect  comet.math.Rect?  The rectangle to use as the bounding box (optional)
 --- @return comet.math.Rect
 function Image:getBoundingBox(trans, rect)
@@ -189,7 +189,7 @@ function Image:draw()
     if self.shader then
         gfx.setShader(self.shader)
     end
-    gfx.draw(self.texture:getImage(self.antialiasing and "linear" or "nearest"), transform)
+    gfx.draw(self.texture:getImage(self.antialiasing and "linear" or "nearest"), transform:getRenderValues())
     if self.shader then
         gfx.setShader(prevShader)
     end

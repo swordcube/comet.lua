@@ -267,7 +267,7 @@ end
 --- @param accountForParent boolean?
 --- @param accountForCamera boolean?
 --- @param accountForCentering boolean?
---- @return love.Transform
+--- @return comet.math.Transform
 function AnimatedImage:getTransform(accountForParent, accountForCamera, accountForCentering)
     if accountForParent == nil then
         accountForParent = true
@@ -315,17 +315,14 @@ function AnimatedImage:getTransform(accountForParent, accountForCamera, accountF
     -- frame & anim offset
     local anim = self._animations[self._curAnim]
     transform:translate(frame.offset.x + (anim and anim.offset.x or 0.0), frame.offset.y + (anim and anim.offset.y or 0.0))
+    transform:translate(0, fastsin(rad(frame.rotation)) * -frame.frameWidth)
+    transform:rotate(rad(frame.rotation))
     
-    -- frame rotation
-    if abs(frame.rotation) % 360 > 0.001 then
-        transform:translate(0, fastsin(rad(frame.rotation)) * -frame.frameWidth)
-        transform:rotate(rad(frame.rotation))
-    end
     return transform
 end
 
 --- Returns the bounding box of this image, as a rectangle
---- @param trans love.Transform?   The transform to use for the bounding box (optional)
+--- @param trans comet.math.Transform?   The transform to use for the bounding box (optional)
 --- @param rect  comet.math.Rect?  The rectangle to use as the bounding box (optional)
 --- @return comet.math.Rect
 function AnimatedImage:getBoundingBox(trans, rect)
@@ -379,7 +376,7 @@ function AnimatedImage:draw()
     if self.shader then
         gfx.setShader(self.shader)
     end
-    gfx.draw(self._frame.texture:getImage(self.antialiasing and "linear" or "nearest"), self._frame.quad, transform)
+    gfx.draw(self._frame.texture:getImage(self.antialiasing and "linear" or "nearest"), self._frame.quad, transform:getRenderValues())
     if self.shader then
         gfx.setShader(prevShader)
     end

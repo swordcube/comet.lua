@@ -56,8 +56,8 @@ function Camera:__init__()
     --- @type table<comet.gfx.Shader, love.Canvas>
     self._canvases = {} --- @protected
 
-    --- @type love.Transform
-    self._emptyTransform = love.math.newTransform() --- @protected
+    --- @type comet.math.Transform
+    self._emptyTransform = Transform:new() --- @protected
 
     self._fx = {
         fade = {
@@ -189,7 +189,7 @@ end
 --- @param accountForScroll boolean?
 --- @param accountForZoom boolean?
 --- @param accountForParent boolean?
---- @return love.Transform
+--- @return comet.math.Transform
 function Camera:getTransform(accountForScroll, accountForZoom, accountForParent)
     if accountForScroll == nil then
         accountForScroll = true
@@ -427,7 +427,7 @@ function Camera:_draw()
                 gfx.setCanvas(self._canvases[shader])
 
                 gfx.setShader(shader.data)
-                gfx.draw(self._canvases[self._shaders[i - 1]], transform)
+                gfx.draw(self._canvases[self._shaders[i - 1]], transform:getRenderValues())
                 gfx.setShader()
 
                 gfx.setCanvas()
@@ -436,6 +436,7 @@ function Camera:_draw()
                 gfx.setCanvas(self._canvases["first"])
                 
                 local pr, pg, pb, pa = gfx.getColor()
+
                 gfx.setColor(self._bgColor.r, self._bgColor.g, self._bgColor.b, self._bgColor.a)
                 gfx.rectangle("fill", box.x, box.y, box.width, box.height)
                 
@@ -448,7 +449,7 @@ function Camera:_draw()
                 gfx.setCanvas(self._canvases[shader])
                 
                 gfx.setShader(shader.data)
-                gfx.draw(self._canvases["first"], transform)
+                gfx.draw(self._canvases["first"], transform:getRenderValues())
                 gfx.setShader()
 
                 gfx.setCanvas()
@@ -462,7 +463,7 @@ function Camera:_draw()
         box = self:getBoundingBox(transform, self._rect)
 
         gfx.setScissor(comet.adjustToGameScissor(box.x, box.y, box.width, box.height))
-        gfx.draw(self._canvases[shader], transform)
+        gfx.draw(self._canvases[shader], transform:getRenderValues())
         gfx.setScissor(px, py, pw, ph)
     else
         -- draw camera directly

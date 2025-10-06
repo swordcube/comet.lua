@@ -7,7 +7,7 @@ local gfx = love.graphics
 
 local function _drawWithOffset(label, transform, x, y)
     transform:translate(x, y)
-    gfx.draw(label._textObject, transform)
+    gfx.draw(label._textObject, transform:getRenderValues())
     transform:translate(-x, -y)
 end
 
@@ -110,7 +110,7 @@ end
 --- Returns the transform of this label
 --- @param accountForParent boolean?
 --- @param accountForCamera boolean?
---- @return love.Transform
+--- @return comet.math.Transform
 function Label:getTransform(accountForParent, accountForCamera)
     if accountForParent == nil then
         accountForParent = true
@@ -241,7 +241,7 @@ function Label:draw()
         end
     end
     gfx.setColor(self._color.r, self._color.g, self._color.b, self._color.a * self.alpha)
-    gfx.draw(self._textObject, transform)
+    gfx.draw(self._textObject, transform:getRenderValues())
     gfx.setColor(pr, pg, pb, pa)
 
     if comet.settings.debugDraw then

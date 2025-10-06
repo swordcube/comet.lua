@@ -1,32 +1,33 @@
-local middleclass = cometreq("lib.middleclass") --- @type comet.lib.MiddleClass
+local ffi = require("ffi")
+if not type(jit) == "table" or not jit.status() then
+    error("JIT must be enabled to use Rect!")
+end
+ffi.cdef("typedef struct {double x,y,width,height;} comet_rect;")
 
 ---@class comet.math.Rect
-local Rect = Class("Rect", ...)
+---@field x number
+---@field y number
+---@field width number
+---@field height number
+local Rect = {}
+Rect.__index = Rect
 
--- get a random function from Love2d or base lua, in that order.
-local rand = math.random
-if love and love.math then rand = love.math.random end
-
-function Rect:__init__(x, y, w, h)
-    self.x = x and x or 0.0
-    self.y = y and y or 0.0
-    self.width = w and w or 0.0
-    self.height = h and h or 0.0
-end
-
---- makes a new rectangle
----@param x number?
----@param y number?
----@return comet.math.Rect
-local function new(x,y,w,h)
-  return Rect:new(x,y,w,h)
-end
+local _new = ffi.typeof("comet_rect")
+local impl = {new = function(_, x, y, width, height)
+    local v = _new()
+    v.x = tonumber(x or 0.0) or 0.0
+    v.y = tonumber(y or 0.0) or 0.0
+    v.width = tonumber(width or 0.0) or 0.0
+    v.height = tonumber(height or 0.0) or 0.0
+    return v
+end}
+impl.mt = Rect
 
 --- check if an object is a rectangle
 ---@param t any
 ---@return boolean
 local function isrect(t)
-  return middleclass.isinstanceof(t, Rect)
+  return (type(t) == "cdata" and ffi.istype(t, "comet_rect")) or getmetatable(t) == Rect
 end
 
 --- set the values of the rectangle to something new
@@ -55,7 +56,7 @@ end
 --- returns a copy of a rectangle
 ---@return comet.math.Rect
 function Rect:clone()
-  return new(self.x, self.y, self.width, self.height)
+  return Rect:new(self.x, self.y, self.width, self.height)
 end
 
 --- @return comet.math.Rect
@@ -107,7 +108,7 @@ end
 ---@param v comet.math.Rect
 ---@return comet.math.Rect
 function Rect.__unm(v)
-  return new(-v.x, -v.y, -v.width, -v.height)
+  return Rect:new(-v.x, -v.y, -v.width, -v.height)
 end
 
 --- meta function to add rectangles together
@@ -117,7 +118,7 @@ end
 ---@return comet.math.Rect
 function Rect.__add(a,b)
   assert(isrect(a) and isrect(b), "add: wrong argument types: (expected <rectangle> and <rectangle>)")
-  return new(a.x+b.x, a.y+b.y, a.w+b.width, a.h+b.height)
+  return Rect:new(a.x+b.x, a.y+b.y, a.w+b.width, a.h+b.height)
 end
 
 --- meta function to subtract rectangles
@@ -126,7 +127,7 @@ end
 ---@return comet.math.Rect
 function Rect.__sub(a,b)
   assert(isrect(a) and isrect(b), "sub: wrong argument types: (expected <rectangle> and <rectangle>)")
-  return new(a.x-b.x, a.y-b.y, a.w-b.width, a.h-b.height)
+  return Rect:new(a.x-b.x, a.y-b.y, a.w-b.width, a.h-b.height)
 end
 
 --- meta function to multiply rectangles
@@ -135,12 +136,12 @@ end
 ---@return comet.math.Rect
 function Rect.__mul(a,b)
   if type(a) == 'number' then
-    return new(a * b.x, a * b.y, a * b.width, a * b.height)
+    return Rect:new(a * b.x, a * b.y, a * b.width, a * b.height)
   elseif type(b) == 'number' then
-    return new(a.x * b, a.y * b, a.width * b, a.height * b)
+    return Rect:new(a.x * b, a.y * b, a.width * b, a.height * b)
   else
     assert(isrect(a) and isrect(b),  "mul: wrong argument types: (expected <rectangle> or <number>)")
-    return new(a.x*b.x, a.y*b.y, a.width*b.w, a.h*b.height)
+    return Rect:new(a.x*b.x, a.y*b.y, a.width*b.w, a.h*b.height)
   end
 end
 
@@ -150,13 +151,13 @@ end
 ---@return comet.math.Rect
 function Rect.__div(a,b)
   assert(isrect(a) and type(b) == "number", "div: wrong argument types (expected <rectangle> and <number>)")
-  return new(a.x/b, a.y/b, a.width/b, a.height/b)
+  return Rect:new(a.x/b, a.y/b, a.width/b, a.height/b)
 end
 
 --- meta function to change how rectangles appear as string
 --- ex: print(rectangle(2,8)) - this prints 'instance of Rect(2,8)'
 ---@return string
-function Rect:__tostring__()
+function Rect:__tostring()
   return "instance of Rect("..self.x..", "..self.y..")"
 end
 
@@ -172,4 +173,5 @@ function Rect:unpack()
   return self.x, self.y, self.width, self.height
 end
 
-return Rect
+ffi.metatype("comet_rect", impl.mt)
+return impl

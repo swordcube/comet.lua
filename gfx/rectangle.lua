@@ -89,7 +89,7 @@ end
 --- Returns the transform of this rectangle
 --- @param accountForParent boolean?
 --- @param accountForCamera boolean?
---- @return love.Transform
+--- @return comet.math.Transform
 function Rectangle:getTransform(accountForParent, accountForCamera)
     if accountForParent == nil then
         accountForParent = true
@@ -183,7 +183,7 @@ function Rectangle:draw()
     end
     local pr, pg, pb, pa = gfx.getColor()
     gfx.setColor(self._tint.r, self._tint.g, self._tint.b, self._tint.a * self.alpha)
-    gfx.draw(whitePixel, transform)
+    gfx.draw(whitePixel, transform:getRenderValues())
     gfx.setColor(pr, pg, pb, pa)
 
     if comet.settings.debugDraw then

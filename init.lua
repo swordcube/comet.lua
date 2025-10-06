@@ -131,6 +131,7 @@ Class = cometreq("util.class") --- @type comet.util.Class
 
 Vec2 = cometreq("math.vec2") --- @type comet.math.Vec2
 Rect = cometreq("math.rect") --- @type comet.math.Rect
+Transform = cometreq("math.transform") --- @type comet.math.Transform
 Color = cometreq("gfx.color") --- @type comet.gfx.Color
 
 Object = cometreq("core.object") --- @type comet.core.Object

@@ -22,18 +22,18 @@ function Object2D:__init__(x, y)
     --- Scale multiplier of this object
     self.scale = Vec2:new(1, 1) --- @type comet.math.Vec2
     
-    --- @type love.Transform
-    self._transform = lmath.newTransform() --- @protected
+    --- @type comet.math.Transform
+    self._transform = Transform:new() --- @protected
 
     --- @type comet.math.Rect
     self._fullRect = Rect:new() --- @protected
 end
 
---- @param  transform  love.Transform
+--- @param  transform  comet.math.Transform
 --- @param  accountForCamera boolean?
 function Object2D:getParentTransform(transform, accountForCamera)
     if transform == nil then
-        transform = lmath.newTransform()
+        transform = Transform:new()
     end
     if accountForCamera == nil then
         accountForCamera = true
