@@ -31,8 +31,6 @@ end
 
 function Transform:translate(x, y)
     local m = self._m
-    local a,b,c,d = m[0],m[1],m[3],m[4]
-
     m[6] = m[6] + m[0] * x + m[3] * y
     m[7] = m[7] + m[1] * x + m[4] * y
     return self
