@@ -11,6 +11,8 @@ ffi.cdef "typedef struct { double _m[9]; } comet_mat3;"
 local Transform = {}
 Transform.__index = Transform
 
+-- TODO: negative scaled shit is broken!!!!!!
+
 local _new = ffi.typeof("comet_mat3")
 local impl = {new = function(_, x, y, width, height)
     local v = _new()
