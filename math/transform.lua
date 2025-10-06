@@ -29,22 +29,16 @@ function Transform:reset()
     return self
 end
 
-function Transform:translate(x,y)
+function Transform:translate(x, y)
     local m = self._m
     local a,b,c,d = m[0],m[1],m[3],m[4]
 
-    local det = a*d - b*c
-    local sign = det < 0 and -1 or 1
-
-    local sx = sqrt(a*a + c*c) * sign
-    local sy = sqrt(b*b + d*d) * sign
-
-    m[6] = m[6] + (x * sx)
-    m[7] = m[7] + (y * sy)
+    m[6] = m[6] + m[0] * x + m[3] * y
+    m[7] = m[7] + m[1] * x + m[4] * y
     return self
 end
 
-function Transform:scale(sx,sy)
+function Transform:scale(sx, sy)
     local m = self._m
     m[0] = m[0] * sx
     m[1] = m[1] * sx
@@ -55,18 +49,21 @@ end
 
 function Transform:rotate(r)
     local m = self._m
-    local cosr, sinr = cos(r), sin(r)
-    local a,b,c,d = m[0], m[1], m[3], m[4]
-    m[0] = a*cosr - c*sinr
-    m[1] = b*cosr - d*sinr
-    m[3] = a*sinr + c*cosr
-    m[4] = b*sinr + d*cosr
+    local cosr, sinr = math.cos(r), math.sin(r)
+    local a, b, c, d = m[0], m[1], m[3], m[4]
+
+    m[0] = cosr * a - sinr * b
+    m[1] = sinr * a + cosr * b
+    m[3] = cosr * c - sinr * d
+    m[4] = sinr * c + cosr * d
+
     return self
 end
 
-function Transform:transformPoint(x,y)
+function Transform:transformPoint(x, y)
     local m = self._m
-    return x*m[0] + y*m[3] + m[6], x*m[1] + y*m[4] + m[7]
+    return x * m[0] + y * m[3] + m[6],
+           x * m[1] + y * m[4] + m[7]
 end
 
 function Transform:apply(other)
@@ -92,7 +89,7 @@ end
 function Transform:getRenderValues()
     local m = self._m
     local a,b,c,d = m[0],m[1],m[3],m[4]
-    local r = atan2(c,a)
+    local r = math.atan2(b, a)
 
     local det = a*d - b*c
     local sign = det < 0 and -1 or 1
