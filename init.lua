@@ -153,7 +153,9 @@ ProgressBar = cometreq("gfx.progressbar") --- @type comet.gfx.ProgressBar
 
 Label = cometreq("gfx.label") --- @type comet.gfx.Label
 Camera = cometreq("gfx.camera") --- @type comet.gfx.Camera
+
 Tween = cometreq("gfx.tween") --- @type comet.gfx.Tween
+Ease = cometreq("math.ease") --- @type comet.math.Ease
 
 Source = cometreq("mixer.source") --- @type comet.mixer.Source
 Sound = cometreq("mixer.sound") --- @type comet.mixer.Sound

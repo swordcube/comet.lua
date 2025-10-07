@@ -235,7 +235,7 @@ end
 
 --- @param progress number
 function ProgressBar:setProgress(progress)
-    self._progress = progress
+    self._progress = math.clamp(progress, 0.0, 1.0)
 end
 
 function ProgressBar:destroy()
