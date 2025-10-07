@@ -2,6 +2,8 @@
 --- A basic object for displaying animated images, typically loaded through the `FrameCollection` class.
 local AnimatedImage, super = Object2D:subclass("AnimatedImage", ...)
 
+AnimatedImage.static.NO_OFF_SCREEN_CHECKS = false
+
 local abs, floor, rad, fastsin, wrap, clamp = math.abs, math.floor, math.rad, math.fastsin, math.wrap, math.clamp
 local gfx = love.graphics -- Faster access with local variable
 
@@ -365,8 +367,8 @@ function AnimatedImage:draw()
         return
     end
     local transform = self:getTransform(true, true, true)
-    local box = self:getBoundingBox(transform, self._rect)
-    if not self:isOnScreen(box) then
+    local box = not AnimatedImage.NO_OFF_SCREEN_CHECKS and self:getBoundingBox(transform, self._rect) or nil
+    if box and not self:isOnScreen(box) then
         return
     end
     local pr, pg, pb, pa = gfx.getColor()
@@ -380,12 +382,15 @@ function AnimatedImage:draw()
     if self.shader then
         gfx.setShader(prevShader)
     end
-    gfx.setColor(pr, pg, pb, pa)
-
     if comet.settings.debugDraw then
+        if not box then
+            box = self:getBoundingBox(transform, self._rect)
+        end
         gfx.setLineWidth(4)
+        gfx.setColor(1, 1, 1, 1)
         gfx.rectangle("line", box.x, box.y, box.width, box.height)
     end
+    gfx.setColor(pr, pg, pb, pa)
 end
 
 function AnimatedImage:destroy()
