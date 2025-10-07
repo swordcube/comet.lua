@@ -54,7 +54,8 @@ end
 ---@param t any
 ---@return boolean
 local function iscolor(t)
-    return type(t) == "cdata" and pcall(_iscolor, t)
+    local success, result = pcall(_iscolor, t)
+    return type(t) == "cdata" and (success and result == true)
 end
 impl.isColor = iscolor
 Color.isColor = iscolor
