@@ -59,12 +59,13 @@ function Signal:emit(...)
     local deadListeners = {}
     for i = 1, #self.listeners do
         local listener = self.listeners[i]
-        listener.method(...)
-        
+        if listener then
+            listener.method(...)
+        end
         if self.cancelled then
             break
         end
-        if listener.once then
+        if listener and listener.once then
             listener.__index = i
             table.insert(deadListeners, listener)
         end

@@ -149,6 +149,8 @@ FrameCollection = cometreq("gfx.framecollection") --- @type comet.gfx.FrameColle
 AnimatedImage = cometreq("gfx.animatedimage") --- @type comet.gfx.AnimatedImage
 
 Rectangle = cometreq("gfx.rectangle") --- @type comet.gfx.Rectangle
+ProgressBar = cometreq("gfx.progressbar") --- @type comet.gfx.ProgressBar
+
 Label = cometreq("gfx.label") --- @type comet.gfx.Label
 Camera = cometreq("gfx.camera") --- @type comet.gfx.Camera
 Tween = cometreq("gfx.tween") --- @type comet.gfx.Tween
@@ -649,7 +651,7 @@ function comet.draw()
     love.graphics.translate(gamePos[1], gamePos[2])
     love.graphics.scale(gameScale[1], gameScale[2])
     
-    if not middleclass.isinstanceof(comet.settings.bgColor, Color) then
+    if not Color.isColor(comet.settings.bgColor) or not comet.settings.bgColor._isClone then
         -- convert to valid color object
         comet.settings.bgColor = Color:new(comet.settings.bgColor)
     end

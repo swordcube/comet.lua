@@ -242,12 +242,13 @@ function Label:draw()
     end
     gfx.setColor(self._color.r, self._color.g, self._color.b, self._color.a * self.alpha)
     gfx.draw(self._textObject, transform:getRenderValues())
-    gfx.setColor(pr, pg, pb, pa)
-
+    
     if comet.settings.debugDraw then
         gfx.setLineWidth(4)
+        gfx.setColor(1, 1, 1, 1)
         gfx.rectangle("line", box.x, box.y, box.width, box.height)
     end
+    gfx.setColor(pr, pg, pb, pa)
 end
 
 return Label:finalize()

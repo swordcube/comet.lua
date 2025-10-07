@@ -49,6 +49,10 @@ function Object:addChild(object, tag)
         Log.warn("You can't add the same object twice!")
         return
     end
+    if object.parent then
+        Log.warn("You can't add a child object that already has a parent! Use Object:reparent() instead!")
+        return
+    end
     if tag then
         self._childrenByTag[tag] = object
     end
@@ -64,6 +68,10 @@ function Object:insertChild(position, object, tag)
     end
     if table.contains(self.children, object) then
         Log.warn("You can't insert the same object twice!")
+        return
+    end
+    if object.parent then
+        Log.warn("You can't add a child object that already has a parent! Use Object:reparent() instead!")
         return
     end
     if tag then

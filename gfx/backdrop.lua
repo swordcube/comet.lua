@@ -19,7 +19,7 @@ end
 --- @param accountForParent boolean?
 --- @param accountForCamera boolean?
 --- @return comet.math.Transform
-function Backdrop:getTransform(accountForParent, accountForCamera)
+function Backdrop:getTransform(gridX, gridY, accountForParent, accountForCamera)
     if accountForParent == nil then
         accountForParent = true
     end
@@ -146,12 +146,13 @@ function Backdrop:draw()
         local pr, pg, pb, pa = gfx.getColor()
         gfx.setColor(self._tint.r, self._tint.g, self._tint.b, self._tint.a * self.alpha)
         gfx.draw(self.texture:getImage(self.antialiasing and "linear" or "nearest"), transform:getRenderValues())
-        gfx.setColor(pr, pg, pb, pa)
         
         if comet.settings.debugDraw then
             gfx.setLineWidth(4)
+            gfx.setColor(1, 1, 1, 1)
             gfx.rectangle("line", box.x, box.y, box.width, box.height)
         end
+        gfx.setColor(pr, pg, pb, pa)
         gridX = gridX + 1
         if not self:isAxesOnScreen("x", box) then
             gridX = ogGridX

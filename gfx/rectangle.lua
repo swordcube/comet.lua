@@ -33,7 +33,7 @@ function Rectangle:__init__(x, y, width, height)
     self.size = Vec2:new(width or 1, height or 1) --- @type comet.math.Vec2
 
     --- @type comet.gfx.Color
-    self._tint = Color:new(1, 1, 1, 1) --- @protected
+    self._color = Color:new(1, 1, 1, 1) --- @protected
 end
 
 --- Returns the unscaled width of this rectangle.
@@ -77,7 +77,7 @@ end
 --- @param newHeight number
 --- @deprecated
 function Rectangle:setSize(newWidth, newHeight)
-    Log.warn("Rectangle.setSize() is deprecated, use myRect.size:set() instead!")
+    Log.warn("Rectangle:setSize() is deprecated, use myRect.size:set() instead!")
     self.size:set(newWidth, newHeight)
 end
 
@@ -120,7 +120,7 @@ function Rectangle:getTransform(accountForParent, accountForCamera)
 end
 
 --- Returns the bounding box of this rectangle, as a basic rectangle
---- @param trans love.Transform?   The transform to use for the bounding box (optional)
+--- @param trans comet.math.Transform?   The transform to use for the bounding box (optional)
 --- @param rect  comet.math.Rect?  The rectangle to use as the bounding box (optional)
 --- @return comet.math.Rect
 function Rectangle:getBoundingBox(trans, rect)
@@ -182,31 +182,48 @@ function Rectangle:draw()
         return
     end
     local pr, pg, pb, pa = gfx.getColor()
-    gfx.setColor(self._tint.r, self._tint.g, self._tint.b, self._tint.a * self.alpha)
+    gfx.setColor(self._color.r, self._color.g, self._color.b, self._color.a * self.alpha)
     gfx.draw(whitePixel, transform:getRenderValues())
-    gfx.setColor(pr, pg, pb, pa)
-
+    
     if comet.settings.debugDraw then
         gfx.setLineWidth(4)
+        gfx.setColor(1, 1, 1, 1)
         gfx.rectangle("line", box.x, box.y, box.width, box.height)
     end
+    gfx.setColor(pr, pg, pb, pa)
+end
+
+--- Returns the color of this rectangle
+--- @return comet.gfx.Color
+function Rectangle:getColor()
+    return self._color
+end
+
+--- Sets the color of this rectangle
+--- @param color comet.gfx.Color
+function Rectangle:setColor(color)
+    self._color = Color:new(color)
 end
 
 --- Returns the tint of this rectangle
+--- @deprecated
 --- @return comet.gfx.Color
 function Rectangle:getTint()
-    return self._tint
+    Log.warn("Rectangle:getTint() is deprecated, use Rectangle:getColor() instead")
+    return self._color
 end
 
 --- Sets the tint of this rectangle
+--- @deprecated
 --- @param tint comet.gfx.Color
 function Rectangle:setTint(tint)
-    self._tint = Color:new(tint)
+    Log.warn("Rectangle:setTint() is deprecated, use Rectangle:setColor() instead")
+    self._color = Color:new(tint)
 end
 
 function Rectangle:destroy()
     super.destroy(self)
-    self._tint = nil
+    self._color = nil
 end
 
 return Rectangle

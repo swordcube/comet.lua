@@ -1,3 +1,5 @@
+local Signal = cometreq("util.signal") --- @type comet.util.Signal
+
 --- @class comet.gfx.AnimatedImage : comet.gfx.Object2D
 --- A basic object for displaying animated images, typically loaded through the `FrameCollection` class.
 local AnimatedImage, super = Object2D:subclass("AnimatedImage", ...)
@@ -18,6 +20,9 @@ function AnimatedImage:__init__(x, y)
 
     --- Alpha multiplier for this image
     self.alpha = 1
+
+    --- Signal that gets emitted when the animation finishes
+    self.onComplete = Signal:new():type("string", "void") --- @type comet.util.Signal
 
     --- @type comet.gfx.Shader
     self._shader = nil --- @protected
@@ -338,7 +343,7 @@ function AnimatedImage:isOnScreen(box)
 end
 
 function AnimatedImage:update(dt)
-    if not self._playing then
+    if not self._playing or not self._frames then
         return
     end
     self._frameTimer = self._frameTimer + dt
@@ -347,18 +352,25 @@ function AnimatedImage:update(dt)
     local frameDuration = 1.0 / anim.fps
 
     while self._frameTimer >= frameDuration do
+        local finished = false
         local newFrame = self._curFrame + 1
         local animFrames = anim.indices or self._frames:getFrames(anim.name)
+
+        if not anim.loop and self._curFrame >= #animFrames and self._playing then
+            self._playing = false
+            finished = true
+        end
         if anim.loop then
             newFrame = wrap(newFrame, 1, #animFrames)
         else
             newFrame = clamp(newFrame, 1, #animFrames)
-            if newFrame >= #animFrames then
-                self._playing = false
-            end
         end
         self:setCurrentFrame(newFrame)
         self._frameTimer = self._frameTimer - frameDuration
+        
+        if finished then
+            self.onComplete:emit(self._curAnim)
+        end
     end
 end
 

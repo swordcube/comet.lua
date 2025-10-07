@@ -1,6 +1,6 @@
 --- @diagnostic disable: cast-local-type
 local ffi = require("ffi")
-local atan2, sqrt, cos, sin = math.atan2, math.sqrt, math.fastcos, math.fastsin
+local atan2, sqrt, epsilon = math.atan2, math.sqrt, math.epsilon
 
 if not type(jit) == "table" or not jit.status() then
     error("JIT must be enabled to use Transform!")
@@ -94,8 +94,10 @@ function Transform:getRenderValues()
     local sx = sqrt(a*a + b*b)
     local sy = sqrt(c*c + d*d)
 
-    local signX = ((a * d) - (b * c)) < 0 and -1 or 1
-    local signY = ((a * c) + (b * d)) < 0 and -1 or 1
+    -- checking if less than -0.001 because floating point numbers
+    -- are the bane of my existence
+    local signX = ((a * d) - (b * c)) < -epsilon and -1 or 1
+    local signY = ((a * c) + (b * d)) < -epsilon and -1 or 1
 
     if signX < 0 then
         r = r + math.pi

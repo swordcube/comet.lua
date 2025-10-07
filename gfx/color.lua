@@ -31,7 +31,7 @@ Color.MAGENTA     = nil --- @type comet.gfx.Color
 Color.PINK        = nil --- @type comet.gfx.Color
 Color.BROWN       = nil --- @type comet.gfx.Color
 
-ffi.cdef "typedef struct { double r,g,b,a; } comet_color;"
+ffi.cdef "typedef struct { double r,g,b,a; bool _isClone; bool _isColor; } comet_color;"
 
 Color = {}
 Color.__index = Color
@@ -39,17 +39,25 @@ Color.__index = Color
 local _new = ffi.typeof("comet_color")
 local impl = {new = function(_, r, g, b, a)
     local v = _new()
+    v._isClone = false
+    v._isColor = true
     Color.set(v, r, g, b, a)
     return v
 end}
 impl.mt = Color
 
+local function _iscolor(t)
+    return t._isColor == true
+end
+
 --- check if an object is a color
 ---@param t any
 ---@return boolean
 local function iscolor(t)
-    return type(t) == "cdata"
+    return type(t) == "cdata" and pcall(_iscolor, t)
 end
+impl.isColor = iscolor
+Color.isColor = iscolor
 
 -- Sets the RGBA values of this color and returns it
 --- @param r number|string? The red channel (or hex color as int or string)
@@ -59,6 +67,7 @@ end
 function Color:set(r, g, b, a)
     if not r then return self end
     if iscolor(r) then
+        self._isClone = true
         self.r, self.g, self.b, self.a = r.r, r.g, r.b, r.a
         return self
     elseif type(r) == "table" then
@@ -78,6 +87,16 @@ function Color:set(r, g, b, a)
     end
     self.r, self.g, self.b, self.a = r, g, b, a
     return self
+end
+
+--- Creates a clone of this color
+--- @return comet.gfx.Color
+function Color:clone()
+    local v = _new()
+    v._isClone = true
+    v._isColor = true
+    Color.set(v, self.r, self.g, self.b, self.a)
+    return v
 end
 
 -- Unpacks the RGBA values of this color
