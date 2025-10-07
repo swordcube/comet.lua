@@ -88,16 +88,19 @@ end
 
 function Transform:getRenderValues()
     local m = self._m
-    local a,b,c,d = m[0],m[1],m[3],m[4]
-    local r = math.atan2(b, a)
+    local a, b, c, d = m[0], m[1], m[3], m[4]
 
-    local det = a*d - b*c
-    local sign = det < 0 and -1 or 1
+    local r = atan2(b, a)
+    local sx = sqrt(a*a + b*b)
+    local sy = sqrt(c*c + d*d)
 
-    local sx = sqrt(a*a + c*c) * sign
-    local sy = sqrt(b*b + d*d) * sign
-    
-    return m[6], m[7], r, sx, sy
+    local signX = ((a * d) - (b * c)) < 0 and -1 or 1
+    local signY = ((a * c) + (b * d)) < 0 and -1 or 1
+
+    if signX < 0 then
+        r = r + math.pi
+    end
+    return m[6], m[7], r, sx * signX, sy * signY
 end
 
 ffi.metatype("comet_mat3", impl.mt)
