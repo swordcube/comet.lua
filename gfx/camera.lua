@@ -37,11 +37,14 @@ function Camera:__init__()
     --- Non-functional on Cameras, use `zoom` instead.
     self.scale = nil
 
+    --- Alpha multiplier for this camera
+    self.alpha = 1.0
+
     --- @type comet.math.Vec2
     self._scrollTarget = Vec2:new() --- @protected
 
     --- @type comet.gfx.Color
-    self._bgColor = Color:new(Color.BLACK) --- @protected
+    self._bgColor = Color:new(Color.TRANSPARENT) --- @protected
 
     --- @type comet.math.Rect
     self._rect = Rect:new() --- @protected
@@ -391,11 +394,12 @@ function Camera:update(dt)
 end
 
 function Camera:drawFX(box)
+    local pr, pg, pb, pa = gfx.getColor()
     if self._fx.flash.time <= self._fx.flash.duration then
         local alpha = self._fx.flash.color.a * (1 - (self._fx.flash.time / self._fx.flash.duration))
         self._fx.flash.alpha = alpha
 
-        gfx.setColor(self._fx.flash.color.r, self._fx.flash.color.g, self._fx.flash.color.b, alpha)
+        gfx.setColor(self._fx.flash.color.r * pr, self._fx.flash.color.g * pg, self._fx.flash.color.b * pb, alpha * pa)
         gfx.rectangle("fill", box.x, box.y, box.width, box.height)
     end
     if self._fx.fade.time <= self._fx.fade.duration then
@@ -405,7 +409,7 @@ function Camera:drawFX(box)
         if self._fx.fade.fadeIn then
             alpha = 1.0 - alpha
         end
-        gfx.setColor(self._fx.fade.color.r, self._fx.fade.color.g, self._fx.fade.color.b, alpha)
+        gfx.setColor(self._fx.fade.color.r * pr, self._fx.fade.color.g * pg, self._fx.fade.color.b * pb, alpha * pa)
         gfx.rectangle("fill", box.x, box.y, box.width, box.height)
     end
 end
@@ -415,11 +419,14 @@ function Camera:_draw()
         -- draw to a bunch of canvases with shaders applied to them
         -- and then 
         local transform = self._emptyTransform
-        local box = self:getBoundingBox(transform, self._rect)
+        local box = self._rect:set(0, 0, self.size.x, self.size.y)
 
         gfx.push()
         gfx.origin()
         gfx.setScissor()
+
+        local pbr, pbg, pbb, pba = gfx.getBackgroundColor()
+        gfx.setBackgroundColor(0, 0, 0, 0)
 
         for i = 1, #self._shaders do
             local shader = self._shaders[i]
@@ -436,18 +443,32 @@ function Camera:_draw()
                 gfx.setCanvas(self._canvases["first"])
                 
                 local pr, pg, pb, pa = gfx.getColor()
+                local bgVisible = self._bgColor.a > 0.001
 
-                gfx.setColor(self._bgColor.r, self._bgColor.g, self._bgColor.b, self._bgColor.a)
+                -- mandatory bg color, shit breaks with shaders on if we don't have this
+                gfx.setColor(0, 0, 0, 1)
                 gfx.rectangle("fill", box.x, box.y, box.width, box.height)
-                
+
+                if bgVisible then
+                    gfx.setColor(self._bgColor.r, self._bgColor.g, self._bgColor.b, self._bgColor.a)
+                    gfx.rectangle("fill", box.x, box.y, box.width, box.height)
+                end
+                gfx.setColor(pr, pg, pb, pa * self.alpha)
+
                 super._draw(self)
                 self:drawFX(box)
-
+                
                 gfx.setColor(pr, pg, pb, pa)
 
                 -- then draw this shaderless canvas to the final canvas
                 gfx.setCanvas(self._canvases[shader])
                 
+                -- mandatory bg color first tho, shit breaks with shaders on if we don't have this
+                gfx.setColor(0, 0, 0, 1)
+                gfx.rectangle("fill", box.x, box.y, box.width, box.height)
+                gfx.setColor(pr, pg, pb, pa)
+                
+                -- and then we ACTUALLY draw the shaderless canvas
                 gfx.setShader(shader.data)
                 gfx.draw(self._canvases["first"], transform:getRenderValues())
                 gfx.setShader()
@@ -465,6 +486,8 @@ function Camera:_draw()
         gfx.setScissor(comet.adjustToGameScissor(box.x, box.y, box.width, box.height))
         gfx.draw(self._canvases[shader], transform:getRenderValues())
         gfx.setScissor(px, py, pw, ph)
+
+        gfx.setBackgroundColor(pbr, pbg, pbb, pba)
     else
         -- draw camera directly
         local box = self:getBoundingBox(self:getTransform(false, false), self._rect)
@@ -473,9 +496,14 @@ function Camera:_draw()
         gfx.setScissor(comet.adjustToGameScissor(box.x, box.y, box.width, box.height))
         
         local pr, pg, pb, pa = gfx.getColor()
-        gfx.setColor(self._bgColor.r, self._bgColor.g, self._bgColor.b, self._bgColor.a)
-        gfx.rectangle("fill", box.x, box.y, box.width, box.height)
-        
+        local bgVisible = self._bgColor.a > 0.001
+
+        if bgVisible then
+            gfx.setColor(self._bgColor.r, self._bgColor.g, self._bgColor.b, self._bgColor.a)
+            gfx.rectangle("fill", box.x, box.y, box.width, box.height)
+            gfx.setColor(pr, pg, pb, pa)
+        end
+        gfx.setColor(pr, pg, pb, pa * self.alpha)
         super._draw(self)
         self:drawFX(box)
         

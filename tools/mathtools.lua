@@ -64,6 +64,16 @@ function math.preciseRandom(low, high)
 end
 
 ---
+--- @param  lerp  number
+--- @param  dt    number
+---
+--- @return number
+---
+function math.getElapsedLerp(lerp, dt)
+    return 1.0 - math.pow(1.0 - lerp, dt * 60)
+end
+
+---
 --- Round a decimal number to have reduced precision (less decimal numbers).
 ---
 --- @param  num       number   The number to round.

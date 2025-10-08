@@ -22,6 +22,12 @@ function Image:__init__(image)
     --- Alpha multiplier for this image
     self.alpha = 1
 
+    --- Whether or not to horizontally flip this image
+    self.flipX = false
+
+    --- Whether or not to vertically flip this image
+    self.flipY = false
+
     --- @type comet.gfx.Shader
     self._shader = nil --- @protected
 
@@ -104,14 +110,28 @@ function Image:getTransform(accountForParent, accountForCamera, accountForCenter
 
     -- scale
     local ox2, oy2 = abs(self:getOriginalWidth()) * 0.5, abs(self:getOriginalHeight()) * 0.5
-    transform:scale(abs(self.scale.x), abs(self.scale.y))
-
-    if self.scale.x < 0.0 then
+    if self.centered then
+        transform:scale(abs(self.scale.x), abs(self.scale.y))
+        
+        if self.scale.x < -math.epsilon then
+            transform:translate(ox2, oy2)
+            transform:scale(-1, 1)
+            transform:translate(-ox2, -oy2)
+        end
+        if self.scale.y < -math.epsilon then
+            transform:translate(ox2, oy2)
+            transform:scale(1, -1)
+            transform:translate(-ox2, -oy2)
+        end
+    else
+        transform:scale(self.scale.x, self.scale.y)
+    end
+    if self.flipX then
         transform:translate(ox2, oy2)
         transform:scale(-1, 1)
         transform:translate(-ox2, -oy2)
     end
-    if self.scale.y < 0.0 then
+    if self.flipY then
         transform:translate(ox2, oy2)
         transform:scale(1, -1)
         transform:translate(-ox2, -oy2)
@@ -185,14 +205,14 @@ function Image:draw()
         return
     end
     local pr, pg, pb, pa = gfx.getColor()
-    gfx.setColor(self._tint.r, self._tint.g, self._tint.b, self._tint.a * self.alpha)
+    gfx.setColor(self._tint.r * pr, self._tint.g * pg, self._tint.b * pb, self._tint.a * self.alpha * pa)
 
     local prevShader = gfx.getShader()
-    if self.shader then
-        gfx.setShader(self.shader)
+    if self._shader then
+        gfx.setShader(self._shader.data)
     end
     gfx.draw(self.texture:getImage(self.antialiasing and "linear" or "nearest"), transform:getRenderValues())
-    if self.shader then
+    if self._shader then
         gfx.setShader(prevShader)
     end
     if comet.settings.debugDraw then

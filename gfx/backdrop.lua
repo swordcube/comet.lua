@@ -139,13 +139,12 @@ function Backdrop:draw()
     gridY = gridY + 1
 
     local ogGridX = gridX
-    local ogGridY = gridY
     while true do
         local transform = self:getTransform(gridX, gridY)
         local box = self:getBoundingBox(transform, self._rect)
         local pr, pg, pb, pa = gfx.getColor()
         gfx.setColor(self._tint.r, self._tint.g, self._tint.b, self._tint.a * self.alpha)
-        gfx.draw(self.texture:getImage(self.antialiasing and "linear" or "nearest"), transform:getRenderValues())
+        gfx.draw(self._tint.r * pr, self._tint.g * pg, self._tint.b * pb, self._tint.a * self.alpha * pa)
         
         if comet.settings.debugDraw then
             gfx.setLineWidth(4)

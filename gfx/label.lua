@@ -216,7 +216,6 @@ function Label:draw()
         return
     end
     self:updateText()
-    local pr, pg, pb, pa = gfx.getColor()
 
     local filter = self.antialiasing and "linear" or "nearest"
     self._fontData:setFilter(filter, filter)
@@ -226,6 +225,7 @@ function Label:draw()
     if not self:isOnScreen(box) then
         return
     end
+    local pr, pg, pb, pa = gfx.getColor()
     if self.borderSize > 0 and self._borderColor.a > 0 then
         local r, g, b, a = self._borderColor:unpack()
         gfx.setColor(r, g, b, a * self.alpha)
@@ -240,7 +240,7 @@ function Label:draw()
             _drawWithOffset(self, transform, dx, dy)
         end
     end
-    gfx.setColor(self._color.r, self._color.g, self._color.b, self._color.a * self.alpha)
+    gfx.setColor(self._color.r * pr, self._color.g * pg, self._color.b * pb, self._color.a * self.alpha * pa)
     gfx.draw(self._textObject, transform:getRenderValues())
     
     if comet.settings.debugDraw then

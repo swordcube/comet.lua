@@ -182,7 +182,7 @@ function Rectangle:draw()
         return
     end
     local pr, pg, pb, pa = gfx.getColor()
-    gfx.setColor(self._color.r, self._color.g, self._color.b, self._color.a * self.alpha)
+    gfx.setColor(self._color.r * pr, self._color.g * pg, self._color.b * pb, self._color.a * self.alpha * pa)
     gfx.draw(whitePixel, transform:getRenderValues())
     
     if comet.settings.debugDraw then

@@ -116,7 +116,10 @@ end
 function Shader:send(name, number, ...)
     local values = {number, ...}
     self._uniforms[name] = values
-    self.data:send(name, number, ...)
+
+    if self:hasUniform(name) then
+        self.data:send(name, number, ...)
+    end
 end
 
 --- Sends one or more colors to a special (`extern` / `uniform`) vec3 or vec4 variable inside the shader. The color components must be in the range of 1. The colors are gamma-corrected if global gamma-correction is enabled.

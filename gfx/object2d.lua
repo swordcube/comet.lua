@@ -21,6 +21,19 @@ function Object2D:__init__(x, y)
     
     --- Scale multiplier of this object
     self.scale = Vec2:new(1, 1) --- @type comet.math.Vec2
+
+    --- Optional callback for customizing how this object is drawn (runs as soon as the object is drawn)
+    --- 
+    --- Can be used to draw it twice for a cool reflection effect or something <3
+    self.onDraw = nil --- @type function?
+
+    --- Optional callback for customizing how this object is drawn (runs after the object is drawn)
+    --- 
+    --- Can be used to draw it twice for a cool reflection effect or something <3
+    self.onPostDraw = nil --- @type function?
+
+    --- @type boolean
+    self._inDrawCallback = false --- @protected
     
     --- @type comet.math.Transform
     self._transform = Transform:new() --- @protected
@@ -146,6 +159,40 @@ function Object2D:screenCenter(axes)
     if axes == "y" or axes == "xy" then
         self.position.y = (bottom / 2.0) - box.y
     end
+end
+
+function Object2D:_draw()
+    if self.onDraw and not self._inDrawCallback then
+        self._inDrawCallback = true
+        self:onDraw()
+        self._inDrawCallback = false
+        return
+    end
+    if not self.children then
+        return
+    end
+    local pendingToRemove = self._pendingToRemove
+    if #pendingToRemove ~= 0 then
+        for i = 1, #pendingToRemove do
+            local child = pendingToRemove[i]
+            table.removeItem(self.children, child)
+        end
+        self._pendingToRemove = {}
+    end
+    self:draw()
+    for i = 1, self:getChildCount() do
+        local object = self.children[i] --- @type comet.core.Object
+        if object and object.exists and object.visible then
+            object:_draw()
+        end
+    end
+    if self.onPostDraw and not self._inDrawCallback then
+        self._inDrawCallback = true
+        self:onPostDraw()
+        self._inDrawCallback = false
+        return
+    end
+    self:postDraw()
 end
 
 return Object2D

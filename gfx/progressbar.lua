@@ -186,11 +186,11 @@ function ProgressBar:draw()
     local pr, pg, pb, pa = gfx.getColor()
     local x, y, r, sx, sy = transform:getRenderValues()
 
-    gfx.setColor(self._emptyColor.r, self._emptyColor.g, self._emptyColor.b, self._emptyColor.a * self.alpha)
+    gfx.setColor(self._emptyColor.r * pr, self._emptyColor.g * pg, self._emptyColor.b * pb, self._emptyColor.a * self.alpha * pa)
     gfx.draw(Rectangle.whitePixel, x, y, r, sx, sy)
 
     if self._progress > 0.0 then
-        gfx.setColor(self._fillColor.r, self._fillColor.g, self._fillColor.b, self._fillColor.a * self.alpha)
+        gfx.setColor(self._fillColor.r * pr, self._fillColor.g * pg, self._fillColor.b * pb, self._fillColor.a * self.alpha * pa)
 
         transform = self:getTransform(true, true, true)
         x, y, r, sx, sy = transform:getRenderValues()
