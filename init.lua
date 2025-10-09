@@ -506,9 +506,11 @@ function comet.run()
             tpsTimer = tpsTimer - 1000000000.0
             tps = 0
         end
-        local dtLimit = framePeriod * 4
-        if rawDt > dtLimit then
-            rawDt = dtLimit
+        if framePeriod > 0 then
+            local dtLimit = framePeriod * 4
+            if rawDt > dtLimit then
+                rawDt = dtLimit
+            end
         end
         comet._rawDt = rawDt / 1000000000.0
         currentUpdate = currentUpdate + rawDt
