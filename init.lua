@@ -174,6 +174,7 @@ InputMouseMoveEvent = cometreq("input.inputmousemoveevent") --- @type comet.inpu
 InputMouseWheelEvent = cometreq("input.inputmousewheelevent") --- @type comet.input.InputMouseWheelEvent
 
 Timer = cometreq("util.timer") --- @type comet.util.Timer
+Save = cometreq("util.save") --- @type comet.util.Save
 
 local gfx = love.graphics
 
