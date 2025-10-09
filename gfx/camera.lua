@@ -5,6 +5,10 @@ local Camera, super = Object2D:subclass("Camera", ...)
 local math = math -- Faster access with local variable
 local gfx = love.graphics -- Faster access with local variable
 
+local function preMultiplyChannels(r, g, b, a)
+    return r * a, g * a, b * a, a
+end
+
 function Camera:__init__()
     super.__init__(self)
 
@@ -399,7 +403,7 @@ function Camera:drawFX(box)
         local alpha = self._fx.flash.color.a * (1 - (self._fx.flash.time / self._fx.flash.duration))
         self._fx.flash.alpha = alpha
 
-        gfx.setColor(self._fx.flash.color.r * pr, self._fx.flash.color.g * pg, self._fx.flash.color.b * pb, alpha * pa)
+        gfx.setColor(preMultiplyChannels(self._fx.flash.color.r * pr, self._fx.flash.color.g * pg, self._fx.flash.color.b * pb, alpha * pa))
         gfx.rectangle("fill", box.x, box.y, box.width, box.height)
     end
     if self._fx.fade.time <= self._fx.fade.duration then
@@ -409,12 +413,14 @@ function Camera:drawFX(box)
         if self._fx.fade.fadeIn then
             alpha = 1.0 - alpha
         end
-        gfx.setColor(self._fx.fade.color.r * pr, self._fx.fade.color.g * pg, self._fx.fade.color.b * pb, alpha * pa)
+        gfx.setColor(preMultiplyChannels(self._fx.fade.color.r * pr, self._fx.fade.color.g * pg, self._fx.fade.color.b * pb, alpha * pa))
         gfx.rectangle("fill", box.x, box.y, box.width, box.height)
     end
 end
 
 function Camera:_draw()
+    gfx.setBlendMode("alpha", "premultiplied")
+
     if #self._shaders ~= 0 then
         -- draw to a bunch of canvases with shaders applied to them
         -- and then 
@@ -450,7 +456,7 @@ function Camera:_draw()
                 gfx.rectangle("fill", box.x, box.y, box.width, box.height)
 
                 if bgVisible then
-                    gfx.setColor(self._bgColor.r, self._bgColor.g, self._bgColor.b, self._bgColor.a)
+                    gfx.setColor(preMultiplyChannels(self._bgColor.r, self._bgColor.g, self._bgColor.b, self._bgColor.a))
                     gfx.rectangle("fill", box.x, box.y, box.width, box.height)
                 end
                 gfx.setColor(pr, pg, pb, pa * self.alpha)
@@ -499,11 +505,11 @@ function Camera:_draw()
         local bgVisible = self._bgColor.a > 0.001
 
         if bgVisible then
-            gfx.setColor(self._bgColor.r, self._bgColor.g, self._bgColor.b, self._bgColor.a)
+            gfx.setColor(preMultiplyChannels(self._bgColor.r, self._bgColor.g, self._bgColor.b, self._bgColor.a))
             gfx.rectangle("fill", box.x, box.y, box.width, box.height)
-            gfx.setColor(pr, pg, pb, pa)
         end
         gfx.setColor(pr, pg, pb, pa * self.alpha)
+
         super._draw(self)
         self:drawFX(box)
         

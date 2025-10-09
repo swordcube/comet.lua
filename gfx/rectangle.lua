@@ -20,6 +20,10 @@ whitePixelData:setPixel(0, 0, 1, 1, 1, 1)
 local whitePixel = gfx.newImage(whitePixelData)
 Rectangle.static.whitePixel = whitePixel
 
+local function preMultiplyChannels(r, g, b, a)
+    return r * a, g * a, b * a, a
+end
+
 function Rectangle:__init__(x, y, width, height)
     super.__init__(self, x, y)
 
@@ -182,7 +186,9 @@ function Rectangle:draw()
         return
     end
     local pr, pg, pb, pa = gfx.getColor()
-    gfx.setColor(self._color.r * pr, self._color.g * pg, self._color.b * pb, self._color.a * self.alpha * pa)
+    gfx.setColor(preMultiplyChannels(self._color.r * pr, self._color.g * pg, self._color.b * pb, self._color.a * self.alpha * pa))
+    
+    gfx.setBlendMode("alpha", "premultiplied")
     gfx.draw(whitePixel, transform:getRenderValues())
     
     if comet.settings.debugDraw then

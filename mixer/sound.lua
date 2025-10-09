@@ -22,6 +22,9 @@ function Sound:__init__()
     --- @protected
     self._playing = false
 
+    --- @protected
+    self._fadeTween = nil --- @type comet.gfx.Tween
+
     if comet.mixer then
         comet.mixer.sounds:addChild(self)
     end
@@ -164,6 +167,52 @@ function Sound:pause()
     src:pause()
 end
 
+function Sound:fadeIn(duration, from, to, onComplete)
+    if from == nil then
+        from = 0
+    end
+    if to == nil then
+        to = 1
+    end
+    if self._fadeTween then
+        self._fadeTween:cancel()
+        self._fadeTween = nil
+    end
+    local temp = {v = from}
+    self._fadeTween = Tween:new() --- @type comet.gfx.Tween
+    self._fadeTween:target({target = temp, properties = {v = to}})
+    self._fadeTween.onUpdate:connect(function(t)
+        self:setVolume(temp.v)
+    end)
+    if onComplete then
+        self._fadeTween.onComplete:connect(onComplete)
+    end
+    self._fadeTween:start({duration = duration})
+end
+
+function Sound:fadeOut(duration, to, onComplete)
+    if duration == nil then
+        duration = 1
+    end
+    if to == nil then
+        to = 0
+    end
+    if self._fadeTween then
+        self._fadeTween:cancel()
+        self._fadeTween = nil
+    end
+    local temp = {v = self:getVolume()}
+    self._fadeTween = Tween:new() --- @type comet.gfx.Tween
+    self._fadeTween:target({target = temp, properties = {v = to}})
+    self._fadeTween.onUpdate:connect(function(t)
+        self:setVolume(temp.v)
+    end)
+    if onComplete then
+        self._fadeTween.onComplete:connect(onComplete)
+    end
+    self._fadeTween:start({duration = duration})
+end
+
 function Sound:update(dt)
     if self._playing and not self:isPlaying() and not self:isLooping() then
         self:stop()
@@ -181,6 +230,11 @@ function Sound:shouldUpdate()
 end
 
 function Sound:destroy()
+    local twn = self._fadeTween
+    if twn then
+        twn:cancel()
+        self._fadeTween = nil
+    end
     local src = self._source
     if src then
         src:dereference()

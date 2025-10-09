@@ -192,7 +192,7 @@ local names = {
     "rectangle",
     "stencil",
     "getStats",
-    "setBlendMode",
+    -- "setBlendMode",
     "setCanvas",
     "setColorMask",
     "setScissor",
@@ -209,6 +209,16 @@ for i, name in ipairs(names) do
     autobatch[name] = wrap(love_graphics[name])
 end
 
+local lastBlendMode, lastAlphaMode = "", ""
+autobatch.setBlendMode = function(mode, alphamode)
+    if lastBlendMode ~= mode or lastAlphaMode ~= alphamode then
+        autobatch.flush()
+        love_graphics.setBlendMode(mode, alphamode)
+        
+        lastBlendMode = mode
+        lastAlphaMode = alphamode
+    end
+end
 
 -- Override love.graphics
 love.graphics = autobatch

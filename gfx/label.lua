@@ -226,6 +226,8 @@ function Label:draw()
         return
     end
     local pr, pg, pb, pa = gfx.getColor()
+    gfx.setBlendMode("alpha", "alphamultiply")
+
     if self.borderSize > 0 and self._borderColor.a > 0 then
         local r, g, b, a = self._borderColor:unpack()
         gfx.setColor(r, g, b, a * self.alpha)

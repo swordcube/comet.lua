@@ -5,6 +5,10 @@ local Backdrop, super = Image:subclass("Backdrop", ...)
 local math = math -- Faster access with local variable
 local gfx = love.graphics -- Faster access with local variable
 
+local function preMultiplyChannels(r, g, b, a)
+    return r * a, g * a, b * a, a
+end
+
 function Backdrop:__init__(image)
     super.__init__(self, image)
 
@@ -139,12 +143,15 @@ function Backdrop:draw()
     gridY = gridY + 1
 
     local ogGridX = gridX
+    gfx.setBlendMode("alpha", "premultiplied")
+
     while true do
         local transform = self:getTransform(gridX, gridY)
         local box = self:getBoundingBox(transform, self._rect)
+
         local pr, pg, pb, pa = gfx.getColor()
-        gfx.setColor(self._tint.r, self._tint.g, self._tint.b, self._tint.a * self.alpha)
-        gfx.draw(self._tint.r * pr, self._tint.g * pg, self._tint.b * pb, self._tint.a * self.alpha * pa)
+        gfx.setColor(preMultiplyChannels(self._tint.r * pr, self._tint.g * pg, self._tint.b * pb, self._tint.a * self.alpha * pa))
+        gfx.draw(self.texture:getImage(self.antialiasing and "linear" or "nearest"), transform:getRenderValues())
         
         if comet.settings.debugDraw then
             gfx.setLineWidth(4)

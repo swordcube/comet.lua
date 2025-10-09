@@ -14,6 +14,9 @@ function Texture:__init__(image, key)
         if type(image) == "string" then
             if love.filesystem.exists(image) then
                 data = img.newImageData(image)
+                data:mapPixel(function(_, _, r, g, b, a)
+                    return r * a, g * a, b * a, a
+                end)
             else
                 local size = 16
                 local halfSize = size / 2

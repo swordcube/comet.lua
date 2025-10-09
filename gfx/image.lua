@@ -3,9 +3,15 @@
 local Image, super = Object2D:subclass("Image", ...)
 
 Image.static.NO_OFF_SCREEN_CHECKS = false
+Image.static._lastBlendMode = ""
+Image.static._lastAlphaMode = ""
 
 local abs, floor, rad, fastsin, wrap, clamp, min, max = math.abs, math.floor, math.rad, math.fastsin, math.wrap, math.clamp, math.min, math.max
 local gfx = love.graphics -- Faster access with local variable
+
+local function preMultiplyChannels(r, g, b, a)
+    return r * a, g * a, b * a, a
+end
 
 function Image:__init__(image)
     super.__init__(self)
@@ -205,13 +211,15 @@ function Image:draw()
         return
     end
     local pr, pg, pb, pa = gfx.getColor()
-    gfx.setColor(self._tint.r * pr, self._tint.g * pg, self._tint.b * pb, self._tint.a * self.alpha * pa)
+    gfx.setColor(preMultiplyChannels(self._tint.r * pr, self._tint.g * pg, self._tint.b * pb, self._tint.a * self.alpha * pa))
 
     local prevShader = gfx.getShader()
     if self._shader then
         gfx.setShader(self._shader.data)
     end
+    gfx.setBlendMode("alpha", "premultiplied")
     gfx.draw(self.texture:getImage(self.antialiasing and "linear" or "nearest"), transform:getRenderValues())
+
     if self._shader then
         gfx.setShader(prevShader)
     end

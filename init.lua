@@ -176,13 +176,16 @@ InputMouseWheelEvent = cometreq("input.inputmousewheelevent") --- @type comet.in
 Timer = cometreq("util.timer") --- @type comet.util.Timer
 
 local gfx = love.graphics
-local middleclass = cometreq("lib.middleclass") --- @type comet.lib.MiddleClass
 
 local currentUpdate = 0.0
 local debugFPSFont = nil --- @type love.Font
 
 local gamePos = {0, 0}
 local gameScale = {1, 1}
+
+local function preMultiplyChannels(r, g, b, a)
+    return r * a, g * a, b * a, a
+end
 
 function comet.init(params)
     -- if love.graphics and love.graphics.isActive() then
@@ -650,6 +653,7 @@ end
 
 function comet.draw()
     comet.signals.preDraw:emit()
+    gfx.setBlendMode("alpha", "premultiplied")
 
     love.graphics.setScissor(comet.getGameScissor())
     love.graphics.translate(gamePos[1], gamePos[2])
@@ -659,7 +663,7 @@ function comet.draw()
         -- convert to valid color object
         comet.settings.bgColor = Color:new(comet.settings.bgColor)
     end
-    love.graphics.setColor(comet.settings.bgColor:unpack())
+    love.graphics.setColor(preMultiplyChannels(comet.settings.bgColor:unpack()))
     
     local scaleMode = comet.settings.scaleMode
     local desiredWidth, desiredHeight = comet.getDimensions()
@@ -684,6 +688,8 @@ function comet.draw()
     love.graphics.setScissor()
     love.graphics.origin()
 
+    gfx.setBlendMode("alpha", "alphamultiply")
+    
     local isDebug = comet.isDebug()
     if isDebug and comet.flags.SHOW_FPS_ON_DEBUG then
         local fps = love.timer.getFPS()

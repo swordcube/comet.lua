@@ -3,8 +3,11 @@
 local ProgressBar, super = Object2D:subclass("ProgressBar", ...)
 
 local math = math -- Faster access with local variable
-local img = love.image -- Faster access with local variable
 local gfx = love.graphics -- Faster access with local variable
+
+local function preMultiplyChannels(r, g, b, a)
+    return r * a, g * a, b * a, a
+end
 
 function ProgressBar:__init__(x, y, width, height)
     super.__init__(self, x, y)
@@ -186,11 +189,13 @@ function ProgressBar:draw()
     local pr, pg, pb, pa = gfx.getColor()
     local x, y, r, sx, sy = transform:getRenderValues()
 
-    gfx.setColor(self._emptyColor.r * pr, self._emptyColor.g * pg, self._emptyColor.b * pb, self._emptyColor.a * self.alpha * pa)
+    gfx.setColor(preMultiplyChannels(self._emptyColor.r * pr, self._emptyColor.g * pg, self._emptyColor.b * pb, self._emptyColor.a * self.alpha * pa))
+    
+    gfx.setBlendMode("alpha", "premultiplied")
     gfx.draw(Rectangle.whitePixel, x, y, r, sx, sy)
 
     if self._progress > 0.0 then
-        gfx.setColor(self._fillColor.r * pr, self._fillColor.g * pg, self._fillColor.b * pb, self._fillColor.a * self.alpha * pa)
+        gfx.setColor(preMultiplyChannels(self._fillColor.r * pr, self._fillColor.g * pg, self._fillColor.b * pb, self._fillColor.a * self.alpha * pa))
 
         transform = self:getTransform(true, true, true)
         x, y, r, sx, sy = transform:getRenderValues()
@@ -201,6 +206,7 @@ function ProgressBar:draw()
 
     if comet.settings.debugDraw then
         gfx.setLineWidth(4)
+        gfx.setColor(1, 1, 1, 1)
         gfx.rectangle("line", box.x, box.y, box.width, box.height)
     end
 end
