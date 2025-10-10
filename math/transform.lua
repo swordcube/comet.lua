@@ -12,7 +12,7 @@ local Transform = {}
 Transform.__index = Transform
 
 local _new = ffi.typeof("comet_mat3")
-local impl = {new = function(_, x, y, width, height)
+local impl = {new = function(_)
     local v = _new()
     v._m[0], v._m[1], v._m[2] = 1, 0, 0
     v._m[3], v._m[4], v._m[5] = 0, 1, 0
