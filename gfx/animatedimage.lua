@@ -218,7 +218,8 @@ function AnimatedImage:getOriginalWidth(frame)
         return 0
     end
     local anim = self._animations[self._curAnim]
-    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or frame) or frame).frameWidth
+    local frameData = self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or frame) or frame)
+    return frameData and frameData.frameWidth or 0
 end
 
 --- Returns the unscaled height of a given frame.
@@ -230,7 +231,8 @@ function AnimatedImage:getOriginalHeight(frame)
         return 0
     end
     local anim = self._animations[self._curAnim]
-    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or frame) or frame).frameHeight
+    local frameData = self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or frame) or frame)
+    return frameData and frameData.frameHeight or 0
 end
 
 --- Returns the width of a given frame (accounting for this image's scale).
@@ -242,7 +244,8 @@ function AnimatedImage:getWidth(frame)
         return 0
     end
     local anim = self._animations[self._curAnim]
-    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or frame) or frame).frameWidth * abs(self.scale.x)
+    local frameData = self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or frame) or frame)
+    return frameData and frameData.frameWidth * abs(self.scale.x) or 0
 end
 
 --- Returns the height of a given frame (accounting for this image's scale).
@@ -254,7 +257,8 @@ function AnimatedImage:getHeight(frame)
         return 0
     end
     local anim = self._animations[self._curAnim]
-    return self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or frame) or frame).frameHeight * abs(self.scale.y)
+    local frameData = self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or frame) or frame)
+    return frameData and frameData.frameHeight * abs(self.scale.y) or 0
 end
 
 --- @param newWidth   number

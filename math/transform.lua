@@ -92,8 +92,7 @@ function Transform:getRenderValues()
     local sx = sqrt(a*a + b*b)
     local sy = sqrt(c*c + d*d)
 
-    -- checking if less than -0.001 because floating point numbers
-    -- are the bane of my existence
+    -- floating point numbers are the bane of my existence
     local signX = ((a * d) - (b * c)) < -epsilon and -1 or 1
     local signY = ((a * c) + (b * d)) < -epsilon and -1 or 1
 
