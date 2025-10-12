@@ -215,11 +215,8 @@ function Camera:getTransform(accountForScroll, accountForZoom, accountForParent)
     end
 
     -- position
-    if accountForScroll then
-        transform:translate(-self.scroll.x, -self.scroll.y)
-    end
     local w, h = accountForZoom and self:getWidth() or self:getOriginalWidth(), accountForZoom and self:getHeight() or self:getOriginalHeight()
-    transform:translate(self.position.x - (w * 0.5), self.position.y - (h * 0.5))
+    transform:translate(self.position.x, self.position.y)
 
     -- origin
     local ox, oy = w * self.origin.x, h * self.origin.y
@@ -230,6 +227,11 @@ function Camera:getTransform(accountForScroll, accountForZoom, accountForParent)
     -- scale
     if accountForZoom then
         transform:scale(math.max(self.zoom.x, 0.0), math.max(self.zoom.y, 0.0))
+    end
+    transform:translate(self:getOriginalWidth() * -0.5, self:getOriginalHeight() * -0.5)
+
+    if accountForScroll then
+        transform:translate(-self.scroll.x, -self.scroll.y)
     end
     return transform
 end

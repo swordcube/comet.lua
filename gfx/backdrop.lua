@@ -9,9 +9,10 @@ local function preMultiplyChannels(r, g, b, a)
     return r * a, g * a, b * a, a
 end
 
-function Backdrop:__init__(image)
+function Backdrop:__init__(image, axes)
     super.__init__(self, image)
 
+    self.axes = axes or "xy" --- @type "x"|"y"|"xy"
     self.spacing = Vec2:new() --- @type comet.math.Vec2
     self.velocity = Vec2:new() --- @type comet.math.Vec2
     self.offset = Vec2:new() --- @type comet.math.Vec2
@@ -122,28 +123,31 @@ function Backdrop:draw()
     if self.alpha <= 0.0001 or not self.texture then
         return
     end
-    local gridX, gridY = 0, 0
-    while true do
-        local transform = self:getTransform(gridX, gridY)
-        local box = self:getBoundingBox(transform, self._rect)
-        if not self:isAxesOnScreen("x", box) then
-            break
+    local gridX, gridY, axes = 0, 0, self.axes
+    if axes == "x" or axes == "xy" then
+        while true do
+            local transform = self:getTransform(gridX, gridY)
+            local box = self:getBoundingBox(transform, self._rect)
+            if not self:isAxesOnScreen("x", box) then
+                break
+            end
+            gridX = gridX - 1
         end
-        gridX = gridX - 1
+        gridX = gridX + 1
     end
-    while true do
-        local transform = self:getTransform(gridX, gridY)
-        local box = self:getBoundingBox(transform, self._rect)
-        if not self:isAxesOnScreen("y", box) then
-            break
+    if axes == "y" or axes == "xy" then
+        while true do
+            local transform = self:getTransform(gridX, gridY)
+            local box = self:getBoundingBox(transform, self._rect)
+            if not self:isAxesOnScreen("y", box) then
+                break
+            end
+            gridY = gridY - 1
         end
-        gridY = gridY - 1
+        gridY = gridY + 1
     end
-    gridX = gridX + 1
-    gridY = gridY + 1
-
     local ogGridX = gridX
-    gfx.setBlendMode("alpha", "premultiplied")
+    gfx.setBlendMode(self.blend, "premultiplied")
 
     while true do
         local transform = self:getTransform(gridX, gridY)
@@ -160,12 +164,18 @@ function Backdrop:draw()
         end
         gfx.setColor(pr, pg, pb, pa)
         gridX = gridX + 1
-        if not self:isAxesOnScreen("x", box) then
-            gridX = ogGridX
-            gridY = gridY + 1
-        end
-        if not self:isAxesOnScreen("y", box) then
-            break
+        if axes == "x" or axes == "xy" then
+            if not self:isAxesOnScreen("x", box) then
+                break
+            end
+        elseif axes == "y" or axes == "xy" then
+            if not self:isAxesOnScreen("x", box) then
+                gridX = ogGridX
+                gridY = gridY + 1
+            end
+            if not self:isAxesOnScreen("y", box) then
+                break
+            end
         end
     end
 end

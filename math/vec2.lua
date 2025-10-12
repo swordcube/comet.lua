@@ -77,6 +77,13 @@ function Vec2:setmag(mag)
     return self
 end
 
+--- checks if two vectors are equal
+--- @param other comet.math.Vec2
+--- @return boolean
+function Vec2:equals(other)
+    return self.x == other.x and self.y == other.y
+end
+
 --- meta function to make vectors negative
 --- ex: (negative) -vector(5,6) is the same as vector(-5,-6)
 ---@param v comet.math.Vec2

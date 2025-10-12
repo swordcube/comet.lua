@@ -188,6 +188,13 @@ local function preMultiplyChannels(r, g, b, a)
     return r * a, g * a, b * a, a
 end
 
+--- Returns a boolean value based on a given chance value (default is 50%)
+---@param chance number  The chance of receiving a truthy boolean value. Should be from 0-100
+---@return boolean
+love.math.chance = function(chance)
+    return love.math.random(0, 100) < (chance or 50)
+end
+
 function comet.init(params)
     -- if love.graphics and love.graphics.isActive() then
     --     error("comet.init must be called before love.load!")

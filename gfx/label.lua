@@ -45,6 +45,9 @@ function Label:__init__(x, y)
     --- Alpha multiplier for this label
     self.alpha = 1
 
+    --- The blend mode to use for this label
+    self.blend = "alpha" --- @type love.BlendMode
+
     --- @type string
     self._font = nil --- @protected
 
@@ -226,7 +229,7 @@ function Label:draw()
         return
     end
     local pr, pg, pb, pa = gfx.getColor()
-    gfx.setBlendMode("alpha", "alphamultiply")
+    gfx.setBlendMode(self.blend, "alphamultiply")
 
     if self.borderSize > 0 and self._borderColor.a > 0 then
         local r, g, b, a = self._borderColor:unpack()

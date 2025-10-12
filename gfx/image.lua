@@ -34,6 +34,9 @@ function Image:__init__(image)
     --- Whether or not to vertically flip this image
     self.flipY = false
 
+    --- The blend mode to use for this image
+    self.blend = "alpha" --- @type love.BlendMode
+
     --- @type comet.gfx.Shader
     self._shader = nil --- @protected
 
@@ -217,7 +220,7 @@ function Image:draw()
     if self._shader then
         gfx.setShader(self._shader.data)
     end
-    gfx.setBlendMode("alpha", "premultiplied")
+    gfx.setBlendMode(self.blend, "premultiplied")
     gfx.draw(self.texture:getImage(self.antialiasing and "linear" or "nearest"), transform:getRenderValues())
 
     if self._shader then

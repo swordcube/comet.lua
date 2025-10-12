@@ -24,6 +24,9 @@ function ProgressBar:__init__(x, y, width, height)
     --- The fill direction of this progress bar
     self.fillStyle = "left-to-right" --- @type "left-to-right"|"right-to-left"|"top-to-bottom"|"bottom-to-top"
 
+    --- The blend mode to use for this progress bar
+    self.blend = "alpha" --- @type love.BlendMode
+
     --- @type number
     self._progress = 0.5 --- @protected
 
@@ -191,7 +194,7 @@ function ProgressBar:draw()
 
     gfx.setColor(preMultiplyChannels(self._emptyColor.r * pr, self._emptyColor.g * pg, self._emptyColor.b * pb, self._emptyColor.a * self.alpha * pa))
     
-    gfx.setBlendMode("alpha", "premultiplied")
+    gfx.setBlendMode(self.blend, "premultiplied")
     gfx.draw(Rectangle.whitePixel, x, y, r, sx, sy)
 
     if self._progress > 0.0 then

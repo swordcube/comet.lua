@@ -31,6 +31,9 @@ function AnimatedImage:__init__(x, y)
     --- Whether or not to vertically flip this image
     self.flipY = false
 
+    --- The blend mode to use for this image
+    self.blend = "alpha" --- @type love.BlendMode
+
     --- Signal that gets emitted when the animation finishes
     self.onComplete = Signal:new():type("string", "void") --- @type comet.util.Signal
 
@@ -421,7 +424,7 @@ function AnimatedImage:draw()
     if self._shader then
         gfx.setShader(self._shader.data)
     end
-    gfx.setBlendMode("alpha", "premultiplied")
+    gfx.setBlendMode(self.blend, "premultiplied")
     gfx.draw(self._frame.texture:getImage(self.antialiasing and "linear" or "nearest"), self._frame.quad, transform:getRenderValues())
 
     if self._shader then
