@@ -158,6 +158,16 @@ function AnimatedImage:hasAnimation(name)
     return self._animations[name] ~= nil
 end
 
+--- @param name string  The name/shortcut name of the animation to get the offset of.
+--- @return comet.math.Vec2?
+function AnimatedImage:getAnimationOffset(name)
+    if not self:hasAnimation(name) then
+        Log.warn("Animation '" .. name .. "' does not exist!")
+        return nil
+    end
+    return self._animations[name].offset
+end
+
 --- @param name string  The name/shortcut name of the animation to set the offset of.
 --- @param x    number  The new X offset for this animation.
 --- @param y    number  The new Y offset for this animation.

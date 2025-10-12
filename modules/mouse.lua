@@ -19,6 +19,25 @@ function mouse:__init__()
     self.delta = Vec2:new() --- @type comet.math.Vec2
     self.wheel = Vec2:new() --- @type comet.math.Vec2
 
+    --- @protected
+    self._justPressed = {
+        left = false,
+        right = false,
+        middle = false
+    }
+    --- @protected
+    self._pressed = {
+        left = false,
+        right = false,
+        middle = false
+    }
+    --- @protected
+    self._justReleased = {
+        left = false,
+        right = false,
+        middle = false
+    }
+
     --- @type comet.math.Rect
     self._rect = Rect:new() --- @protected
 end
@@ -72,9 +91,33 @@ function mouse:overlaps(object, camera)
     return true
 end
 
+--- @param button "left"|"middle"|"right"
+function mouse:wasJustPressed(button)
+    return self._justPressed[button]
+end
+
+--- @param button "left"|"middle"|"right"
+function mouse:wasJustReleased(button)
+    return self._justReleased[button]
+end
+
+--- @param button "left"|"middle"|"right"
+function mouse:isPressed(button)
+    return self._pressed[button]
+end
+
 function mouse:handleEvent(e)
-    if e.type == "mousewheel" then
+    if e.type == "mousebutton" then
+        self._pressed[e.button] = e.pressed
+        if e.pressed then
+            self._justPressed[e.button] = true
+        else
+            self._justReleased[e.button] = true
+        end
+
+    elseif e.type == "mousewheel" then
         self.wheel:set(e.x, e.y)
+    
     elseif e.type == "mousemove" then
         self.position:set(comet.adjustPositionToGame(e.x, e.y))
         self.screenPosition:set(e.x, e.y)
@@ -85,6 +128,14 @@ end
 function mouse:update()
     self.delta:set(0, 0)
     self.wheel:set(0, 0)
+
+    self._justPressed.left = false
+    self._justPressed.middle = false
+    self._justPressed.right = false
+
+    self._justReleased.left = false
+    self._justReleased.middle = false
+    self._justReleased.right = false
 end
 
 return mouse

@@ -231,7 +231,7 @@ function Camera:getTransform(accountForScroll, accountForZoom, accountForParent)
     transform:translate(self:getOriginalWidth() * -0.5, self:getOriginalHeight() * -0.5)
 
     if accountForScroll then
-        transform:translate(-self.scroll.x, -self.scroll.y)
+        transform:translate(-self._scrollTarget.x, -self._scrollTarget.y)
     end
     return transform
 end
@@ -290,6 +290,7 @@ function Camera:snapToTarget()
         target.position.x - (self.size.x * 0.5),
         target.position.y - (self.size.y * 0.5)
     )
+    self._scrollTarget:set(self.scroll.x, self.scroll.y)
 end
 
 function Camera:focusOn(obj)
@@ -297,7 +298,8 @@ function Camera:focusOn(obj)
         return
     end
     local box = obj:getBoundingBox(obj:getTransform())
-    self.scroll:set(box.x + (box.width * 0.5), box.y + (box.height * 0.5))
+    self.scroll:set(box.x + (box.width * 0.5) - (self.size.x * 0.5), box.y + (box.height * 0.5) - (self.size.y * 0.5))
+    self._scrollTarget:set(self.scroll.x, self.scroll.y)
 end
 
 function Camera:bindScrollPos(scrollPos)
@@ -323,7 +325,7 @@ end
 function Camera:updateFollow()
     local deadzone, target = self.deadzone, self.target
     if not deadzone then
-        self._scrollTarget:set(
+        self.scroll:set(
             (target.position.x + self.targetOffset.x) - (self.size.x * 0.5),
             (target.position.y + self.targetOffset.y) - (self.size.y * 0.5)
         )
@@ -340,51 +342,51 @@ function Camera:updateFollow()
             local viewTop, viewBottom = self.scroll.y + (camBox.height * 0.5), self.size.y - (camBox.height * 0.5)
 
             if targetX >= viewRight then
-                self._scrollTarget.x = self._scrollTarget.x + viewWidth
+                self.scroll.x = self.scroll.x + viewWidth
             elseif targetX + target:getWidth() < viewLeft then
-                self._scrollTarget.x = self._scrollTarget.x - viewWidth
+                self.scroll.x = self.scroll.x - viewWidth
             end
             if targetY >= viewBottom then
-                self._scrollTarget.y = self._scrollTarget.y + viewHeight
+                self.scroll.y = self.scroll.y + viewHeight
             elseif targetY + target:getHeight() < viewTop then
-                self._scrollTarget.y = self._scrollTarget.y - viewHeight
+                self.scroll.y = self.scroll.y - viewHeight
             end
-            self:bindScrollPos(self._scrollTarget)
+            self:bindScrollPos(self.scroll)
         else
             edge = targetX - deadzone.x
-            if self._scrollTarget.x > edge then
-                self._scrollTarget.x = edge
+            if self.scroll.x > edge then
+                self.scroll.x = edge
             end
             edge = targetX + target:getWidth() - deadzone.x - deadzone.width
-            if self._scrollTarget.x < edge then
-                self._scrollTarget.x = edge
+            if self.scroll.x < edge then
+                self.scroll.x = edge
             end
             edge = targetY - deadzone.y
-            if self._scrollTarget.y > edge then
-                self._scrollTarget.y = edge
+            if self.scroll.y > edge then
+                self.scroll.y = edge
             end
             edge = targetY + target:getHeight() - deadzone.y - deadzone.height
-            if self._scrollTarget.y < edge then
-                self._scrollTarget.y = edge
+            if self.scroll.y < edge then
+                self.scroll.y = edge
             end
         end
     end
     if not self._lastTargetPosition then
         self._lastTargetPosition = Vec2:new(self.target.position.x, self.target.position.y) --- @type comet.math.Vec2
     end
-    self._scrollTarget.x = self._scrollTarget.x + ((self.target.position.x - self._lastTargetPosition.x) * self.followLead.x)
-    self._scrollTarget.y = self._scrollTarget.y + ((self.target.position.y - self._lastTargetPosition.y) * self.followLead.y)
+    self.scroll.x = self.scroll.x + ((self.target.position.x - self._lastTargetPosition.x) * self.followLead.x)
+    self.scroll.y = self.scroll.y + ((self.target.position.y - self._lastTargetPosition.y) * self.followLead.y)
 
     self._lastTargetPosition:set(self.target.position.x, self.target.position.y)
 end
 
 function Camera:updateLerp(dt)
     if self.followSpeed >= 1.0 then
-        self.scroll:set(self._scrollTarget.x, self._scrollTarget.y)
+        self._scrollTarget:set(self.scroll.x, self.scroll.y)
     else
         local adjustedSpeed = 1.0 - math.pow(1.0 - self.followSpeed, dt * 60.0)
-        self.scroll.x = math.lerp(self.scroll.x, self._scrollTarget.x, adjustedSpeed)
-        self.scroll.y = math.lerp(self.scroll.y, self._scrollTarget.y, adjustedSpeed)
+        self._scrollTarget.x = math.lerp(self._scrollTarget.x, self.scroll.x, adjustedSpeed)
+        self._scrollTarget.y = math.lerp(self._scrollTarget.y, self.scroll.y, adjustedSpeed)
     end
 end
 
@@ -395,8 +397,8 @@ function Camera:update(dt)
     local target = self.target
     if target then
         self:updateFollow()
-        self:updateLerp(dt)
     end
+    self:updateLerp(dt)
 end
 
 function Camera:drawFX(box)

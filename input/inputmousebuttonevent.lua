@@ -7,13 +7,13 @@
 ---
 local InputMouseButtonEvent = {
     type = nil, --- @type "mousebutton"
-    button = nil, --- @type "left"|"center"|"right"
+    button = nil, --- @type "left"|"middle"|"right"
     x = nil, --- @type number
     y = nil, --- @type number
     pressed = nil --- @type boolean
 }
 
---- @param  button   "left"|"center"|"right"
+--- @param  button   "left"|"middle"|"right"
 --- @param  x        number
 --- @param  y        number
 --- @param  pressed  boolean
