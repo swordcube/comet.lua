@@ -196,7 +196,7 @@ local names = {
     "setCanvas",
     "setColorMask",
     "setScissor",
-    "setShader",
+    -- "setShader",
     "setStencilTest",
     "origin",
     "rotate",
@@ -207,6 +207,15 @@ local names = {
 
 for i, name in ipairs(names) do
     autobatch[name] = wrap(love_graphics[name])
+end
+
+local lastShader = nil
+autobatch.setShader = function(shader)
+    if lastShader ~= shader then
+        autobatch.flush()
+        love_graphics.setShader(shader)
+        lastShader = shader
+    end
 end
 
 local lastBlendMode, lastAlphaMode = "", ""

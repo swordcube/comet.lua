@@ -34,6 +34,9 @@ function AnimatedImage:__init__(x, y)
     --- The blend mode to use for this image
     self.blend = "alpha" --- @type love.BlendMode
 
+    --- The blend alpha mode to use for this image
+    self.blendAlpha = "premultiplied" --- @type love.BlendAlphaMode
+
     --- Signal that gets emitted when the animation finishes
     self.onComplete = Signal:new():type("string", "void") --- @type comet.util.Signal
 
@@ -174,7 +177,7 @@ function AnimatedImage:playAnimation(name, force)
         return
     end
     force = force ~= nil and force or false
-    if not force and self._curAnim == name then
+    if not force and self._curAnim == name and self:isPlaying() then
         return
     end
     self._curAnim = name
@@ -418,18 +421,20 @@ function AnimatedImage:draw()
         return
     end
     local pr, pg, pb, pa = gfx.getColor()
-    gfx.setColor(preMultiplyChannels(self._tint.r * pr, self._tint.g * pg, self._tint.b * pb, self._tint.a * self.alpha * pa))
+    if self.blendAlpha == "premultiplied" then
+        gfx.setColor(preMultiplyChannels(self._tint.r * pr, self._tint.g * pg, self._tint.b * pb, self._tint.a * self.alpha * pa))
+    else
+        gfx.setColor(self._tint.r * pr, self._tint.g * pg, self._tint.b * pb, self._tint.a * self.alpha * pa)
+    end
+    gfx.setBlendMode(self.blend, self.blendAlpha)
 
-    local prevShader = gfx.getShader()
     if self._shader then
         gfx.setShader(self._shader.data)
+    else
+        gfx.setShader()
     end
-    gfx.setBlendMode(self.blend, "premultiplied")
     gfx.draw(self._frame.texture:getImage(self.antialiasing and "linear" or "nearest"), self._frame.quad, transform:getRenderValues())
 
-    if self._shader then
-        gfx.setShader(prevShader)
-    end
     if comet.settings.debugDraw then
         if not box then
             box = self:getBoundingBox(transform, self._rect)

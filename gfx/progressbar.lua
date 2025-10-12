@@ -27,6 +27,9 @@ function ProgressBar:__init__(x, y, width, height)
     --- The blend mode to use for this progress bar
     self.blend = "alpha" --- @type love.BlendMode
 
+    --- The blend alpha mode to use for this progress bar
+    self.blendAlpha = "premultiplied" --- @type love.BlendAlphaMode
+
     --- @type number
     self._progress = 0.5 --- @protected
 
@@ -192,14 +195,20 @@ function ProgressBar:draw()
     local pr, pg, pb, pa = gfx.getColor()
     local x, y, r, sx, sy = transform:getRenderValues()
 
-    gfx.setColor(preMultiplyChannels(self._emptyColor.r * pr, self._emptyColor.g * pg, self._emptyColor.b * pb, self._emptyColor.a * self.alpha * pa))
-    
-    gfx.setBlendMode(self.blend, "premultiplied")
+    if self.blendAlpha == "premultiplied" then
+        gfx.setColor(preMultiplyChannels(self._emptyColor.r * pr, self._emptyColor.g * pg, self._emptyColor.b * pb, self._emptyColor.a * self.alpha * pa))
+    else
+        gfx.setColor(self._emptyColor.r * pr, self._emptyColor.g * pg, self._emptyColor.b * pb, self._emptyColor.a * self.alpha * pa)
+    end
+    gfx.setBlendMode(self.blend, self.blendAlpha)
     gfx.draw(Rectangle.whitePixel, x, y, r, sx, sy)
-
+    
     if self._progress > 0.0 then
-        gfx.setColor(preMultiplyChannels(self._fillColor.r * pr, self._fillColor.g * pg, self._fillColor.b * pb, self._fillColor.a * self.alpha * pa))
-
+        if self.blendAlpha == "premultiplied" then
+            gfx.setColor(preMultiplyChannels(self._fillColor.r * pr, self._fillColor.g * pg, self._fillColor.b * pb, self._fillColor.a * self.alpha * pa))
+        else
+            gfx.setColor(self._fillColor.r * pr, self._fillColor.g * pg, self._fillColor.b * pb, self._fillColor.a * self.alpha * pa)
+        end
         transform = self:getTransform(true, true, true)
         x, y, r, sx, sy = transform:getRenderValues()
 

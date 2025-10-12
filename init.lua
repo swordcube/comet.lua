@@ -662,6 +662,7 @@ end
 function comet.draw()
     comet.signals.preDraw:emit()
     gfx.setBlendMode("alpha", "premultiplied")
+    gfx.setShader()
 
     love.graphics.setScissor(comet.getGameScissor())
     love.graphics.translate(gamePos[1], gamePos[2])
@@ -697,6 +698,7 @@ function comet.draw()
     love.graphics.origin()
 
     gfx.setBlendMode("alpha", "alphamultiply")
+    gfx.setShader()
     
     local isDebug = comet.isDebug()
     if isDebug and comet.flags.SHOW_FPS_ON_DEBUG then

@@ -147,14 +147,23 @@ function Backdrop:draw()
         gridY = gridY + 1
     end
     local ogGridX = gridX
-    gfx.setBlendMode(self.blend, "premultiplied")
+    gfx.setBlendMode(self.blend, self.blendAlpha)
 
+    if self._shader then
+        gfx.setShader(self._shader.data)
+    else
+        gfx.setShader()
+    end
     while true do
         local transform = self:getTransform(gridX, gridY)
         local box = self:getBoundingBox(transform, self._rect)
 
         local pr, pg, pb, pa = gfx.getColor()
-        gfx.setColor(preMultiplyChannels(self._tint.r * pr, self._tint.g * pg, self._tint.b * pb, self._tint.a * self.alpha * pa))
+        if self.blendAlpha == "premultiplied" then
+            gfx.setColor(preMultiplyChannels(self._tint.r * pr, self._tint.g * pg, self._tint.b * pb, self._tint.a * self.alpha * pa))
+        else
+            gfx.setColor(self._tint.r * pr, self._tint.g * pg, self._tint.b * pb, self._tint.a * self.alpha * pa)
+        end
         gfx.draw(self.texture:getImage(self.antialiasing and "linear" or "nearest"), transform:getRenderValues())
         
         if comet.settings.debugDraw then

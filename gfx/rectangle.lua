@@ -39,6 +39,9 @@ function Rectangle:__init__(x, y, width, height)
     --- The blend mode to use for this rectangle
     self.blend = "alpha" --- @type love.BlendMode
 
+    --- The blend alpha mode to use for this rectangle
+    self.blendAlpha = "premultiplied" --- @type love.BlendAlphaMode
+
     --- @type comet.gfx.Color
     self._color = Color:new(1, 1, 1, 1) --- @protected
 end
@@ -189,9 +192,12 @@ function Rectangle:draw()
         return
     end
     local pr, pg, pb, pa = gfx.getColor()
-    gfx.setColor(preMultiplyChannels(self._color.r * pr, self._color.g * pg, self._color.b * pb, self._color.a * self.alpha * pa))
-    
-    gfx.setBlendMode(self.blend, "premultiplied")
+    if self.blendAlpha == "premultiplied" then
+        gfx.setColor(preMultiplyChannels(self._color.r * pr, self._color.g * pg, self._color.b * pb, self._color.a * self.alpha * pa))
+    else
+        gfx.setColor(self._color.r * pr, self._color.g * pg, self._color.b * pb, self._color.a * self.alpha * pa)
+    end
+    gfx.setBlendMode(self.blend, self.blendAlpha)
     gfx.draw(whitePixel, transform:getRenderValues())
     
     if comet.settings.debugDraw then

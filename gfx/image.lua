@@ -37,6 +37,9 @@ function Image:__init__(image)
     --- The blend mode to use for this image
     self.blend = "alpha" --- @type love.BlendMode
 
+    --- The blend alpha mode to use for this image
+    self.blendAlpha = "premultiplied" --- @type love.BlendAlphaMode
+
     --- @type comet.gfx.Shader
     self._shader = nil --- @protected
 
@@ -214,18 +217,20 @@ function Image:draw()
         return
     end
     local pr, pg, pb, pa = gfx.getColor()
-    gfx.setColor(preMultiplyChannels(self._tint.r * pr, self._tint.g * pg, self._tint.b * pb, self._tint.a * self.alpha * pa))
+    if self.blendAlpha == "premultiplied" then
+        gfx.setColor(preMultiplyChannels(self._tint.r * pr, self._tint.g * pg, self._tint.b * pb, self._tint.a * self.alpha * pa))
+    else
+        gfx.setColor(self._tint.r * pr, self._tint.g * pg, self._tint.b * pb, self._tint.a * self.alpha * pa)
+    end
+    gfx.setBlendMode(self.blend, self.blendAlpha)
 
-    local prevShader = gfx.getShader()
     if self._shader then
         gfx.setShader(self._shader.data)
+    else
+        gfx.setShader()
     end
-    gfx.setBlendMode(self.blend, "premultiplied")
     gfx.draw(self.texture:getImage(self.antialiasing and "linear" or "nearest"), transform:getRenderValues())
-
-    if self._shader then
-        gfx.setShader(prevShader)
-    end
+    
     if comet.settings.debugDraw then
         if not box then
             box = self:getBoundingBox(transform, self._rect)
