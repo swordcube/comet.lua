@@ -14,14 +14,40 @@ cometreq("os")
 
 local lfs = love.filesystem
 
---- Returns whether or not a given file exists.
---- @param  file  string  File path to check
+--- Returns whether or not a given file/directory/symlink exists.
+--- @param  path  string  File/directory/symlink path to check
 --- @return boolean
-local function fsExists(file)
+local function fsExists(path)
+    if not path then
+        return false
+    end
+    if lfs.getInfo(path, "file") or lfs.getInfo(path, "directory") or lfs.getInfo(path, "symlink") then
+        return true
+    end
+    return false
+end
+
+--- Returns whether or not a given path is a directory.
+--- @param  dir  string  Path to check
+--- @return boolean
+local function fsIsDirectory(dir)
+    if not dir then
+        return false
+    end
+    if lfs.getInfo(dir, "directory") then
+        return true
+    end
+    return false
+end
+
+--- Returns whether or not a given path is a file.
+--- @param  file  string  Path to check
+--- @return boolean
+local function fsIsFile(file)
     if not file then
         return false
     end
-    if lfs.getInfo(file, "file") or lfs.getInfo(file, "directory") or lfs.getInfo(file, "symlink") then
+    if lfs.getInfo(file, "file") then
         return true
     end
     return false
@@ -314,6 +340,8 @@ function comet.init(params)
     love.wheelmoved = comet.handleMouseWheel
 
     love.filesystem.exists = fsExists
+    love.filesystem.isDirectory = fsIsDirectory
+    love.filesystem.isFile = fsIsFile
     love.filesystem.getContent = fsGetContent
 
     if comet.flags.DESKTOP then
