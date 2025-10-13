@@ -459,10 +459,6 @@ function Camera:_draw()
                 local pr, pg, pb, pa = gfx.getColor()
                 local bgVisible = self._bgColor.a > 0.001
 
-                -- mandatory bg color, shit breaks with shaders on if we don't have this
-                gfx.setColor(0, 0, 0, 1)
-                gfx.rectangle("fill", box.x, box.y, box.width, box.height)
-
                 if bgVisible then
                     gfx.setColor(preMultiplyChannels(self._bgColor.r, self._bgColor.g, self._bgColor.b, self._bgColor.a))
                     gfx.rectangle("fill", box.x, box.y, box.width, box.height)
@@ -477,11 +473,6 @@ function Camera:_draw()
                 -- then draw this shaderless canvas to the final canvas
                 gfx.setCanvas(self._canvases[shader])
                 gfx.clear()
-                
-                -- mandatory bg color first tho, shit breaks with shaders on if we don't have this
-                gfx.setColor(0, 0, 0, 1)
-                gfx.rectangle("fill", box.x, box.y, box.width, box.height)
-                gfx.setColor(pr, pg, pb, pa)
                 
                 -- and then we ACTUALLY draw the shaderless canvas
                 gfx.setShader(shader.data)
