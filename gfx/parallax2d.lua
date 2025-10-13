@@ -26,7 +26,7 @@ function Parallax2D:getTransform()
         p = p.parent
     end
     if camera then
-        transform:translate(camera._scrollTarget.x * (1 - self.scrollFactor.x), camera._scrollTarget.y * (1 - self.scrollFactor.y))
+        transform:translate(camera.scroll.x * (1 - self.scrollFactor.x), camera.scroll.y * (1 - self.scrollFactor.y))
     end
     transform:rotate(math.rad(self.rotation))
     transform:scale(self.scale.x, self.scale.y)
