@@ -17,28 +17,34 @@ function Path:__init__(path)
         self.file = ""
         return
     end
-
     local c1 = string.lastIndexOf(path, "/")
     local c2 = string.lastIndexOf(path, "\\")
 
+    -- convert -1 (if not found) to 0 for easier comparison
+    if c1 == -1 then c1 = 0 end
+    if c2 == -1 then c2 = 0 end
+
+    local namePart = nil
     if c1 < c2 then
-        self.dir = string.sub(path, 1, c2)
-        self.path = string.sub(path, c2 + 1)
+        -- backslash is last
+        self.dir = string.sub(path, 1, c2 - 1)
+        namePart = string.sub(path, c2 + 1)
         self.backslash = true
     elseif c2 < c1 then
-        self.dir = string.sub(path, 1, c1)
-        self.path = string.sub(path, c1 + 1)
+        -- forward slash is last
+        self.dir = string.sub(path, 1, c1 - 1)
+        namePart = string.sub(path, c1 + 1)
     else
         self.dir = nil
+        namePart = path
     end
-
-    local cp = string.lastIndexOf(path, ".")
+    local cp = string.lastIndexOf(namePart, ".")
     if cp ~= -1 then
-        self.ext = string.sub(path, cp + 1)
-        self.file = string.sub(path, 1, cp - 1)
+        self.ext = string.sub(namePart, cp + 1)
+        self.file = string.sub(namePart, 1, cp - 1)
     else
         self.ext = nil
-        self.file = path
+        self.file = namePart
     end
 end
 
@@ -46,7 +52,7 @@ function Path:__tostring()
     local final = (self.dir == nil) and "" or self.dir .. (self.backslash and "\\" or "/")
     final = final .. self.file
     if self.ext ~= nil then
-        final = final .. self.ext
+        final = final .. "." .. self.ext
     end
     return final
 end
