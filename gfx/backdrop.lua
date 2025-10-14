@@ -115,8 +115,13 @@ function Backdrop:isOnScreen()
 end
 
 function Backdrop:update(dt)
-    self.offset.x = math.wrap(self.offset.x + (self.velocity.x * dt), 0, self:getWidth() + self.spacing.x) 
-    self.offset.y = math.wrap(self.offset.y + (self.velocity.y * dt), 0, self:getHeight() + self.spacing.y)
+    local axes = self.axes
+    if axes == "x" or axes == "xy" then
+        self.offset.x = math.wrap(self.offset.x + (self.velocity.x * dt), 0, self:getWidth() + self.spacing.x) 
+    end
+    if axes == "y" or axes == "xy" then
+        self.offset.y = math.wrap(self.offset.y + (self.velocity.y * dt), 0, self:getHeight() + self.spacing.y)
+    end
 end
 
 function Backdrop:draw()
@@ -172,16 +177,22 @@ function Backdrop:draw()
             gfx.rectangle("line", box.x, box.y, box.width, box.height)
         end
         gfx.setColor(pr, pg, pb, pa)
-        gridX = gridX + 1
-        if axes == "x" or axes == "xy" then
-            if not self:isAxesOnScreen("x", box) then
-                break
-            end
-        elseif axes == "y" or axes == "xy" then
+        if axes == "xy" then
+            gridX = gridX + 1
             if not self:isAxesOnScreen("x", box) then
                 gridX = ogGridX
                 gridY = gridY + 1
             end
+            if not self:isAxesOnScreen("y", box) then
+                break
+            end
+        elseif axes == "x" then
+            gridX = gridX + 1
+            if not self:isAxesOnScreen("x", box) then
+                break
+            end
+        elseif axes == "y" then
+            gridY = gridY + 1
             if not self:isAxesOnScreen("y", box) then
                 break
             end
