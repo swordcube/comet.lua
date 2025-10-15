@@ -304,8 +304,9 @@ end
 --- @param accountForParent boolean?
 --- @param accountForCamera boolean?
 --- @param accountForCentering boolean?
+--- @param accountForFrames boolean?
 --- @return comet.math.Transform
-function AnimatedImage:getTransform(accountForParent, accountForCamera, accountForCentering)
+function AnimatedImage:getTransform(accountForParent, accountForCamera, accountForCentering, accountForFrames)
     if accountForParent == nil then
         accountForParent = true
     end
@@ -314,6 +315,9 @@ function AnimatedImage:getTransform(accountForParent, accountForCamera, accountF
     end
     if accountForCentering == nil then
         accountForCentering = false
+    end
+    if accountForFrames == nil then
+        accountForFrames = false
     end
     local transform = self._transform:reset()
     if accountForParent then
@@ -364,11 +368,12 @@ function AnimatedImage:getTransform(accountForParent, accountForCamera, accountF
     end
 
     -- frame & anim offset
-    local anim = self._animations[self._curAnim]
-    transform:translate(frame.offset.x + (anim and anim.offset.x or 0.0), frame.offset.y + (anim and anim.offset.y or 0.0))
-    transform:translate(0, fastsin(rad(frame.rotation)) * -frame.frameWidth)
-    transform:rotate(rad(frame.rotation))
-    
+    if accountForFrames then
+        local anim = self._animations[self._curAnim]
+        transform:translate(frame.offset.x + (anim and anim.offset.x or 0.0), frame.offset.y + (anim and anim.offset.y or 0.0))
+        transform:translate(0, fastsin(rad(frame.rotation)) * -frame.frameWidth)
+        transform:rotate(rad(frame.rotation))
+    end
     return transform
 end
 
@@ -425,7 +430,7 @@ function AnimatedImage:draw()
     if self.alpha <= 0.0001 or not self._frame or not self._frame.texture then
         return
     end
-    local transform = self:getTransform(true, true, true)
+    local transform = self:getTransform(true, true, true, true)
     local box = not AnimatedImage.NO_OFF_SCREEN_CHECKS and self:getBoundingBox(transform, self._rect) or nil
     if box and not self:isOnScreen(box) then
         return
