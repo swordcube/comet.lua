@@ -135,6 +135,7 @@ function Camera:getShaders()
     return self._shaders
 end
 
+--- @param newShaders comet.gfx.Shader[]
 function Camera:setShaders(newShaders)
     for i = 1, #self._shaders do
         -- if not in new shader list, then deference
@@ -145,7 +146,7 @@ function Camera:setShaders(newShaders)
                 self._canvases[shader]:release()
                 self._canvases[shader] = nil
             end
-            shader:dereference()
+            shader:dereference(false) -- don't try to destroy if there are 0 references yet, we might reuse this same shader in newShaders
         end
     end
     local filteredShaders = table.removeDuplicates(newShaders)
@@ -165,7 +166,21 @@ function Camera:setShaders(newShaders)
     else
         self._canvases["first"] = gfx.newCanvas(self.size.x, self.size.y)
     end
+    for i = 1, #self._shaders do
+        -- if not in new shader list, then destroy
+        -- it entirely if there are 0 references 
+        local shader = self._shaders[i]
+        if not table.contains(newShaders, shader) then
+            shader:checkRefs() -- check if there are 0 references now, destroy if so
+        end
+    end
     self._shaders = filteredShaders
+end
+
+--- @param newShaders comet.gfx.Shader[]
+function Camera:addShaders(newShaders)
+    local curShaders = table.merge(self._shaders, newShaders)
+    self:setShaders(curShaders)
 end
 
 --- Returns the unscaled width of this camera.

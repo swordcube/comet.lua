@@ -69,7 +69,7 @@ end
 --- Gets the first value of an uniform / extern variable as a number.
 --- @return number
 function Shader:getUniformNumber(name)
-    return tonumber(self._uniforms[name][1])
+    return tonumber(self._uniforms[name][1] or 0.0)
 end
 
 --- Returns any warning and error messages from compiling the shader code. This can be used for debugging your shaders if there's anything the graphics hardware doesn't like.

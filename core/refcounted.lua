@@ -17,8 +17,18 @@ function RefCounted:reference()
     self._refs = self._refs + 1
 end
 
-function RefCounted:dereference()
+function RefCounted:dereference(checkRefs)
+    if checkRefs == nil then
+        checkRefs = true
+    end
     self._refs = self._refs - 1
+    if checkRefs then
+        self:checkRefs()
+    end
+end
+
+--- Checks if there are no more references to this object and destroys it if so.
+function RefCounted:checkRefs()
     if self._refs <= 0 and not self._destroyed then
         self:destroy()
         self._destroyed = true

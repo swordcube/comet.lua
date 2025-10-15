@@ -213,6 +213,21 @@ function math.sign(value)
 end
 
 ---
+--- Remaps a number from one range to another.
+---
+--- @param  value   number  The incoming value to be converted
+--- @param  start1  number  Lower bound of the value's current range
+--- @param  stop1   number  Upper bound of the value's current range
+--- @param  start2  number  Lower bound of the value's target range
+--- @param  stop2   number  Upper bound of the value's target range
+---
+--- @return number
+---
+function math.remapToRange(value, start1, stop1, start2, stop2)
+    return start2 + (value - start1) * ((stop2 - start2) / (stop1 - start1))
+end
+
+---
 --- A faster but slightly less accurate version of `math.sin`
 --- 
 --- About 2-6 times faster with < 0.05% average margin of error

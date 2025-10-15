@@ -230,3 +230,19 @@ function table.numberList(beginNumber, endNumber, inc)
     end
     return t
 end
+
+---
+--- Merges two tables into one new table.
+--- 
+--- @param t1  table  The first table to merge.
+--- @param t2  table  The second table to merge.
+--- 
+--- @return table
+---
+function table.merge(t1, t2)
+    local result = {}
+    for k, v in pairs(t2) do
+        result[k] = v
+    end
+    return result
+end
