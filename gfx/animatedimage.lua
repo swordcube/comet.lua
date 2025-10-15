@@ -382,6 +382,9 @@ end
 --- @param rect  comet.math.Rect?  The rectangle to use as the bounding box (optional)
 --- @return comet.math.Rect
 function AnimatedImage:getBoundingBox(trans, rect)
+    if not trans then
+        trans = self:getTransform(true, true, true, true)
+    end
     return Image.getBoundingBox(self, trans, rect)
 end
 
