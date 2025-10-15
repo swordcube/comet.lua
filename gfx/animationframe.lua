@@ -38,6 +38,26 @@ function AnimationFrame:updateQuad()
     self.quad:setViewport(self.position.x, self.position.y, self.clipWidth, self.clipHeight, self.texture:getWidth(), self.texture:getHeight())
 end
 
+function AnimationFrame:getUV()
+    return self.position.x / self.texture:getWidth(), self.position.y / self.texture:getHeight(), self.clipWidth / self.texture:getWidth(), self.clipHeight / self.texture:getHeight()
+end
+
+function AnimationFrame:getUVX()
+    return self.position.x / self.texture:getWidth()
+end
+
+function AnimationFrame:getUVY()
+    return self.position.y / self.texture:getHeight()
+end
+
+function AnimationFrame:getUVWidth()
+    return self.clipWidth / self.texture:getWidth()
+end
+
+function AnimationFrame:getUVHeight()
+    return self.clipHeight / self.texture:getHeight()
+end
+
 function AnimationFrame:destroy()
     if self.quad then
         self.quad:release()

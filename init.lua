@@ -225,6 +225,28 @@ function comet.init(params)
     -- if love.graphics and love.graphics.isActive() then
     --     error("comet.init must be called before love.load!")
     -- end
+    love.run = comet.run
+    love.load = comet.load
+    love.update = comet.update
+    love.draw = comet.draw
+    love.quit = comet.quit
+    love.timer.getTPS = comet.getTPS
+
+    love.keypressed = comet.handleKeyPress
+    love.keyreleased = comet.handleKeyRelease
+
+    love.textinput = comet.handleTextInput
+
+    love.mousepressed = comet.handleMousePress
+    love.mousereleased = comet.handleMouseRelease
+    love.mousemoved = comet.handleMouseMove
+    love.wheelmoved = comet.handleMouseWheel
+
+    love.filesystem.exists = fsExists
+    love.filesystem.isDirectory = fsIsDirectory
+    love.filesystem.isFile = fsIsFile
+    love.filesystem.getContent = fsGetContent
+    
     if not params then
         params = {}
     end
@@ -321,28 +343,6 @@ function comet.init(params)
     comet.signals.postScreenSwitch = cometreq("util.signal"):new()
 
     comet.signals.onQuit = cometreq("util.signal"):new()
-
-    love.run = comet.run
-    love.load = comet.load
-    love.update = comet.update
-    love.draw = comet.draw
-    love.quit = comet.quit
-    love.timer.getTPS = comet.getTPS
-
-    love.keypressed = comet.handleKeyPress
-    love.keyreleased = comet.handleKeyRelease
-
-    love.textinput = comet.handleTextInput
-
-    love.mousepressed = comet.handleMousePress
-    love.mousereleased = comet.handleMouseRelease
-    love.mousemoved = comet.handleMouseMove
-    love.wheelmoved = comet.handleMouseWheel
-
-    love.filesystem.exists = fsExists
-    love.filesystem.isDirectory = fsIsDirectory
-    love.filesystem.isFile = fsIsFile
-    love.filesystem.getContent = fsGetContent
 
     if comet.flags.DESKTOP then
         love.keyboard.setKeyRepeat(true)

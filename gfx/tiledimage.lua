@@ -1,0 +1,172 @@
+--- @class comet.gfx.TiledImage : comet.gfx.Image
+local TiledImage, super = Image:subclass("TiledImage", ...)
+
+local gfx = love.graphics -- Faster access with local variable
+local vertexFormat = {
+    {format = "floatvec3", offset = 0,  arraylength = 0, location = 0},
+    {format = "floatvec2", offset = 12, arraylength = 0, location = 1}
+}
+local defaultTriangles = {}
+local defaultTri = {0, 0, 0, 0, 0, 0}
+for _ = 1, 1000 do
+    defaultTriangles[#defaultTriangles + 1] = defaultTri
+end
+local ceil, lerp = math.ceil, math.lerp
+
+local function preMultiplyChannels(r, g, b, a)
+    return r * a, g * a, b * a, a
+end
+
+function TiledImage:__init__(x, y)
+    super.__init__(self, x, y)
+
+    self.horizontallyRepeat = true
+    self.verticallyRepeat = true
+
+    self.horizontalLength = 0
+    self.verticalLength = 0
+
+    self.horizontalPadding = 0
+    self.verticalPadding = 0
+
+    --- @type love.Mesh
+    self._mesh = gfx.newMesh(vertexFormat, defaultTriangles, "triangles", "stream") --- @protected
+end
+
+function TiledImage:getFrameWidth(frame)
+    return super.getWidth(self, frame)
+end
+
+function TiledImage:getOriginalFrameWidth(frame)
+    return super.getOriginalWidth(self, frame)
+end
+
+function TiledImage:getFrameHeight(frame)
+    return super.getHeight(self, frame)
+end
+
+function TiledImage:getOriginalFrameHeight(frame)
+    return super.getOriginalHeight(self, frame)
+end
+
+function TiledImage:getWidth(frame)
+    return self.horizontallyRepeat and self.horizontalLength or super.getWidth(self, frame)
+end
+
+function TiledImage:getHeight(frame)
+    return self.verticallyRepeat and self.verticalLength or super.getHeight(self, frame)
+end
+
+--- @param  frame   comet.gfx.Texture
+--- @param  hTiles  integer
+--- @param  vTiles  integer
+--- 
+--- @return table[]
+function TiledImage:calculateVertices(frame, hTiles, vTiles)
+    local vertices = {}
+
+    local roundHTiles = self.horizontallyRepeat and (ceil(hTiles) - 1) or 1
+    local roundVTiles = self.verticallyRepeat and (ceil(vTiles) - 1) or 1
+
+    local uvOffsetX = self.horizontalPadding / frame:getWidth()
+    local uvOffsetY = self.verticalPadding / frame:getHeight()
+    
+    local rightMult = 1.0
+    local uvLeft, uvRight = uvOffsetX, 1 - uvOffsetX
+    for x = 0, roundHTiles do
+        if x == roundHTiles and hTiles ~= (roundHTiles + 1) then
+            rightMult = hTiles % 1
+            uvRight = lerp(uvLeft, uvRight, rightMult)
+        end
+        local bottomMult = 1.0
+        local uvTop, uvBottom = uvOffsetY, 1 - uvOffsetY
+        for y = 0, roundVTiles do
+            if y == roundVTiles and hTiles ~= (roundVTiles + 1) then
+                bottomMult = vTiles % 1
+                uvBottom = lerp(uvTop, uvBottom, bottomMult)
+            end
+            vertices[#vertices + 1] = {
+                x * frame:getWidth(), frame:getHeight() * y, 1,
+                uvLeft, uvTop
+            }
+            vertices[#vertices + 1] = {
+                (x * frame:getWidth()) + frame:getWidth() * rightMult, frame:getHeight() * y, 1,
+                uvRight, uvTop
+            }
+            vertices[#vertices + 1] = {
+                x * frame:getWidth(), frame:getHeight() * bottomMult + (frame:getHeight() * y), 1,
+                uvLeft, uvBottom
+            }
+            vertices[#vertices + 1] = {
+                x * frame:getWidth(), frame:getHeight() * bottomMult + (frame:getHeight() * y), 1,
+                uvLeft, uvBottom
+            }
+            vertices[#vertices + 1] = {
+                (x * frame:getWidth()) + frame:getWidth() * rightMult, frame:getHeight() * bottomMult + (frame:getHeight() * y), 1,
+                uvRight, uvBottom
+            }
+            vertices[#vertices + 1] = {
+                (x * frame:getWidth()) + frame:getWidth() * rightMult, frame:getHeight() * y, 1,
+                uvRight, uvTop
+            }
+        end
+    end
+    return vertices
+end
+
+function TiledImage:draw()
+    if self.alpha <= 0.0001 or not self.texture then
+        return
+    end
+    local transform = self:getTransform(true, true, true)
+    local box = not Image.NO_OFF_SCREEN_CHECKS and self:getBoundingBox(transform, self._rect) or nil
+    if box and not self:isOnScreen(box) then
+        return
+    end
+    local pr, pg, pb, pa = gfx.getColor()
+    if self.blendAlpha == "premultiplied" then
+        gfx.setColor(preMultiplyChannels(self._tint.r * pr, self._tint.g * pg, self._tint.b * pb, self._tint.a * self.alpha * pa))
+    else
+        gfx.setColor(self._tint.r * pr, self._tint.g * pg, self._tint.b * pb, self._tint.a * self.alpha * pa)
+    end
+    gfx.setBlendMode(self.blend, self.blendAlpha)
+
+    if self._shader then
+        gfx.setShader(self._shader.data)
+    else
+        gfx.setShader()
+    end
+    local vertices = self:calculateVertices(self.texture, self.horizontalLength / self.texture:getWidth(), self.verticalLength / self.texture:getHeight())
+    local vertexCount = #vertices
+
+    local mesh = self._mesh
+    if vertexCount > mesh:getVertexCount() then
+        -- if you reach higher vertex count than the mesh
+        -- can currently handle, make a new mesh
+
+        -- seems to be the best solution other than
+        -- giving the mesh a shit ton of triangles immediately
+
+        mesh:release()
+        mesh = gfx.newMesh(vertexFormat, vertices, "triangles", "stream")
+
+        self._mesh = mesh
+    else
+        mesh:setDrawRange(1, vertexCount)
+        mesh:setVertices(vertices)
+    end
+    mesh:setTexture(self.texture:getImage(self.antialiasing and "linear" or "nearest").image)
+    gfx.draw(mesh, transform:getRenderValues())
+
+    if comet.settings.debugDraw then
+        if not box then
+            box = self:getBoundingBox(transform, self._rect)
+        end
+        gfx.setLineWidth(4)
+        gfx.setColor(1, 1, 1, 1)
+        gfx.rectangle("line", box.x, box.y, box.width, box.height)
+    end
+    gfx.setColor(pr, pg, pb, pa)
+end
+
+return TiledImage
