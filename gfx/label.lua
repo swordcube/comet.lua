@@ -73,6 +73,7 @@ function Label:getBorderColor()
     return self._borderColor
 end
 
+--- @param color comet.gfx.Color
 function Label:setBorderColor(color)
     self._borderColor = Color:new(color)
 end
@@ -81,6 +82,7 @@ function Label:getColor()
     return self._color
 end
 
+--- @param color comet.gfx.Color
 function Label:setColor(color)
     self._color = Color:new(color)
 end
@@ -89,7 +91,9 @@ function Label:getSize()
     return self._size
 end
 
+--- @param size number
 function Label:setSize(size)
+    assert(type(size) == "number", "Label:setSize(): You must pass in a number for the text size")
     self._size = size
     self:setFont(self._font)
 end
@@ -98,7 +102,9 @@ function Label:getFont()
     return self._font
 end
 
+--- @param font string?
 function Label:setFont(font)
+    assert(type(font) == "string" or font == nil, "Label:setFont(): You must pass in a file path for the font")
     self._font = font or comet.getEmbeddedFont("Roboto-Regular")
     if self._fontData then
         self._fontData:release()

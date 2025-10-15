@@ -137,6 +137,8 @@ end
 
 --- @param newShaders comet.gfx.Shader[]
 function Camera:setShaders(newShaders)
+    assert(type(newShaders) == "table", "Camera:setShaders(): Parameter 1 must be a table with shader instances")
+
     for i = 1, #self._shaders do
         -- if not in new shader list, then deference
         -- otherwise, do nothing since it's still referenced
@@ -179,6 +181,8 @@ end
 
 --- @param newShaders comet.gfx.Shader[]
 function Camera:addShaders(newShaders)
+    assert(type(newShaders) == "table", "Camera:addShaders(): Parameter 1 must be a table with shader instances")
+    
     local curShaders = table.merge(self._shaders, newShaders)
     self:setShaders(curShaders)
 end

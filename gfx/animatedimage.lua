@@ -77,6 +77,7 @@ end
 
 --- @param frames comet.gfx.FrameCollection
 function AnimatedImage:setFrameCollection(frames)
+    assert(type(frames) == "table" and Class.isinstanceof(frames, FrameCollection), "AnimatedImage:setFrameCollection(): You must pass in a FrameCollection instance")
     if self._frames then
         self._frames:dereference()
         self._frames = nil
@@ -94,6 +95,7 @@ function AnimatedImage:getShader()
 end
 
 function AnimatedImage:setShader(shader)
+    assert(type(shader) == "table" and Class.isinstanceof(shader, Shader), "AnimatedImage:setShader(): You must pass in a shader instance")
     if self._shader then
         self._shader:dereference()
         self._shader = nil
