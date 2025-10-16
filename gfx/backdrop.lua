@@ -24,9 +24,6 @@ function Backdrop:__init__(image, axes)
     self.spacing = Vec2:new() --- @type comet.math.Vec2
     self.velocity = Vec2:new() --- @type comet.math.Vec2
     self.offset = Vec2:new() --- @type comet.math.Vec2
-
-    --- @type comet.math.Rect
-    self._rect = Rect:new() --- @protected
 end
 
 --- Returns the transform of this backdrop

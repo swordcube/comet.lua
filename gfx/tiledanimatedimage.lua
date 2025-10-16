@@ -11,7 +11,7 @@ local defaultTri = {0, 0, 0, 0, 0, 0}
 for _ = 1, 1000 do
     defaultTriangles[#defaultTriangles + 1] = defaultTri
 end
-local ceil, lerp = math.ceil, math.lerp
+local abs, ceil, lerp = math.abs, math.ceil, math.lerp
 
 local function preMultiplyChannels(r, g, b, a)
     return r * a, g * a, b * a, a
@@ -49,12 +49,20 @@ function TiledAnimatedImage:getOriginalFrameHeight(frame)
     return super.getOriginalHeight(self, frame)
 end
 
+function TiledAnimatedImage:getOriginalWidth(frame)
+    return self.horizontallyRepeat and self.horizontalLength or super.getOriginalWidth(self, frame)
+end
+
 function TiledAnimatedImage:getWidth(frame)
-    return self.horizontallyRepeat and self.horizontalLength or super.getWidth(self, frame)
+    return self.horizontallyRepeat and self.horizontalLength * abs(self.scale.x) or super.getWidth(self, frame)
+end
+
+function TiledAnimatedImage:getOriginalHeight(frame)
+    return self.verticallyRepeat and self.verticalLength or super.getOriginalHeight(self, frame)
 end
 
 function TiledAnimatedImage:getHeight(frame)
-    return self.verticallyRepeat and self.verticalLength or super.getHeight(self, frame)
+    return self.verticallyRepeat and self.verticalLength * abs(self.scale.y) or super.getHeight(self, frame)
 end
 
 --- @param  frame   comet.gfx.AnimationFrame
@@ -140,25 +148,26 @@ function TiledAnimatedImage:draw()
     local vertices = self:calculateVertices(frame, self.horizontalLength / frame.clipWidth, self.verticalLength / frame.clipHeight)
     local vertexCount = #vertices
 
-    local mesh = self._mesh
-    if vertexCount > mesh:getVertexCount() then
-        -- if you reach higher vertex count than the mesh
-        -- can currently handle, make a new mesh
-
-        -- seems to be the best solution other than
-        -- giving the mesh a shit ton of triangles immediately
-
-        mesh:release()
-        mesh = gfx.newMesh(vertexFormat, vertices, "triangles", "stream")
-
-        self._mesh = mesh
-    else
-        mesh:setDrawRange(1, vertexCount)
-        mesh:setVertices(vertices)
+    if vertexCount > 0 then
+        local mesh = self._mesh
+        if vertexCount > mesh:getVertexCount() then
+            -- if you reach higher vertex count than the mesh
+            -- can currently handle, make a new mesh
+    
+            -- seems to be the best solution other than
+            -- giving the mesh a shit ton of triangles immediately
+    
+            mesh:release()
+            mesh = gfx.newMesh(vertexFormat, vertices, "triangles", "stream")
+    
+            self._mesh = mesh
+        else
+            mesh:setDrawRange(1, vertexCount)
+            mesh:setVertices(vertices)
+        end
+        mesh:setTexture(frame.texture:getImage(self.antialiasing and "linear" or "nearest").image)
+        gfx.draw(mesh, transform:getRenderValues())
     end
-    mesh:setTexture(frame.texture:getImage(self.antialiasing and "linear" or "nearest").image)
-    gfx.draw(mesh, transform:getRenderValues())
-
     if comet.settings.debugDraw then
         if not box then
             box = self:getBoundingBox(transform, self._rect)
@@ -168,6 +177,14 @@ function TiledAnimatedImage:draw()
         gfx.rectangle("line", box.x, box.y, box.width, box.height)
     end
     gfx.setColor(pr, pg, pb, pa)
+end
+
+function TiledAnimatedImage:destroy()
+    if self._mesh then
+        self._mesh:release()
+        self._mesh = nil
+    end
+    super.destroy(self)
 end
 
 return TiledAnimatedImage

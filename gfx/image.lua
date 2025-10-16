@@ -13,6 +13,19 @@ local function preMultiplyChannels(r, g, b, a)
     return r * a, g * a, b * a, a
 end
 
+local stencilSprite = nil
+local function stencil(tx, ty, tr, tsx, tsy)
+	if stencilSprite then
+        local cr = stencilSprite.clipRect
+        gfx.push()
+        gfx.translate(tx, ty)
+        gfx.rotate(tr)
+        gfx.scale(tsx, tsy)
+		gfx.rectangle("fill", cr.x, cr.y, cr.width, cr.height)
+        gfx.pop()
+	end
+end
+
 function Image:__init__(image)
     super.__init__(self)
 
@@ -39,6 +52,9 @@ function Image:__init__(image)
 
     --- The blend alpha mode to use for this image
     self.blendAlpha = "premultiplied" --- @type love.BlendAlphaMode
+
+    --- The clipping rectangle to use for this image
+    self.clipRect = nil --- @type comet.math.Rect?
 
     --- @type comet.gfx.Shader
     self._shader = nil --- @protected
@@ -227,13 +243,30 @@ function Image:draw()
     end
     gfx.setBlendMode(self.blend, self.blendAlpha)
 
+    local x, y, r, sx, sy = transform:getRenderValues()
+    if self.clipRect then
+		stencilSprite = self
+        gfx.clear(false, true, false)
+
+        gfx.setStencilState("replace", "always", 1)
+        gfx.setColorMask(false)
+
+        stencil(x, y, r, sx, sy)
+
+        gfx.setStencilState("keep", "greater", 0)
+        gfx.setColorMask(true)
+	end
     if self._shader then
         gfx.setShader(self._shader.data)
     else
         gfx.setShader()
     end
-    gfx.draw(self.texture:getImage(self.antialiasing and "linear" or "nearest"), transform:getRenderValues())
+    gfx.draw(self.texture:getImage(self.antialiasing and "linear" or "nearest"), x, y, r, sx, sy)
     
+    if self.clipRect then
+        gfx.clear(false, true, false)
+		gfx.setStencilState()
+	end
     if comet.settings.debugDraw then
         if not box then
             box = self:getBoundingBox(transform, self._rect)

@@ -49,8 +49,16 @@ function TiledImage:getOriginalFrameHeight(frame)
     return super.getOriginalHeight(self, frame)
 end
 
+function TiledImage:getOriginalWidth(frame)
+    return self.horizontallyRepeat and self.horizontalLength or super.getOriginalWidth(self, frame)
+end
+
 function TiledImage:getWidth(frame)
     return self.horizontallyRepeat and self.horizontalLength or super.getWidth(self, frame)
+end
+
+function TiledImage:getOriginalHeight(frame)
+    return self.verticallyRepeat and self.verticalLength or super.getOriginalHeight(self, frame)
 end
 
 function TiledImage:getHeight(frame)
@@ -114,6 +122,32 @@ function TiledImage:calculateVertices(frame, hTiles, vTiles)
     return vertices
 end
 
+--- Returns the bounding box of this image, as a rectangle
+--- @param trans comet.math.Transform?   The transform to use for the bounding box (optional)
+--- @param rect  comet.math.Rect?  The rectangle to use as the bounding box (optional)
+--- @return comet.math.Rect
+function Image:getBoundingBox(trans, rect)
+    if not trans then
+        trans = self:getTransform()
+    end
+    if not rect then
+        rect = Rect:new()
+    end
+    local w, h = self:getOriginalWidth(), self:getOriginalHeight()
+    local x1, y1 = trans:transformPoint(0, 0)
+    local x2, y2 = trans:transformPoint(w, 0)
+    local x3, y3 = trans:transformPoint(w, h)
+    local x4, y4 = trans:transformPoint(0, h)
+
+    local minX = min(x1, x2, x3, x4)
+    local minY = min(y1, y2, y3, y4)
+    local maxX = max(x1, x2, x3, x4)
+    local maxY = max(y1, y2, y3, y4)
+
+    rect:set(minX, minY, maxX - minX, maxY - minY)
+    return rect
+end
+
 function TiledImage:draw()
     if self.alpha <= 0.0001 or not self.texture then
         return
@@ -167,6 +201,14 @@ function TiledImage:draw()
         gfx.rectangle("line", box.x, box.y, box.width, box.height)
     end
     gfx.setColor(pr, pg, pb, pa)
+end
+
+function TiledImage:destroy()
+    if self._mesh then
+        self._mesh:release()
+        self._mesh = nil
+    end
+    super.destroy(self)
 end
 
 return TiledImage

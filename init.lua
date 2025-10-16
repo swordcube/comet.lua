@@ -6,6 +6,7 @@ cometreq = function(mod)
 end
 cometreq("lib.autobatch")
 
+cometreq("tools.stdlibtools") --- @type comet.tools.stdlibtools
 cometreq("tools.mathtools") --- @type comet.tools.mathtools
 cometreq("tools.tabletools") --- @type comet.tools.tabletools
 cometreq("tools.stringtools") --- @type comet.tools.stringtools
