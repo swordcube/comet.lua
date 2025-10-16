@@ -46,7 +46,7 @@ function ScreenManager:_switchScreen()
         self.current:destroy()
         self.current = nil
     end
-    comet.signals.preScreenSwitch:emit()
+    comet.signals.preScreenSwitch:emit(self.pending)
     
     for i = 1, #comet.mixer.sounds.children do
         local sound = comet.mixer.sounds.children[i] --- @type comet.mixer.Sound
