@@ -57,7 +57,7 @@ function Object:addChild(object, tag)
         self._childrenByTag[tag] = object
     end
     object.parent = self
-    table.insert(self.children, object)
+    self.children[#self.children + 1] = object --- @type comet.core.Object
     self._childCount = #self.children
 end
 
@@ -139,6 +139,34 @@ end
 
 function Object:revive()
     self.exists = true
+end
+
+---
+--- @param  class    comet.core.Object
+--- @param  factory  function?
+--- @param  revive   boolean?
+---
+--- @return comet.core.Object
+---
+function Object:recycle(class, factory, revive)
+    revive = (revive ~= nil) and revive or true
+    for i = 1, self._childCount do
+        local actor = self.children[i] --- @type comet.core.Object
+        if actor and not actor.exists and Class.isinstanceof(actor, class) then
+            if revive then
+                actor:revive()
+            end
+            return actor
+        end
+    end
+    if factory then
+        local actor = factory()
+        self:addChild(actor)
+        return actor
+    end
+    local actor = class:new()
+    self:addChild(actor)
+    return actor
 end
 
 function Object:shouldUpdate()
