@@ -347,9 +347,7 @@ function comet.init(params)
 
     if comet.flags.DESKTOP then
         love.keyboard.setKeyRepeat(true)
-        love.keyboard.setTextInput(true)
     end
-    -- TODO: handle gamepad input
 end
 
 function comet.getEmbeddedResourceDir()
