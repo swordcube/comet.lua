@@ -460,7 +460,7 @@ function Camera:_draw()
         for i = 1, #self._shaders do
             local shader = self._shaders[i]
             if i > 1 then
-                gfx.setCanvas(self._canvases[shader])
+                gfx.setCanvas({self._canvases[shader], stencil=true})
                 gfx.setBlendMode("alpha", "alphamultiply")
                 gfx.clear()
                 
@@ -472,7 +472,7 @@ function Camera:_draw()
                 gfx.setCanvas()
             else
                 -- draw to initial shaderless canvas first
-                gfx.setCanvas(self._canvases["first"])
+                gfx.setCanvas({self._canvases["first"], stencil=true})
                 gfx.setBlendMode("alpha", "alphamultiply")
                 gfx.clear()
                 gfx.setBlendMode("alpha", "premultiplied")
@@ -492,7 +492,7 @@ function Camera:_draw()
                 gfx.setColor(pr, pg, pb, pa)
 
                 -- then draw this shaderless canvas to the final canvas
-                gfx.setCanvas(self._canvases[shader])
+                gfx.setCanvas({self._canvases[shader], stencil=true})
                 gfx.setBlendMode("alpha", "alphamultiply")
                 gfx.clear()
                 
