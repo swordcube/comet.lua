@@ -109,7 +109,15 @@ function table.join(t, sep)
     local result = ""
 
     for i, value in ipairs(t) do
-        result = result .. tostring(value)
+        local valstr = nil
+        if type(value) == "nil" then
+            valstr = "nil"
+        elseif type(value) == "function" then
+            valstr = "function"
+        else
+            valstr = tostring(value)
+        end
+        result = result .. valstr
         if i < tl then
             result = result .. sep
         end
