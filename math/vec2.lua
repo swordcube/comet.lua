@@ -1,7 +1,4 @@
 local ffi = require("ffi")
-if not type(jit) == "table" or not jit.status() then
-    error("JIT must be enabled to use Vec2!")
-end
 ffi.cdef("typedef struct {double x,y;} comet_vec2;")
 
 ---@class comet.math.Vec2

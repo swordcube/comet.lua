@@ -1,11 +1,8 @@
 --- @diagnostic disable: cast-local-type
 local ffi = require("ffi")
-local atan2, sqrt, epsilon = math.atan2, math.sqrt, math.epsilon
-
-if not type(jit) == "table" or not jit.status() then
-    error("JIT must be enabled to use Transform!")
-end
 ffi.cdef "typedef struct { double _m[9]; } comet_mat3;"
+
+local atan2, sqrt, epsilon = math.atan2, math.sqrt, math.epsilon
 
 ---@class comet.math.Transform
 local Transform = {}

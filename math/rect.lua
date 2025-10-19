@@ -1,7 +1,4 @@
 local ffi = require("ffi")
-if not type(jit) == "table" or not jit.status() then
-    error("JIT must be enabled to use Rect!")
-end
 ffi.cdef("typedef struct {double x,y,width,height;} comet_rect;")
 
 ---@class comet.math.Rect

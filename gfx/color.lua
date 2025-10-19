@@ -1,7 +1,4 @@
 local ffi = require("ffi")
-if not type(jit) == "table" or not jit.status() then
-    error("JIT must be enabled to use Color!")
-end
 local bit = require("bit")
 
 --- @class comet.gfx.Color : comet.util.Class
