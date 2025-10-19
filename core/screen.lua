@@ -104,8 +104,12 @@ function Screen:close()
     self:destroy()
 end
 
+function Screen:canUpdate()
+    return self.persistentUpdate or not self._subScreen
+end
+
 function Screen:_update(dt)
-    if self.persistentUpdate or not self._subScreen then
+    if self:canUpdate() then
         super._update(self, dt)
     end
     if self._subScreen and self._subScreen.exists then
