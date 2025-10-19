@@ -362,34 +362,34 @@ function AnimatedImage:getTransform(accountForParent, accountForCamera, accountF
         transform:scale(abs(self.scale.x), abs(self.scale.y))
         
         if self.scale.x < -math.epsilon then
-            transform:translate(ox2, oy2)
+            transform:translate(ox2, 0)
             transform:scale(-1, 1)
-            transform:translate(-ox2, -oy2)
+            transform:translate(-ox2, 0)
         end
         if self.scale.y < -math.epsilon then
-            transform:translate(ox2, oy2)
+            transform:translate(0, oy2)
             transform:scale(1, -1)
-            transform:translate(-ox2, -oy2)
+            transform:translate(0, -oy2)
         end
     else
         transform:scale(self.scale.x, self.scale.y)
     end
     if self.flipX then
-        transform:translate(ox2, oy2)
+        transform:translate(ox2, 0)
         transform:scale(-1, 1)
-        transform:translate(-ox2, -oy2)
+        transform:translate(-ox2, 0)
     end
     if self.flipY then
-        transform:translate(ox2, oy2)
+        transform:translate(0, oy2)
         transform:scale(1, -1)
-        transform:translate(-ox2, -oy2)
+        transform:translate(0, -oy2)
     end
 
     -- frame & anim offset
     if accountForFrames then
         local anim = self._animations[self._curAnim]
         transform:translate(frame.offset.x + (anim and anim.offset.x or 0.0), frame.offset.y + (anim and anim.offset.y or 0.0))
-        transform:translate(0, fastsin(rad(frame.rotation)) * -frame.frameWidth)
+        transform:translate(0, fastsin(rad(frame.rotation)) * -frame.clipWidth)
         transform:rotate(rad(frame.rotation))
     end
     return transform

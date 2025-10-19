@@ -2,7 +2,7 @@
 local ffi = require("ffi")
 ffi.cdef "typedef struct { double _m[9]; } comet_mat3;"
 
-local atan2, sqrt, epsilon = math.atan2, math.sqrt, math.epsilon
+local abs, atan2, sqrt, epsilon = math.abs, math.atan2, math.sqrt, math.epsilon
 
 ---@class comet.math.Transform
 local Transform = {}
@@ -85,18 +85,31 @@ function Transform:getRenderValues()
     local m = self._m
     local a, b, c, d = m[0], m[1], m[3], m[4]
 
-    local r = atan2(b, a)
-    local sx = sqrt(a*a + b*b)
-    local sy = sqrt(c*c + d*d)
+    local sx = sqrt(a * a + b * b)
+    local sy = sqrt(c * c + d * d)
 
-    -- floating point numbers are the bane of my existence
-    local signX = ((a * d) - (b * c)) < -epsilon and -1 or 1
-    local signY = ((a * c) + (b * d)) < -epsilon and -1 or 1
+    if sx < epsilon then sx = 0 end
+    if sy < epsilon then sy = 0 end
 
-    if signX < 0 then
-        r = r + math.pi
+    local det = a * d - b * c
+    local mirrorX, mirrorY = false, false
+
+    if det < -epsilon then
+        if abs(a * d) > abs(b * c) then
+            mirrorX = true
+        else
+            mirrorY = true
+        end
     end
-    return m[6], m[7], r, sx * signX, sy * signY
+    local r = atan2(b, a)
+    if mirrorX then
+        sx = -sx
+        r = r + math.pi
+    elseif mirrorY then
+        sy = -sy
+        r = -r
+    end
+    return m[6], m[7], r, sx, sy
 end
 
 ffi.metatype("comet_mat3", impl.mt)
