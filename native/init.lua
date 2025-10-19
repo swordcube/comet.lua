@@ -21,7 +21,7 @@ local _gcCount_ = "count"
 
 local ffi = require("ffi")
 
-local SDL3 = ffi.load("SDL3")
+local SDL3 = ffi.os == "Windows" and ffi.load("SDL3") or ffi.C
 
 ffi.cdef [[\
 	// sdl3 api
