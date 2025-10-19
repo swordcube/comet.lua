@@ -2,7 +2,7 @@
 local ffi = require("ffi")
 ffi.cdef "typedef struct { double _m[9]; } comet_mat3;"
 
-local abs, atan2, sqrt, epsilon = math.abs, math.atan2, math.sqrt, math.epsilon
+local abs, atan2, sqrt, epsilon, pi = math.abs, math.atan2, math.sqrt, math.epsilon, math.pi
 
 ---@class comet.math.Transform
 local Transform = {}
@@ -104,7 +104,7 @@ function Transform:getRenderValues()
     local r = atan2(b, a)
     if mirrorX then
         sx = -sx
-        r = r + math.pi
+        r = r + pi
     elseif mirrorY then
         sy = -sy
         r = -r

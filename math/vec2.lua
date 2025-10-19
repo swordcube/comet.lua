@@ -37,6 +37,62 @@ function Vec2:set(x, y)
     return self
 end
 
+--- add to the values of the vector
+---@param x number?
+---@param y number?
+---@overload fun(self: comet.math.Vec2, vec: comet.math.Vec2): self
+---@return self
+function Vec2:add(x, y)
+    ---@diagnostic disable-next-line: undefined-field
+    if isvector(x) then
+        self.x, self.y = self.x + x.x, self.y + x.y; return self
+    end
+    self.x, self.y = self.x + (x or 0.0), self.y + (y or 0.0)
+    return self
+end
+
+--- subtract from the values of the vector
+---@param x number?
+---@param y number?
+---@overload fun(self: comet.math.Vec2, vec: comet.math.Vec2): self
+---@return self
+function Vec2:sub(x, y)
+    ---@diagnostic disable-next-line: undefined-field
+    if isvector(x) then
+        self.x, self.y = self.x - x.x, self.y - x.y; return self
+    end
+    self.x, self.y = self.x - (x or 0.0), self.y - (y or 0.0)
+    return self
+end
+
+--- multiply the values of the vector
+---@param x number?
+---@param y number?
+---@overload fun(self: comet.math.Vec2, vec: comet.math.Vec2): self
+---@return self
+function Vec2:multiply(x, y)
+    ---@diagnostic disable-next-line: undefined-field
+    if isvector(x) then
+        self.x, self.y = self.x * x.x, self.y * x.y; return self
+    end
+    self.x, self.y = self.x * (x or 1.0), self.y * (y or 1.0)
+    return self
+end
+
+--- divide the values of the vector
+---@param x number?
+---@param y number?
+---@overload fun(self: comet.math.Vec2, vec: comet.math.Vec2): self
+---@return self
+function Vec2:divide(x, y)
+    ---@diagnostic disable-next-line: undefined-field
+    if isvector(x) then
+        self.x, self.y = self.x / x.x, self.y / x.y; return self
+    end
+    self.x, self.y = self.x / (x or 1.0), self.y / (y or 1.0)
+    return self
+end
+
 --- replace the values of a vector with the values of another vector
 ---@param v comet.math.Vec2
 ---@return self
