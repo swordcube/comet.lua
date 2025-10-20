@@ -4,6 +4,9 @@ local Class = cometreq("util.class") --- @type comet.util.Class
 local mixer = Class("comet.modules.mixer", ...)
 
 function mixer:__init__()
+    self._volume = 1.0 --- @protected
+    self._muted = false --- @protected
+
     self.sounds = Object:new() --- @type comet.core.Object
     self.sounds.updateMode = "always"
 
@@ -32,11 +35,26 @@ function mixer:play(src, volume, looping)
 end
 
 function mixer:getMasterVolume()
-    return love.audio.getVolume()
+    return self._volume
 end
 
 function mixer:setMasterVolume(volume)
-    love.audio.setVolume(volume)
+    self._volume = volume
+    love.audio.setVolume(volume * (self._muted and 0.0 or 1.0))
+end
+
+function mixer:isMasterMuted()
+    return self._muted
+end
+
+function mixer:muteMaster()
+    self._muted = true
+    love.audio.setVolume(0.0)
+end
+
+function mixer:unmuteMaster()
+    self._muted = false
+    love.audio.setVolume(self._volume)
 end
 
 --- @param  filePath  string

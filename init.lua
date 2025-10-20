@@ -78,6 +78,8 @@ comet = {
         srcDirectory = "", --- @type string
 
         fpsCap = 0,
+        timeScale = 1,
+
         bgColor = nil, --- @type comet.gfx.Color
         dimensions = nil, --- @type comet.math.Vec2
         scaleMode = "ratio", --- @type "ratio"|"fill"|"stage"
@@ -280,6 +282,9 @@ function comet.init(params)
     comet.settings.dimensions = comet.settings.dimensions and Vec2:new(comet.settings.dimensions[1], comet.settings.dimensions[2]) or Vec2:new(800, 600)
     comet.settings.scaleMode = comet.settings.scaleMode or "ratio"
 
+    if comet.settings.timeScale == nil then
+        comet.settings.timeScale = 1.0
+    end
     if comet.settings.parallelUpdate == nil then
         comet.settings.parallelUpdate = true
     end
@@ -560,7 +565,7 @@ function comet.run()
             if not comet.settings.parallelUpdate then
                 comet._rawDt = dt
             end
-            if love.update and not comet.settings.parallelUpdate then love.update(dt) end
+            if love.update and not comet.settings.parallelUpdate then love.update(dt * comet.settings.timeScale) end
     
             if love.graphics and love.graphics.isActive() then
                 love.graphics.origin()
@@ -583,7 +588,7 @@ function comet.run()
             currentUpdate = 0
         end
         if comet.settings.parallelUpdate then
-            love.update(comet._rawDt)
+            love.update(comet._rawDt * comet.settings.timeScale)
             comet._dt = 0
         end
         if comet.settings.frequentGc then
@@ -600,18 +605,28 @@ end
 function comet.load() end -- define this yourself
 
 --- Returns delta time based off of FPS
---- 
---- Use this if you're within the context of comet.update (screen updating, plugin updating, etc)
-function comet.getDeltaTime()
+function comet.getRawDeltaTime()
     return comet._dt
 end
 
+--- Returns delta time based off of FPS, accounting for timescale
+--- 
+--- Use this if you're within the context of comet.update (screen updating, plugin updating, etc)
+function comet.getDeltaTime()
+    return comet._dt * comet.settings.timeScale
+end
+
 --- Returns delta time based off of TPS
+function comet.getRawFullDeltaTime()
+    return comet._rawDt
+end
+
+--- Returns delta time based off of TPS, accounting for timescale
 --- 
 --- You should use `comet.getDeltaTime()` for most cases, but
 --- if you need the highest delta time available, this will return it!
 function comet.getFullDeltaTime()
-    return comet._rawDt
+    return comet._rawDt * comet.settings.timeScale
 end
 
 function comet.update(dt)
@@ -690,6 +705,8 @@ function comet.draw()
     comet.signals.preDraw:emit()
     gfx.setBlendMode("alpha", "premultiplied")
     gfx.setShader()
+    gfx.setScissor()
+    gfx.setColor(1, 1, 1, 1)
 
     love.graphics.setScissor(comet.getGameScissor())
     love.graphics.translate(gamePos[1], gamePos[2])

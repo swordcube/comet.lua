@@ -49,6 +49,8 @@ function Sound:setSource(src)
         src = comet.mixer:getSource(src)
     end
     self._source = src
+    self._source:reference()
+    
     self._loveSource = src.data:clone()
 end
 
