@@ -224,6 +224,19 @@ love.math.chance = function(chance)
     return love.math.random(0, 100) < (chance or 50)
 end
 
+--- Shuffles the contents of an array around randomly.
+--- @param arr any  The array to shuffle
+--- @return any
+love.math.shuffle = function(arr)
+    local maxValidIndex = #arr
+    for i = 1, maxValidIndex do
+        local j = math.floor(love.math.random(i, maxValidIndex))
+        local tmp = arr[i]
+        arr[i] = arr[j]
+        arr[j] = tmp
+    end
+end
+
 function comet.init(params)
     -- if love.graphics and love.graphics.isActive() then
     --     error("comet.init must be called before love.load!")

@@ -52,7 +52,7 @@ end
 --- @return comet.util.Timer
 function Timer:start(duration, func, loops)
     self.time = 0.0
-    self.duration = duration
+    self.duration = math.max(duration or 0.0, math.epsilon) -- for some reason having 0 duration will cause the game to freeze??? tf???
 
     self.loops = loops or 1
     self.loopsLeft = self.loops
@@ -82,7 +82,8 @@ function Timer:update(dt)
         self.onComplete:emit(self)
 
         if self.loopsLeft <= 0 then
-            self:destroy()
+            self:cancel()
+            break
         end
     end
 end
