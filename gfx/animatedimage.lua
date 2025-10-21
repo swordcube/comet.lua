@@ -72,7 +72,10 @@ function AnimatedImage:__init__(x, y)
     self._frameTimer = 0.0 --- @protected
 
     --- @type boolean
-    self._playing = false
+    self._playing = false --- @protected
+
+    --- @type boolean
+    self._finished = false --- @protected
 
     --- @type comet.gfx.FrameCollection
     self._frames = nil --- @protected
@@ -213,6 +216,7 @@ function AnimatedImage:playAnimation(name, force)
 
     self._frameTimer = 0.0
     self._playing = true
+    self._finished = false
 end
 
 function AnimatedImage:getCurrentAnimation()
@@ -241,6 +245,10 @@ end
 
 function AnimatedImage:resume()
     self._playing = true
+end
+
+function AnimatedImage:isFinished()
+    return self._finished
 end
 
 --- Returns the unscaled width of a given frame.
@@ -442,6 +450,7 @@ function AnimatedImage:update(dt)
         self._frameTimer = self._frameTimer - frameDuration
         
         if finished then
+            self._finished = true
             self.onComplete:emit(self._curAnim)
         end
     end

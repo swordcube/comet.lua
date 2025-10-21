@@ -31,6 +31,8 @@ function TiledAnimatedImage:__init__(x, y)
 
     --- @type love.Mesh
     self._mesh = gfx.newMesh(vertexFormat, defaultTriangles, "triangles", "stream") --- @protected
+
+    self._vertices = {}
 end
 
 function TiledAnimatedImage:getFrameWidth(frame)
@@ -66,58 +68,77 @@ function TiledAnimatedImage:getHeight(frame)
 end
 
 --- @param  frame   comet.gfx.AnimationFrame
---- @param  hTiles  integer
---- @param  vTiles  integer
---- 
---- @return table[]
+--- @param  hTiles  number
+--- @param  vTiles  number
+--- @return table[]  -- array of vertex tables: {x, y, z, u, v}
 function TiledAnimatedImage:calculateVertices(frame, hTiles, vTiles)
-    local vertices = {}
+    local fw, fh = frame.clipWidth, frame.clipHeight
+    local texW, texH = frame.texture:getWidth(), frame.texture:getHeight()
+    local uvx, uvy, uvw, uvh = frame:getUVX(), frame:getUVY(), frame:getUVWidth(), frame:getUVHeight()
+
+    local uvOffsetX = self.horizontalPadding / texW
+    local uvOffsetY = self.verticalPadding / texH
 
     local roundHTiles = self.horizontallyRepeat and (ceil(hTiles) - 1) or 1
     local roundVTiles = self.verticallyRepeat and (ceil(vTiles) - 1) or 1
 
-    local uvOffsetX = self.horizontalPadding / frame.texture:getWidth()
-    local uvOffsetY = self.verticalPadding / frame.texture:getHeight()
-    
-    local rightMult = 1.0
-    local uvLeft, uvRight = frame:getUVX() + uvOffsetX, frame:getUVX() + frame:getUVWidth() - uvOffsetX
+    local uvLeftBase = uvx + uvOffsetX
+    local uvRightBase = uvx + uvw - uvOffsetX
+    local uvTopBase = uvy + uvOffsetY
+    local uvBottomBase = uvy + uvh - uvOffsetY
+
+    local vertices = self._vertices
+    local vi = 1
+
     for x = 0, roundHTiles do
+        local rightMult, uvRight = 1.0, uvRightBase
         if x == roundHTiles and hTiles ~= (roundHTiles + 1) then
             rightMult = hTiles % 1
-            uvRight = lerp(uvLeft, uvRight, rightMult)
+            uvRight = uvLeftBase + (uvRightBase - uvLeftBase) * rightMult
         end
-        local bottomMult = 1.0
-        local uvTop, uvBottom = frame:getUVY() + uvOffsetY, frame:getUVY() + frame:getUVHeight() - uvOffsetY
+        local x0 = x * fw
+        local x1 = x0 + fw * rightMult
+
         for y = 0, roundVTiles do
-            if y == roundVTiles and hTiles ~= (roundVTiles + 1) then
+            local bottomMult, uvBottom = 1.0, uvBottomBase
+            if y == roundVTiles and vTiles ~= (roundVTiles + 1) then
                 bottomMult = vTiles % 1
-                uvBottom = lerp(uvTop, uvBottom, bottomMult)
+                uvBottom = uvTopBase + (uvBottomBase - uvTopBase) * bottomMult
             end
-            vertices[#vertices + 1] = {
-                x * frame.clipWidth, frame.clipHeight * y, 1,
-                uvLeft, uvTop
-            }
-            vertices[#vertices + 1] = {
-                (x * frame.clipWidth) + frame.clipWidth * rightMult, frame.clipHeight * y, 1,
-                uvRight, uvTop
-            }
-            vertices[#vertices + 1] = {
-                x * frame.clipWidth, frame.clipHeight * bottomMult + (frame.clipHeight * y), 1,
-                uvLeft, uvBottom
-            }
-            vertices[#vertices + 1] = {
-                x * frame.clipWidth, frame.clipHeight * bottomMult + (frame.clipHeight * y), 1,
-                uvLeft, uvBottom
-            }
-            vertices[#vertices + 1] = {
-                (x * frame.clipWidth) + frame.clipWidth * rightMult, frame.clipHeight * bottomMult + (frame.clipHeight * y), 1,
-                uvRight, uvBottom
-            }
-            vertices[#vertices + 1] = {
-                (x * frame.clipWidth) + frame.clipWidth * rightMult, frame.clipHeight * y, 1,
-                uvRight, uvTop
-            }
+            local y0 = y * fh
+            local y1 = y0 + fh * bottomMult
+
+            local v = vertices
+            v[vi]   = v[vi]   or {0, 0, 0, 0, 0}
+            v[vi+1] = v[vi+1] or {0, 0, 0, 0, 0}
+            v[vi+2] = v[vi+2] or {0, 0, 0, 0, 0}
+            v[vi+3] = v[vi+3] or {0, 0, 0, 0, 0}
+            v[vi+4] = v[vi+4] or {0, 0, 0, 0, 0}
+            v[vi+5] = v[vi+5] or {0, 0, 0, 0, 0}
+
+            local p = v[vi]
+            p[1],p[2],p[3],p[4],p[5] = x0, y0, 1, uvLeftBase, uvTopBase
+            
+            p = v[vi+1]
+            p[1],p[2],p[3],p[4],p[5] = x1, y0, 1, uvRight, uvTopBase
+            
+            p = v[vi+2]
+            p[1],p[2],p[3],p[4],p[5] = x0, y1, 1, uvLeftBase, uvBottom
+            
+            p = v[vi+3]
+            p[1],p[2],p[3],p[4],p[5] = x0, y1, 1, uvLeftBase, uvBottom
+            
+            p = v[vi+4]
+            p[1],p[2],p[3],p[4],p[5] = x1, y1, 1, uvRight, uvBottomBase
+            
+            p = v[vi+5]
+            p[1],p[2],p[3],p[4],p[5] = x1, y0, 1, uvRight, uvTopBase
+
+            vi = vi + 6
         end
+    end
+    for i = vi, #vertices do
+        vertices[i] = nil
     end
     return vertices
 end
