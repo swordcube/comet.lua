@@ -46,6 +46,7 @@ function ScreenManager:_switchScreen()
         self.current:destroy()
         self.current = nil
     end
+    collectgarbage()
     comet.signals.preScreenSwitch:emit(self.pending)
     
     for i = 1, #comet.mixer.sounds.children do
@@ -57,6 +58,8 @@ function ScreenManager:_switchScreen()
     TimerManager.instance:clear()
     TweenManager.instance:clear()
     
+    collectgarbage()
+    
     local new = self.pending
     self.current = new
     Log.verbose("Switched to screen: " .. new.class.name)
@@ -65,8 +68,12 @@ function ScreenManager:_switchScreen()
     self.current:startIntro()
     self.current:postEnter()
     
+    collectgarbage()
+
     comet.signals.postScreenSwitch:emit()
     self.pending = nil
+
+    collectgarbage()
 end
 
 return ScreenManager
