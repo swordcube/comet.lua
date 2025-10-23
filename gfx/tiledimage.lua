@@ -31,6 +31,8 @@ function TiledImage:__init__(x, y)
 
     --- @type love.Mesh
     self._mesh = gfx.newMesh(vertexFormat, defaultTriangles, "triangles", "stream") --- @protected
+
+    self._vertices = {} --- @protected
 end
 
 function TiledImage:getFrameWidth(frame)
@@ -65,107 +67,62 @@ function TiledImage:getHeight(frame)
     return self.verticallyRepeat and self.verticalLength or super.getHeight(self, frame)
 end
 
+local function setupVertex(list, idx, x, y, z, u, v)
+    local t = list[idx]
+    if not t then
+        t = {}
+        list[idx] = t
+    end
+    t[1] = x
+    t[2] = y
+    t[3] = z
+    t[4] = u
+    t[5] = v
+end
+
 --- @param  frame   comet.gfx.Texture
 --- @param  hTiles  integer
 --- @param  vTiles  integer
 --- 
 --- @return table[]
 function TiledImage:calculateVertices(frame, hTiles, vTiles)
-    local fw, fh = frame:getWidth(), frame:getHeight()
-    local texW, texH = frame:getWidth(), frame:getHeight()
-    local uvx, uvy, uvw, uvh = 0, 0, 1, 1
-
-    local uvOffsetX = self.horizontalPadding / texW
-    local uvOffsetY = self.verticalPadding / texH
+    local vertices = self._vertices or {}
+    local vc = 1
 
     local roundHTiles = self.horizontallyRepeat and (ceil(hTiles) - 1) or 1
     local roundVTiles = self.verticallyRepeat and (ceil(vTiles) - 1) or 1
 
-    local uvLeftBase = uvx + uvOffsetX
-    local uvRightBase = uvx + uvw - uvOffsetX
-    local uvTopBase = uvy + uvOffsetY
-    local uvBottomBase = uvy + uvh - uvOffsetY
-
-    local vertices = self._vertices
-    local vi = 1
-
+    local uvOffsetX = self.horizontalPadding / frame:getWidth()
+    local uvOffsetY = self.verticalPadding / frame:getHeight()
+    
+    local rightMult = 1.0
+    local uvLeft, uvRight = uvOffsetX, 1 - uvOffsetX
     for x = 0, roundHTiles do
-        local rightMult, uvRight = 1.0, uvRightBase
         if x == roundHTiles and hTiles ~= (roundHTiles + 1) then
             rightMult = hTiles % 1
-            uvRight = uvLeftBase + (uvRightBase - uvLeftBase) * rightMult
+            uvRight = lerp(uvLeft, uvRight, rightMult)
         end
-        local x0 = x * fw
-        local x1 = x0 + fw * rightMult
-
+        local bottomMult = 1.0
+        local uvTop, uvBottom = uvOffsetY, 1 - uvOffsetY
         for y = 0, roundVTiles do
-            local bottomMult, uvBottom = 1.0, uvBottomBase
-            if y == roundVTiles and vTiles ~= (roundVTiles + 1) then
+            if y == roundVTiles and hTiles ~= (roundVTiles + 1) then
                 bottomMult = vTiles % 1
-                uvBottom = uvTopBase + (uvBottomBase - uvTopBase) * bottomMult
+                uvBottom = lerp(uvTop, uvBottom, bottomMult)
             end
-            local y0 = y * fh
-            local y1 = y0 + fh * bottomMult
-
-            local v = vertices
-            v[vi]   = v[vi]   or {0, 0, 0, 0, 0}
-            v[vi+1] = v[vi+1] or {0, 0, 0, 0, 0}
-            v[vi+2] = v[vi+2] or {0, 0, 0, 0, 0}
-            v[vi+3] = v[vi+3] or {0, 0, 0, 0, 0}
-            v[vi+4] = v[vi+4] or {0, 0, 0, 0, 0}
-            v[vi+5] = v[vi+5] or {0, 0, 0, 0, 0}
-
-            local p = v[vi]
-            p[1],p[2],p[3],p[4],p[5] = x0, y0, 1, uvLeftBase, uvTopBase
-            
-            p = v[vi+1]
-            p[1],p[2],p[3],p[4],p[5] = x1, y0, 1, uvRight, uvTopBase
-            
-            p = v[vi+2]
-            p[1],p[2],p[3],p[4],p[5] = x0, y1, 1, uvLeftBase, uvBottom
-            
-            p = v[vi+3]
-            p[1],p[2],p[3],p[4],p[5] = x0, y1, 1, uvLeftBase, uvBottom
-            
-            p = v[vi+4]
-            p[1],p[2],p[3],p[4],p[5] = x1, y1, 1, uvRight, uvBottomBase
-            
-            p = v[vi+5]
-            p[1],p[2],p[3],p[4],p[5] = x1, y0, 1, uvRight, uvTopBase
-
-            vi = vi + 6
+            setupVertex(vertices, vc, x * frame:getWidth(), frame:getHeight() * y, 1, uvLeft, uvTop)
+            setupVertex(vertices, vc + 1, (x * frame:getWidth()) + frame:getWidth() * rightMult, frame:getHeight() * y, 1, uvRight, uvTop)
+            setupVertex(vertices, vc + 2, x * frame:getWidth(), frame:getHeight() * bottomMult + (frame:getHeight() * y), 1, uvLeft, uvBottom)
+            setupVertex(vertices, vc + 3, x * frame:getWidth(), frame:getHeight() * bottomMult + (frame:getHeight() * y), 1, uvLeft, uvBottom)
+            setupVertex(vertices, vc + 4, (x * frame:getWidth()) + frame:getWidth() * rightMult, frame:getHeight() * bottomMult + (frame:getHeight() * y), 1, uvRight, uvBottom)
+            setupVertex(vertices, vc + 5, (x * frame:getWidth()) + frame:getWidth() * rightMult, frame:getHeight() * y, 1, uvRight, uvTop)
+            vc = vc + 6
         end
     end
-    for i = vi, #vertices do
+    for i = vc, #vertices do
         vertices[i] = nil
     end
+    self._vertices = vertices
     return vertices
-end
-
---- Returns the bounding box of this image, as a rectangle
---- @param trans comet.math.Transform?   The transform to use for the bounding box (optional)
---- @param rect  comet.math.Rect?  The rectangle to use as the bounding box (optional)
---- @return comet.math.Rect
-function Image:getBoundingBox(trans, rect)
-    if not trans then
-        trans = self:getTransform()
-    end
-    if not rect then
-        rect = Rect:new()
-    end
-    local w, h = self:getOriginalWidth(), self:getOriginalHeight()
-    local x1, y1 = trans:transformPoint(0, 0)
-    local x2, y2 = trans:transformPoint(w, 0)
-    local x3, y3 = trans:transformPoint(w, h)
-    local x4, y4 = trans:transformPoint(0, h)
-
-    local minX = min(x1, x2, x3, x4)
-    local minY = min(y1, y2, y3, y4)
-    local maxX = max(x1, x2, x3, x4)
-    local maxY = max(y1, y2, y3, y4)
-
-    rect:set(minX, minY, maxX - minX, maxY - minY)
-    return rect
 end
 
 function TiledImage:draw()
@@ -193,25 +150,26 @@ function TiledImage:draw()
     local vertices = self:calculateVertices(self.texture, self.horizontalLength / self.texture:getWidth(), self.verticalLength / self.texture:getHeight())
     local vertexCount = #vertices
 
-    local mesh = self._mesh
-    if vertexCount > mesh:getVertexCount() then
-        -- if you reach higher vertex count than the mesh
-        -- can currently handle, make a new mesh
-
-        -- seems to be the best solution other than
-        -- giving the mesh a shit ton of triangles immediately
-
-        mesh:release()
-        mesh = gfx.newMesh(vertexFormat, vertices, "triangles", "stream")
-
-        self._mesh = mesh
-    else
-        mesh:setDrawRange(1, vertexCount)
-        mesh:setVertices(vertices)
+    if vertexCount > 0 then
+        local mesh = self._mesh
+        if vertexCount > mesh:getVertexCount() then
+            -- if you reach higher vertex count than the mesh
+            -- can currently handle, make a new mesh
+    
+            -- seems to be the best solution other than
+            -- giving the mesh a shit ton of triangles immediately
+    
+            mesh:release()
+            mesh = gfx.newMesh(vertexFormat, vertices, "triangles", "stream")
+    
+            self._mesh = mesh
+        else
+            mesh:setDrawRange(1, vertexCount)
+            mesh:setVertices(vertices)
+        end
+        mesh:setTexture(self.texture:getImage(self.antialiasing and "linear" or "nearest").image)
+        gfx.draw(mesh, transform:getRenderValues())
     end
-    mesh:setTexture(self.texture:getImage(self.antialiasing and "linear" or "nearest").image)
-    gfx.draw(mesh, transform:getRenderValues())
-
     if comet.settings.debugDraw then
         if not box then
             box = self:getBoundingBox(transform, self._rect)
