@@ -9,15 +9,15 @@ function MouseOverlapTest:enter()
     
     self.object = Rectangle:new(0, 0, 240, 240) --- @type comet.gfx.Rectangle
     self.object:screenCenter("xy")
-    self.object:setTint(Color.CYAN)
+    self.object:setColor(Color.CYAN)
     self.camera:addChild(self.object)
 end
 
 function MouseOverlapTest:update(dt)
-    if comet.mouse:overlaps(self.object, self.camera) then
-        self.object:setTint(Color.RED)
+    if comet.mouse:overlaps(self.object) then
+        self.object:setColor(Color.RED)
     else
-        self.object:setTint(Color.CYAN)
+        self.object:setColor(Color.CYAN)
     end
 end
 

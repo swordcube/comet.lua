@@ -190,7 +190,9 @@ end
 --- @return any
 ---
 function table.removeItem(t, item)
-	return _table.remove(t, _table.indexOf(t, item))
+    local idx = _table.indexOf(t, item)
+    if idx == -1 then return end
+	return _table.remove(t, idx)
 end
 
 ---

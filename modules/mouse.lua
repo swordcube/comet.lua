@@ -67,28 +67,22 @@ end
 
 --- Checks if the mouse is over the given object
 --- @param object comet.gfx.Object2D  The object to check (if it doesn't have a bounding box, this function will return `false`)
---- @param camera comet.gfx.Camera?   The camera to check against (optional, it is recommended to specify, but will automatically detect if not specified)
-function mouse:overlaps(object, camera)
-    if not object or not object.getBoundingBox then
+function mouse:overlaps(object)
+    if not object then
         return false
-    end
-    if not camera then
-        local p = self.parent
-        while p do
-            if p and p:isInstanceOf(Camera) then
-                --- @cast p comet.gfx.Camera
-                camera = p
-                break
-            end
-            p = p.parent
-        end
     end
     local x, y = self.position.x, self.position.y
-    local box = object:getBoundingBox(object:getTransform(), object._rect)
-    if x < box.x or x > box.x + box.width or y < box.y or y > box.y + box.height then
-        return false
+    if object.getBoundingBox then
+        local box = object:getBoundingBox(object:getTransform(), object._rect)
+        if x >= box.x and x <= box.x + box.width and y >= box.y and y <= box.y + box.height then
+            return true
+        end
     end
-    return true
+    local box = object:getChildrenBoundingBox(object._rect)
+    if x >= box.x and x <= box.x + box.width and y >= box.y and y <= box.y + box.height then
+        return true
+    end
+    return false
 end
 
 --- @param button "left"|"middle"|"right"

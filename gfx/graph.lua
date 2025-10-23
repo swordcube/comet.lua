@@ -103,6 +103,7 @@ function Graph:draw()
     end
 
     -- Draw the line
+    gfx.setLineWidth(1)
     gfx.line(unpack(lineData))
 
     -- Print the label
