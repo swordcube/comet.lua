@@ -1,4 +1,5 @@
 local Signal = cometreq("util.signal") --- @type comet.util.Signal
+local AnimationController = cometreq("gfx.animationcontroller") --- @type comet.gfx.AnimationController
 
 --- @class comet.gfx.AnimatedImage : comet.gfx.Object2D
 --- A basic object for displaying animated images, typically loaded through the `FrameCollection` class.
@@ -56,26 +57,10 @@ function AnimatedImage:__init__(x, y)
     --- Signal that gets emitted when the animation finishes
     self.onComplete = Signal:new():type("string", "void") --- @type comet.util.Signal
 
+    self.animation = AnimationController:new(self) --- @type comet.gfx.AnimationController
+
     --- @type comet.gfx.Shader
     self._shader = nil --- @protected
-
-    --- @type table<string, table[]>
-    self._animations = {} --- @protected
-
-    --- @type string
-    self._curAnim = "" --- @protected
-
-    --- @type integer
-    self._curFrame = 1 --- @protected
-
-    --- @type number
-    self._frameTimer = 0.0 --- @protected
-
-    --- @type boolean
-    self._playing = false --- @protected
-
-    --- @type boolean
-    self._finished = false --- @protected
 
     --- @type comet.gfx.FrameCollection
     self._frames = nil --- @protected
@@ -137,9 +122,9 @@ end
 --- @param indices  integer[]  The indices of the frames to use.
 --- @param fps      number     The framerate of the animation.
 --- @param loop     boolean?   Whether or not to loop the animation. (optional, default=`false`)
+--- @deprecated Use `obj.animation:add()` instead!
 function AnimatedImage:addAnimation(shortcut, indices, fps, loop)
-    loop = loop ~= nil and loop or false
-    self._animations[shortcut] = {name = "grid", fps = fps, indices = indices, loop = loop, offset = Vec2:new()}
+    self.animation:add(shortcut, indices, fps, loop)
 end
 
 --- @param shortcut    string?   A shortcut name to use when playing the animation.
@@ -147,19 +132,9 @@ end
 --- @param fps         number    The framerate of the animation.
 --- @param loop        boolean?  Whether or not to loop the animation. (optional, default=`false`)
 --- @param skipWarning boolean? Whether or not to skip warnings. (optional, default=`false`)
+--- @deprecated Use `obj.animation:addByName()` instead!
 function AnimatedImage:addAnimationByName(shortcut, name, fps, loop, skipWarnings)
-    if skipWarnings == nil then
-        skipWarnings = false
-    end
-    if not self._frames:getFrames(name) then
-        if not skipWarnings then
-            Log.warn("Animation '" .. name .. "' does not exist in the frame collection!")
-        end
-        return
-    end
-    shortcut = shortcut or name
-    loop = loop ~= nil and loop or false
-    self._animations[shortcut] = {name = name, fps = fps, loop = loop, offset = Vec2:new()}
+    self.animation:addByName(shortcut, name, fps, loop, skipWarnings)
 end
 
 --- @param shortcut string?    A shortcut name to use when playing the animation.
@@ -167,140 +142,102 @@ end
 --- @param indices  integer[]  The indices of the frames to use.
 --- @param fps      number     The framerate of the animation.
 --- @param loop     boolean?   Whether or not to loop the animation. (optional, default=`false`)
+--- @deprecated Use `obj.animation:addByIndices()` instead!
 function AnimatedImage:addAnimationByIndices(shortcut, name, indices, fps, loop)
-    shortcut = shortcut or name
-    loop = loop ~= nil and loop or false
-    self._animations[shortcut] = {name = name, fps = fps, indices = indices, loop = loop, offset = Vec2:new()}
+    self.animation:addByIndices(shortcut, name, indices, fps, loop)
 end
 
 --- @param name string  The name/shortcut name of the animation to check.
 --- @return boolean
+--- @deprecated Use `obj.animation:has()` instead!
 function AnimatedImage:hasAnimation(name)
-    return self._animations[name] ~= nil
+    return self.animation:has(name)
 end
 
 --- @param name string  The name/shortcut name of the animation to get the offset of.
 --- @return comet.math.Vec2?
+--- @deprecated Use `obj.animation:getOffset()` instead!
 function AnimatedImage:getAnimationOffset(name)
-    if not self:hasAnimation(name) then
-        Log.warn("Animation '" .. name .. "' does not exist!")
-        return nil
-    end
-    return self._animations[name].offset
+    return self.animation:getOffset(name)
 end
 
 --- @param name string  The name/shortcut name of the animation to set the offset of.
 --- @param x    number  The new X offset for this animation.
 --- @param y    number  The new Y offset for this animation.
+--- @deprecated Use `obj.animation:setOffset()` instead!
 function AnimatedImage:setAnimationOffset(name, x, y)
-    if not self:hasAnimation(name) then
-        Log.warn("Animation '" .. name .. "' does not exist!")
-        return
-    end
-    self._animations[name].offset:set(x, y)
+    self.animation:setOffset(name, x, y)
 end
 
 --- @param name  string    The name/shortcut name of the animation to play.
 --- @param force boolean?  Whether or not to forcefully restart the animation. (optional, default=`false`)
+--- @deprecated Use `obj.animation:play()` instead!
 function AnimatedImage:playAnimation(name, force)
-    if not self:hasAnimation(name) then
-        Log.warn("Animation '" .. name .. "' does not exist!")
-        return
-    end
-    force = force ~= nil and force or false
-    if not force and self._curAnim == name and self:isPlaying() then
-        return
-    end
-    self._curAnim = name
-    self:setCurrentFrame(1)
-
-    self._frameTimer = 0.0
-    self._playing = true
-    self._finished = false
+    self.animation:play(name, force)
 end
 
+--- @deprecated Use `obj.animation:getCurrentAnimation()` instead!
 function AnimatedImage:getCurrentAnimation()
-    return self._curAnim
+    return self.animation:getCurrentAnimation()
 end
 
+--- @deprecated Use `obj.animation:getCurrentFrame()` instead!
 function AnimatedImage:getCurrentFrame()
-    return self._curFrame
+    return self.animation:getCurrentFrame()
 end
 
 --- @param frame integer
+--- @deprecated Use `obj.animation:setCurrentFrame()` instead!
 function AnimatedImage:setCurrentFrame(frame)
-    self._curFrame = frame
-
-    local anim = self._animations[self._curAnim]
-    self._frame = self._frames:getFrame(anim.name, anim.indices and (anim.indices[frame] or 1) or frame)
+    self.animation:setCurrentFrame(frame)
 end
 
+--- @deprecated Use `obj.animation:isPlaying()` instead!
 function AnimatedImage:isPlaying()
-    return self._playing
+    return self.animation:isPlaying()
 end
 
+--- @deprecated Use `obj.animation:pause()` instead!
 function AnimatedImage:pause()
-    self._playing = false
+    self.animation:pause()
 end
 
+--- @deprecated Use `obj.animation:resume()` instead!
 function AnimatedImage:resume()
-    self._playing = true
+    self.animation:resume()
 end
 
+--- @deprecated Use `obj.animation:isFinished()` instead!
 function AnimatedImage:isFinished()
-    return self._finished
+    return self.animation:isFinished()
 end
 
 --- Returns the unscaled width of a given frame.
 --- @param frame integer?  The frame to get the width of. (optional, defaults to current)
 --- @return number
 function AnimatedImage:getOriginalWidth(frame)
-    frame = frame ~= nil and frame or self._curFrame
-    if not self._frames then
-        return 0
-    end
-    local anim = self._animations[self._curAnim]
-    local frameData = self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or frame) or frame)
-    return frameData and frameData.frameWidth or 0
+    return self.animation:getOriginalWidth(frame)
 end
 
 --- Returns the unscaled height of a given frame.
 --- @param frame integer?  The frame to get the height of. (optional, defaults to current)
 --- @return number
 function AnimatedImage:getOriginalHeight(frame)
-    frame = frame ~= nil and frame or self._curFrame
-    if not self._frames then
-        return 0
-    end
-    local anim = self._animations[self._curAnim]
-    local frameData = self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or frame) or frame)
-    return frameData and frameData.frameHeight or 0
+    return self.animation:getOriginalHeight(frame)
 end
 
 --- Returns the width of a given frame (accounting for this image's scale).
 --- @param frame integer?  The frame to get the width of. (optional, defaults to current)
 --- @return number
 function AnimatedImage:getWidth(frame)
-    frame = frame ~= nil and frame or self._curFrame
-    if not self._frames then
-        return 0
-    end
-    local anim = self._animations[self._curAnim]
-    local frameData = self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or frame) or frame)
-    return frameData and frameData.frameWidth * abs(self.scale.x) or 0
+    return self.animation:getOriginalWidth(frame) * abs(self.scale.x)
 end
 
 --- Returns the height of a given frame (accounting for this image's scale).
 --- @param frame integer?  The frame to get the height of. (optional, defaults to current)
 --- @return number
 function AnimatedImage:getHeight(frame)
-    frame = frame ~= nil and frame or self._curFrame
-    if not self._frames then
-        return 0
-    end
-    local anim = self._animations[self._curAnim]
-    local frameData = self._frames:getFrame(self._animations[self._curAnim].name, anim.indices and (anim.indices[frame] or frame) or frame)
-    return frameData and frameData.frameHeight * abs(self.scale.y) or 0
+    return self.animation:getOriginalHeight(frame) * abs(self.scale.y)
 end
 
 --- @param newWidth   number
@@ -395,7 +332,7 @@ function AnimatedImage:getTransform(accountForParent, accountForCamera, accountF
 
     -- frame & anim offset
     if accountForFrames then
-        local anim = self._animations[self._curAnim]
+        local anim = self.animation._animations[self.animation._curAnim]
         transform:translate(frame.offset.x + (anim and anim.offset.x or 0.0), frame.offset.y + (anim and anim.offset.y or 0.0))
         transform:translate(0, fastsin(rad(frame.rotation)) * -frame.clipWidth)
         transform:rotate(rad(frame.rotation))
@@ -421,39 +358,7 @@ function AnimatedImage:isOnScreen(box)
 end
 
 function AnimatedImage:update(dt)
-    if not self._playing or not self._frames then
-        return
-    end
-    self._frameTimer = self._frameTimer + dt
-
-    local anim = self._animations[self._curAnim]
-    local frameDuration = 1.0 / anim.fps
-
-    while self._frameTimer >= frameDuration do
-        if not self._frames then
-            break
-        end
-        local finished = false
-        local newFrame = self._curFrame + 1
-        local animFrames = anim.indices or self._frames:getFrames(anim.name)
-
-        if not anim.loop and self._curFrame >= #animFrames and self._playing then
-            self._playing = false
-            finished = true
-        end
-        if anim.loop then
-            newFrame = wrap(newFrame, 1, #animFrames)
-        else
-            newFrame = clamp(newFrame, 1, #animFrames)
-        end
-        self:setCurrentFrame(newFrame)
-        self._frameTimer = self._frameTimer - frameDuration
-        
-        if finished then
-            self._finished = true
-            self.onComplete:emit(self._curAnim)
-        end
-    end
+    self.animation:update(dt)
 end
 
 function AnimatedImage:draw()
