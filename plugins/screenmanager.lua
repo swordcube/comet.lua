@@ -64,9 +64,9 @@ function ScreenManager:_switchScreen()
     self.current = new
     Log.verbose("Switched to screen: " .. new.class.name)
 
-    self.current:enter()
-    self.current:startIntro()
-    self.current:postEnter()
+    new:enter()
+    new:startIntro()
+    new:postEnter()
     
     collectgarbage()
 
