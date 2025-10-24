@@ -1,7 +1,5 @@
-local middleclass = cometreq("lib.middleclass") --- @type comet.lib.MiddleClass
-
 --- @class comet.core.Object : comet.util.Class
-local Object = Class("Object", ...)
+local Object = Class:extend("Object", ...)
 
 function Object:__init__()
     self.tag = nil
@@ -61,6 +59,15 @@ function Object:addChild(object, tag)
     self._childCount = #self.children
 end
 
+function Object:addChildUnsafe(object, tag)
+    if tag then
+        self._childrenByTag[tag] = object
+    end
+    object.parent = self
+    self.children[#self.children + 1] = object --- @type comet.core.Object
+    self._childCount = #self.children
+end
+
 function Object:insertChild(position, object, tag)
     if not object then
         Log.warn("You can't add an invalid child to an object!")
@@ -74,6 +81,16 @@ function Object:insertChild(position, object, tag)
         Log.warn("You can't add a child object that already has a parent! Use Object:reparent() instead!")
         return
     end
+    if tag then
+        self._childrenByTag[tag] = object
+        object.tag = tag
+    end
+    object.parent = self
+    table.insert(self.children, position, object)
+    self._childCount = #self.children
+end
+
+function Object:insertChildUnsafe(position, object, tag)
     if tag then
         self._childrenByTag[tag] = object
         object.tag = tag
@@ -99,6 +116,16 @@ function Object:removeChild(object)
     end
     object.parent = nil
     table.insert(self._pendingToRemove, object)
+
+    if object.tag then
+        self._childrenByTag[object.tag] = nil
+        object.tag = nil
+    end
+end
+
+function Object:removeChildUnsafe(object)
+    object.parent = nil
+    table.removeItem(self.children, object)
 
     if object.tag then
         self._childrenByTag[object.tag] = nil
@@ -152,7 +179,7 @@ function Object:recycle(class, factory, revive)
     revive = (revive ~= nil) and revive or true
     for i = 1, self._childCount do
         local actor = self.children[i] --- @type comet.core.Object
-        if actor and not actor.exists and Class.isinstanceof(actor, class) then
+        if actor and not actor.exists and Class.isInstanceOf(actor, class) then
             if revive then
                 actor:revive()
             end
@@ -161,11 +188,11 @@ function Object:recycle(class, factory, revive)
     end
     if factory then
         local actor = factory()
-        self:addChild(actor)
+        self:addChildUnsafe(actor)
         return actor
     end
     local actor = class:new()
-    self:addChild(actor)
+    self:addChildUnsafe(actor)
     return actor
 end
 

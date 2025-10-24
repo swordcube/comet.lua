@@ -1,6 +1,6 @@
 --- @class comet.gfx.Parallax2D : comet.gfx.Object2D
 --- A basic object meant for displaying child objects at different scroll factors.
-local Parallax2D, super = Object2D:subclass("Parallax2D", ...)
+local Parallax2D, super = Object2D:extend("Parallax2D", ...)
 
 function Parallax2D:__init__(x, y)
     super.__init__(self, x, y)
@@ -18,7 +18,7 @@ function Parallax2D:getTransform()
     local p = self.parent
     local camera = nil --- @type comet.gfx.Camera
     while p do
-        if p and p:isInstanceOf(Camera) then
+        if p and p:is(Camera) then
             --- @cast p comet.gfx.Camera
             camera = p
             break

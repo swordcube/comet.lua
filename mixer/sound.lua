@@ -1,7 +1,7 @@
 local Signal = cometreq("util.signal") --- @type comet.util.Signal
 
 --- @class comet.mixer.Sound : comet.util.Class
-local Sound = Class("Sound", ...)
+local Sound = Class:extend("Sound", ...)
 
 function Sound:__init__()
     self.exists = true

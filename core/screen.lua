@@ -1,5 +1,5 @@
 --- @class comet.core.Screen : comet.core.Object
-local Screen, super = Object:subclass("Screen", ...)
+local Screen, super = Object:extend("Screen", ...)
 
 function Screen:__init__()
     super.__init__(self)

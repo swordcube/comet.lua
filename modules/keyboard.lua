@@ -1,7 +1,7 @@
 local Class = cometreq("util.class") --- @type comet.util.Class
 
 --- @class comet.modules.keyboard
-local keyboard = Class("comet.modules.keyboard", ...)
+local keyboard = Class:extend("comet.modules.keyboard", ...)
 
 local list = {
     "none",

@@ -1,5 +1,5 @@
 --- @class comet.gfx.Object2D : comet.core.Object
-local Object2D, super = Object:subclass("Object2D", ...)
+local Object2D, super = Object:extend("Object2D", ...)
 
 local gfx = love.graphics
 local lmath = love.math
@@ -51,8 +51,8 @@ function Object2D:getParentTransform(transform, accountForCamera)
     if accountForCamera == nil then
         accountForCamera = true
     end
-    if self.parent and self.parent:isInstanceOf(Object2D) then
-        local isCam = self.parent:isInstanceOf(Camera)
+    if self.parent and self.parent:is(Object2D) then
+        local isCam = self.parent:is(Camera)
         if isCam and not accountForCamera then
             goto continue
         end

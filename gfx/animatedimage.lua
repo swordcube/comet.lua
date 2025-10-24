@@ -3,9 +3,9 @@ local AnimationController = cometreq("gfx.animationcontroller") --- @type comet.
 
 --- @class comet.gfx.AnimatedImage : comet.gfx.Object2D
 --- A basic object for displaying animated images, typically loaded through the `FrameCollection` class.
-local AnimatedImage, super = Object2D:subclass("AnimatedImage", ...)
+local AnimatedImage, super = Object2D:extend("AnimatedImage", ...)
 
-AnimatedImage.static.NO_OFF_SCREEN_CHECKS = false
+AnimatedImage.NO_OFF_SCREEN_CHECKS = false
 
 local abs, floor, rad, fastsin, wrap, clamp = math.abs, math.floor, math.rad, math.fastsin, math.wrap, math.clamp
 local gfx = love.graphics -- Faster access with local variable
@@ -81,7 +81,7 @@ end
 
 --- @param frames comet.gfx.FrameCollection
 function AnimatedImage:setFrameCollection(frames)
-    assert(type(frames) == "table" and Class.isinstanceof(frames, FrameCollection), "AnimatedImage:setFrameCollection(): You must pass in a FrameCollection instance")
+    assert(type(frames) == "table" and Class.isInstanceOf(frames, FrameCollection), "AnimatedImage:setFrameCollection(): You must pass in a FrameCollection instance")
     if self._frames then
         self._frames:dereference()
         self._frames = nil
@@ -99,7 +99,7 @@ function AnimatedImage:getShader()
 end
 
 function AnimatedImage:setShader(shader)
-    assert(type(shader) == "table" and Class.isinstanceof(shader, Shader), "AnimatedImage:setShader(): You must pass in a shader instance")
+    assert(type(shader) == "table" and Class.isInstanceOf(shader, Shader), "AnimatedImage:setShader(): You must pass in a shader instance")
     if self._shader then
         self._shader:dereference()
         self._shader = nil

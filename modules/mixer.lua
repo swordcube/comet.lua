@@ -1,7 +1,7 @@
 local Class = cometreq("util.class") --- @type comet.util.Class
 
 --- @class comet.modules.mixer
-local mixer = Class("comet.modules.mixer", ...)
+local mixer = Class:extend("comet.modules.mixer", ...)
 
 function mixer:__init__()
     self._volume = 1.0 --- @protected

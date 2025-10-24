@@ -1,7 +1,7 @@
 local Signal = cometreq("util.signal") --- @type comet.util.Signal
 
 --- @class comet.util.Timer : comet.util.Class
-local Timer = Class("Timer", ...)
+local Timer = Class:extend("Timer", ...)
 
 function Timer:__init__()
     self.exists = true

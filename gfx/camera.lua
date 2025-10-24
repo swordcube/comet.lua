@@ -1,6 +1,6 @@
 --- @class comet.gfx.Camera : comet.gfx.Object2D
 --- A basic object for displaying static Cameras.
-local Camera, super = Object2D:subclass("Camera", ...)
+local Camera, super = Object2D:extend("Camera", ...)
 
 local math = math -- Faster access with local variable
 local gfx = love.graphics -- Faster access with local variable

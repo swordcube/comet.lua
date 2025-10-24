@@ -1,5 +1,5 @@
 --- @class comet.util.Path : comet.util.Class
-local Path = Class("Path", ...)
+local Path = Class:extend("Path", ...)
 
 -- sloppily ported over from haxe itself
 -- https://github.com/HaxeFoundation/haxe/blob/4.3.1/std/haxe/io/Path.hx

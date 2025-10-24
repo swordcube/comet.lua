@@ -5,7 +5,7 @@ local fs = love.filesystem
 
 --- @class comet.util.Save : comet.util.Class
 --- A simple class for storing and loading data.
-local Save = Class("Save", ...)
+local Save = Class:extend("Save", ...)
 
 function Save:__init__()
     self.data = {}

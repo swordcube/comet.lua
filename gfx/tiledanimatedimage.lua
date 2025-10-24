@@ -1,5 +1,5 @@
 --- @class comet.gfx.TiledAnimatedImage : comet.gfx.AnimatedImage
-local TiledAnimatedImage, super = AnimatedImage:subclass("TiledAnimatedImage", ...)
+local TiledAnimatedImage, super = AnimatedImage:extend("TiledAnimatedImage", ...)
 
 local gfx = love.graphics -- Faster access with local variable
 local vertexFormat = {

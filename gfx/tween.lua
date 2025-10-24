@@ -1,7 +1,7 @@
 local Signal = cometreq("util.signal") --- @type comet.util.Signal
 
 --- @class comet.gfx.Tween : comet.core.Object
-local Tween = Class("Tween", ...)
+local Tween = Class:extend("Tween", ...)
 
 function Tween:__init__(tweenManager)
     self.exists = true

@@ -1,10 +1,10 @@
 --- @class comet.gfx.Image : comet.gfx.Object2D
 --- A basic object for displaying static images.
-local Image, super = Object2D:subclass("Image", ...)
+local Image, super = Object2D:extend("Image", ...)
 
-Image.static.NO_OFF_SCREEN_CHECKS = false
-Image.static._lastBlendMode = ""
-Image.static._lastAlphaMode = ""
+Image.NO_OFF_SCREEN_CHECKS = false
+Image._lastBlendMode = ""
+Image._lastAlphaMode = ""
 
 local abs, floor, rad, fastsin, wrap, clamp, min, max = math.abs, math.floor, math.rad, math.fastsin, math.wrap, math.clamp, math.min, math.max
 local gfx = love.graphics -- Faster access with local variable
@@ -67,7 +67,7 @@ function Image:__init__(image)
 end
 
 function Image:loadTexture(tex)
-    assert((type(tex) == "table" and Class.isinstanceof(tex, Texture)) or type(tex) == "string" or tex == nil, "Image:loadTexture(): You must pass in a texture instance or file path")
+    assert((type(tex) == "table" and Class.isInstanceOf(tex, Texture)) or type(tex) == "string" or tex == nil, "Image:loadTexture(): You must pass in a texture instance or file path")
     if self.texture then
         self.texture:dereference()
         self.texture = nil
@@ -96,7 +96,7 @@ end
 
 --- @param shader comet.gfx.Shader
 function Image:setShader(shader)
-    assert(type(shader) == "table" and Class.isinstanceof(shader, Shader), "Image:setShader(): You must pass in a shader instance")
+    assert(type(shader) == "table" and Class.isInstanceOf(shader, Shader), "Image:setShader(): You must pass in a shader instance")
     if self._shader then
         self._shader:dereference()
         self._shader = nil
@@ -205,7 +205,7 @@ function Image:isOnScreen(box)
     local p = self.parent
     local camera = nil --- @type comet.gfx.Camera
     while p do
-        if p and p:isInstanceOf(Camera) then
+        if p and p:is(Camera) then
             --- @cast p comet.gfx.Camera
             camera = p
             break

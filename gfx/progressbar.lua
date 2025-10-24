@@ -1,6 +1,6 @@
 --- @class comet.gfx.ProgressBar : comet.gfx.Object2D
 --- A basic object for displaying rectangular progress bars.
-local ProgressBar, super = Object2D:subclass("ProgressBar", ...)
+local ProgressBar, super = Object2D:extend("ProgressBar", ...)
 
 local math = math -- Faster access with local variable
 local gfx = love.graphics -- Faster access with local variable
@@ -165,7 +165,7 @@ function ProgressBar:isOnScreen(box)
     local p = self.parent
     local camera = nil --- @type comet.gfx.Camera
     while p do
-        if p and p:isInstanceOf(Camera) then
+        if p and p:is(Camera) then
             --- @cast p comet.gfx.Camera
             camera = p
             break

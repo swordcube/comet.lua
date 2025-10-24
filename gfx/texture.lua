@@ -2,7 +2,7 @@ local RefCounted = cometreq("core.refcounted") --- @type comet.core.RefCounted
 
 --- @class comet.gfx.Texture : comet.core.RefCounted
 --- A basic object for storing a texture.
-local Texture, super = RefCounted:subclass("Texture", ...)
+local Texture, super = RefCounted:extend("Texture", ...)
 
 local img = love.image
 local gfx = love.graphics

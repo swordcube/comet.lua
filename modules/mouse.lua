@@ -1,7 +1,7 @@
 local Class = cometreq("util.class") --- @type comet.util.Class
 
 --- @class comet.modules.mouse
-local mouse = Class("comet.modules.mouse", ...)
+local mouse = Class:extend("comet.modules.mouse", ...)
 
 local list = {
     "left",

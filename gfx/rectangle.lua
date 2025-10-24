@@ -1,6 +1,6 @@
 --- @class comet.gfx.Rectangle : comet.gfx.Object2D
 --- A basic object for displaying static images.
-local Rectangle, super = Object2D:subclass("Rectangle", ...)
+local Rectangle, super = Object2D:extend("Rectangle", ...)
 
 local math = math -- Faster access with local variable
 local img = love.image -- Faster access with local variable
@@ -18,7 +18,7 @@ local whitePixelData = img.newImageData(1, 1)
 whitePixelData:setPixel(0, 0, 1, 1, 1, 1)
 
 local whitePixel = gfx.newImage(whitePixelData)
-Rectangle.static.whitePixel = whitePixel
+Rectangle.whitePixel = whitePixel
 
 local function preMultiplyChannels(r, g, b, a)
     return r * a, g * a, b * a, a
@@ -164,7 +164,7 @@ function Rectangle:isOnScreen(box)
     local p = self.parent
     local camera = nil --- @type comet.gfx.Camera
     while p do
-        if p and p:isInstanceOf(Camera) then
+        if p and p:is(Camera) then
             --- @cast p comet.gfx.Camera
             camera = p
             break

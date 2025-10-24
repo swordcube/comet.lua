@@ -1,7 +1,7 @@
 local gfx = love.graphics
 
 --- @class comet.gfx.Graph : comet.util.Class
-local Graph = Class("Graph", ...)
+local Graph = Class:extend("Graph", ...)
 
 function Graph:__init__(type, x, y, width, height, delay, label, font)
     if ({ mem = 0, fps = 0, custom = 0 })[type] == nil then

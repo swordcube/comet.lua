@@ -1,7 +1,7 @@
 --- @class comet.gfx.AnimationFrame : comet.util.Class
 --- A basic class for storing an animation frame.
 --- Meant to be used in `FrameCollection` objects.
-local AnimationFrame = Class("AnimationFrame", ...)
+local AnimationFrame = Class:extend("AnimationFrame", ...)
 
 ---@param name string
 ---@param texture comet.gfx.Texture

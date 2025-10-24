@@ -1,5 +1,5 @@
---- @class comet.ui.UI9SliceImage : comet.gfx.Image
-local UI9SliceImage, super = Image:subclass("UI9SliceImage", ...)
+--- @class comet.ui.components.UI9SliceImage : comet.gfx.Image
+local UI9SliceImage, super = Image:extend("UI9SliceImage", ...)
 
 local abs, rad = math.abs, math.rad
 local gfx = love.graphics

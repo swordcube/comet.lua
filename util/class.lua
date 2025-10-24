@@ -1,5 +1,3 @@
-local middleclass = cometreq("lib.middleclass") --- @type comet.lib.MiddleClass
-
---- @class comet.util.Class
-local Class = middleclass
+--- @class comet.util.Class : comet.lib.classical
+local Class = cometreq("lib.classical")
 return Class

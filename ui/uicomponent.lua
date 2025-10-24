@@ -1,7 +1,7 @@
 local UIUtil = cometreq("ui.uiutil") --- @type comet.ui.UIUtil
 
 --- @class comet.ui.UIComponent : comet.gfx.Object2D
-local UIComponent, super = Object2D:subclass("UIComponent", ...)
+local UIComponent, super = Object2D:extend("UIComponent", ...)
 
 function UIComponent:__init__(x, y)
     super.__init__(self, x, y)

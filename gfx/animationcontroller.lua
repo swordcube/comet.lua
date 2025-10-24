@@ -1,11 +1,11 @@
 --- @class comet.gfx.AnimationController : comet.util.Class
 --- A simple animation controller for AnimatedImages.
-local AnimationController = Class("AnimationController", ...)
+local AnimationController = Class:extend("AnimationController", ...)
 
 local wrap, clamp = math.wrap, math.clamp
 
 function AnimationController:__init__(parent)
-    assert(parent ~= nil and Class.isinstanceof(parent, AnimatedImage), "AnimationImage:new(): Parent must be an AnimatedImage")
+    assert(parent ~= nil and Class.isInstanceOf(parent, AnimatedImage), "AnimationImage:new(): Parent must be an AnimatedImage")
     self.parent = parent --- @type comet.gfx.AnimatedImage
 
     self.onComplete = self.parent.onComplete
