@@ -97,6 +97,9 @@ end
 --- @param shader comet.gfx.Shader
 function Image:setShader(shader)
     assert(type(shader) == "table" and Class.isInstanceOf(shader, Shader), "Image:setShader(): You must pass in a shader instance")
+    if self._shader == shader then
+        return
+    end
     if self._shader then
         self._shader:dereference()
         self._shader = nil
@@ -143,7 +146,7 @@ function Image:getTransform(accountForParent, accountForCamera, accountForCenter
     local ox2, oy2 = abs(self:getOriginalWidth()) * 0.5, abs(self:getOriginalHeight()) * 0.5
     if self.centered then
         transform:scale(abs(self.scale.x), abs(self.scale.y))
-        
+
         if self.scale.x < -math.epsilon then
             transform:translate(ox2, oy2)
             transform:scale(-1, 1)
@@ -262,7 +265,7 @@ function Image:draw()
         gfx.setShader()
     end
     gfx.draw(self.texture:getImage(self.antialiasing and "linear" or "nearest"), x, y, r, sx, sy)
-    
+
     if self.clipRect then
         gfx.clear(false, true, false)
 		gfx.setStencilState()

@@ -26,8 +26,8 @@ function AnimationFrame:__init__(name, texture, x, y, offsetX, offsetY, clipWidt
     self.clipWidth = clipWidth --- @type number
     self.clipHeight = clipHeight --- @type number
 
-    self.frameWidth = frameWidth or clipWidth --- @type number
-    self.frameHeight = frameHeight or clipHeight --- @type number
+    self.frameWidth = tonumber(frameWidth or clipWidth) --- @type number
+    self.frameHeight = tonumber(frameHeight or clipHeight) --- @type number
 
     self.rotation = rotation or 0.0 --- @type number
 

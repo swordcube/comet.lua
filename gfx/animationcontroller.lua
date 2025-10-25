@@ -1,3 +1,5 @@
+local json = cometreq("lib.json") --- @type comet.lib.Json
+
 --- @class comet.gfx.AnimationController : comet.util.Class
 --- A simple animation controller for AnimatedImages.
 local AnimationController = Class:extend("AnimationController", ...)
@@ -27,15 +29,41 @@ function AnimationController:__init__(parent)
 
     --- @type boolean
     self._finished = false --- @protected
+
+    --- @type number
+    self._biggestFrameWidth = 0.0 --- @protected
+
+    --- @type number
+    self._biggestFrameHeight = 0.0 --- @protected
+end
+
+function AnimationController:_updateBiggestFrameSize()
+    self._biggestFrameWidth, self._biggestFrameHeight = 0, 0
+    for _, anim in pairs(self._animations) do
+        if anim.indices and anim.indices ~= json.null then
+            for i = 1, #anim.indices do
+                local frame = self.parent._frames:getFrame(anim.name, anim.indices[i])
+                self._biggestFrameWidth = math.max(frame and frame.frameWidth or 0, self._biggestFrameWidth)
+                self._biggestFrameHeight = math.max(frame and frame.frameHeight or 0, self._biggestFrameHeight)
+            end
+        else
+            local frames = self.parent._frames:getFrames(anim.name)
+            for i = 1, #frames do
+                local frame = frames[i]
+                self._biggestFrameWidth = math.max(frame and frame.frameWidth or 0, self._biggestFrameWidth)
+                self._biggestFrameHeight = math.max(frame and frame.frameHeight or 0, self._biggestFrameHeight)
+            end
+        end
+    end
 end
 
 --- Adds an animation purely by frame indices.
---- 
+---
 --- Use this if your using a frame collection loaded as a grid (`FrameCollection.fromTexture`),
 --- as there is no animation names available in them.
---- 
+---
 --- Otherwise use `addByName()` or `addByIndices()`.
---- 
+---
 --- @param shortcut string?    A shortcut name to use when playing the animation.
 --- @param indices  integer[]  The indices of the frames to use.
 --- @param fps      number     The framerate of the animation.
@@ -43,6 +71,7 @@ end
 function AnimationController:add(shortcut, indices, fps, loop)
     loop = loop ~= nil and loop or false
     self._animations[shortcut] = {name = "grid", fps = fps, indices = indices, loop = loop, offset = Vec2:new()}
+    self:_updateBiggestFrameSize()
 end
 
 --- @param shortcut    string?   A shortcut name to use when playing the animation.
@@ -63,6 +92,7 @@ function AnimationController:addByName(shortcut, name, fps, loop, skipWarnings)
     shortcut = shortcut or name
     loop = loop ~= nil and loop or false
     self._animations[shortcut] = {name = name, fps = fps, loop = loop, offset = Vec2:new()}
+    self:_updateBiggestFrameSize()
 end
 
 --- @param shortcut string?    A shortcut name to use when playing the animation.
@@ -74,6 +104,7 @@ function AnimationController:addByIndices(shortcut, name, indices, fps, loop)
     shortcut = shortcut or name
     loop = loop ~= nil and loop or false
     self._animations[shortcut] = {name = name, fps = fps, indices = indices, loop = loop, offset = Vec2:new()}
+    self:_updateBiggestFrameSize()
 end
 
 --- @param name string  The name/shortcut name of the animation to check.
@@ -120,6 +151,36 @@ function AnimationController:play(name, force)
     self._frameTimer = 0.0
     self._playing = true
     self._finished = false
+end
+
+function AnimationController:remove(name)
+	if self._curAnim == name then
+    	self._curAnim = ""
+    	self._curFrame = 0
+    	self._frameTimer = 0
+    	self._playing, self._finished = false, false
+    end
+	self._animations[name] = nil
+	self:_updateBiggestFrameSize()
+end
+
+function AnimationController:clearAll()
+   	self._curAnim = ""
+   	self._curFrame = 0
+   	self._frameTimer = 0
+   	self._playing, self._finished = false, false
+
+	self._animations = {}
+	self._biggestFrameWidth, self._biggestFrameHeight = 0, 0
+end
+
+--- @return string[]
+function AnimationController:getAnimationNames()
+	local anims = {}
+	for name, _ in pairs(self._animations) do
+		anims[#anims+1] = name
+	end
+	return anims
 end
 
 function AnimationController:getCurrentAnimation()
@@ -180,6 +241,14 @@ function AnimationController:getOriginalHeight(frame)
     return frameData and frameData.frameHeight or 0
 end
 
+function AnimationController:getBiggestFrameWidth()
+    return self._biggestFrameWidth
+end
+
+function AnimationController:getBiggestFrameHeight()
+    return self._biggestFrameHeight
+end
+
 function AnimationController:update(dt)
     if not self._playing or not self.parent._frames then
         return
@@ -196,7 +265,7 @@ function AnimationController:update(dt)
         local finished = false
         local newFrame = self._curFrame + 1
         local animFrames = anim.indices or self.parent._frames:getFrames(anim.name)
-            
+
         if not anim.loop and self._curFrame >= #animFrames and self._playing then
             self._playing = false
             finished = true
@@ -208,7 +277,7 @@ function AnimationController:update(dt)
         end
         self:setCurrentFrame(newFrame)
         self._frameTimer = self._frameTimer - frameDuration
-        
+
         if finished then
             self._finished = true
             self.onComplete:emit(self._curAnim)

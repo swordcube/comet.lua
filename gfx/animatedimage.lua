@@ -82,6 +82,9 @@ end
 --- @param frames comet.gfx.FrameCollection
 function AnimatedImage:setFrameCollection(frames)
     assert(type(frames) == "table" and Class.isInstanceOf(frames, FrameCollection), "AnimatedImage:setFrameCollection(): You must pass in a FrameCollection instance")
+    if self._frames == frames then
+        return
+    end
     if self._frames then
         self._frames:dereference()
         self._frames = nil
@@ -89,9 +92,10 @@ function AnimatedImage:setFrameCollection(frames)
     if frames then
         self._frames = frames
         self._frames:reference()
-    
+
         self._frame = self._frames:getFrame(self._frames:getAnimationNames()[1], 1)
     end
+    self.animation:clearAll()
 end
 
 function AnimatedImage:getShader()
@@ -100,6 +104,9 @@ end
 
 function AnimatedImage:setShader(shader)
     assert(type(shader) == "table" and Class.isInstanceOf(shader, Shader), "AnimatedImage:setShader(): You must pass in a shader instance")
+    if self._shader == shader then
+        return
+    end
     if self._shader then
         self._shader:dereference()
         self._shader = nil
@@ -112,12 +119,12 @@ function AnimatedImage:setShader(shader)
 end
 
 --- Adds an animation purely by frame indices.
---- 
+---
 --- Use this if your using a frame collection loaded as a grid (`FrameCollection.fromTexture`),
 --- as there is no animation names available in them.
---- 
+---
 --- Otherwise use `addAnimationByName()` or `addAnimationByIndices()`.
---- 
+---
 --- @param shortcut string?    A shortcut name to use when playing the animation.
 --- @param indices  integer[]  The indices of the frames to use.
 --- @param fps      number     The framerate of the animation.
@@ -294,7 +301,7 @@ function AnimatedImage:getTransform(accountForParent, accountForCamera, accountF
     if accountForCentering and self.centered then
         transform:translate(-abs(self:getWidth(1)) * 0.5, -abs(self:getHeight(1)) * 0.5)
     end
-    
+
     -- origin
     local ox, oy = abs(self:getWidth(1)) * self.origin.x, abs(self:getHeight(1)) * self.origin.y
     transform:translate(ox, oy)
@@ -302,10 +309,10 @@ function AnimatedImage:getTransform(accountForParent, accountForCamera, accountF
     transform:translate(-ox, -oy)
 
     -- scale
-    local ox2, oy2 = abs(self:getOriginalWidth(1)) * 0.5, abs(self:getOriginalHeight(1)) * 0.5
+    local ox2, oy2 = abs(self.animation:getBiggestFrameWidth()) * 0.5, abs(self.animation:getBiggestFrameHeight()) * 0.5
     if self.centered then
         transform:scale(abs(self.scale.x), abs(self.scale.y))
-        
+
         if self.scale.x < -math.epsilon then
             transform:translate(ox2, 0)
             transform:scale(-1, 1)
