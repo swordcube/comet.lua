@@ -1,6 +1,6 @@
 > [!WARNING]
 > # Migration Alert!!
-> This repo has now migrated to [git.gay](https://git.gay), the new repo can be found by [clicking on this text](https://git.gay/swordcube/friday-again-garfie-baby)
+> This repo has now migrated to [git.gay](https://git.gay), the new repo can be found by [clicking on this text](https://git.gay/swordcube/comet.lua)
 
 <a href="https://github.com/swordcube/comet.lua">
     <img src="./res/image/logo.png" align="center" width="128" />
