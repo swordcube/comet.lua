@@ -13,9 +13,21 @@ function classical:new(...)
 end
 
 function classical:extend(name, path)
+    local rawPath = path
+    local parentDir = comet.parentDirectory .. "."
+    if path and path:startsWith(parentDir) then
+        path = "comet." .. path:sub(#parentDir + 1)
+    end
+    if path and path:startsWith((comet.settings.srcDirectory .. ".")) then
+        path = string.sub(path, #(comet.settings.srcDirectory .. ".") + 1)
+    end
+    if path and path:endsWith(name:lower()) then
+        path = path:sub(1, #path - #name) .. name
+    end
     local cls = {
         name = name,
         path = path,
+        rawPath = rawPath,
         __isclass = true
     }
     for k, v in pairs(self) do

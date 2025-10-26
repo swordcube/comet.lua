@@ -169,6 +169,8 @@ function Native.showFileDialog(type, callback, settings)
 	if settings.multiselect then
 		SDL3.SDL_SetBooleanProperty(props, "SDL.filedialog.many", 1)
 	end
+	-- TODO: this right here is only reliably functional on macOS and Linux
+	-- on Windows it will either crash without any error or crash with a LUA API error
 	SDL3.SDL_ShowFileDialogWithProperties(sdltype, ffi.cast("SDL_DialogFileCallback", function(userdata, filelist, filter)
 		local files = {}
 		local err = nil
